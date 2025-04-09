@@ -1,26 +1,120 @@
-{{ block "blocks-index" . }}
+{{ block "index" . }}
 <html>
-    <head>
-        <title>Infinite Scroll</title>
-        <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
-    </head>
-    <body>
-        <div style="display: flex; flex-direction: column">
-            {{ template "blocks" . }}
-        </div>
-    </body>
+  <head>
+    <title>CONTACTS</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="/js/scripts.js"></script>
+    <script
+      src="https://unpkg.com/htmx.org@2.0.4"
+      integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="/css/index.css" />
+
+    <script>
+      document.addEventListener("DOMContentLoaded", (event) => {
+        document.body.addEventListener("htmx:beforeSwap", function (evt) {
+          if (evt.detail.xhr.status === 422) {
+            // allow 422 responses to swap as we are using this as a signal that
+            // a form was submitted with bad data and want to rerender with the
+            // errors
+            //
+            // set isError to false to avoid error logging in console
+            evt.detail.shouldSwap = true;
+            evt.detail.isError = false;
+          }
+        });
+      });
+    </script>
+
+    {{ template "styles" .}}
+  </head>
+  <body>
+    {{ template "navbar" .}} {{ template "create-contact" .}}
+    <hr />
+    {{ template "show-contacts" .}}
+  </body>
 </html>
 {{ end }}
 
-{{ block "blocks" . }}
-    {{ range .Blocks }}
-        <div style="background-color: #eee; margin: 2px">
-            <span>{{ .Id }}</span>
-        </div>
-    {{ end }}
-
-    {{ if .More }}
-        <div hx-trigger="revealed" hx-swap="outerHTML" hx-get="/blocks?start={{ .Next }}"></div>
-    {{ end }}
+<!--  -->
+{{ block "create-contact" . }}
+<form
+  id="ourform"
+  hx-target="#contacts"
+  hx-swap="afterbegin"
+  hx-post="/create-contact"
+  class="p-2 px-6"
+  style="display: flex; gap: 16px"
+>
+  <div>Name: <input type="text" class="border rounded-sm" name="name" /></div>
+  <div>Email:<input type="text" class="border rounded-sm" name="email" /></div>
+  <button class="p-1 px-3 rounded-sm bg-blue-400" type="submit">
+    Create Contact
+  </button>
+  <div id="error-form"></div>
+</form>
 {{ end }}
 
+<!--  -->
+{{ block "show-contacts" .}}
+<div id="contacts" class="container py-4">
+  {{ range .Contacts}} {{ template "contact" .}} {{end}}
+</div>
+{{end}}
+
+<!--  -->
+{{ block "contact" .}}
+
+<div class="contact flex items-center gap-2">
+  <button
+    hx-disabled-elt="this"
+    hx-delete="/contacts/{{ .Id }}"
+    hx-swap="outerHTML swap:500ms"
+    hx-indicator="#delete-indicator-contact-{{ .Id }}"
+    hx-target="closest .contact"
+    class="reset-button"
+    style="width: 18px; height: 18px"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path fill="none" d="M0 0h24v24H0z" />
+      <path
+        d="M4 2h16a1 1 0 011 1v1a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zM3 6h18v16a1 1 0 01-1 1H4a1 1 0 01-1-1V6zm3 3v9a1 1 0 002 0v-9a1 1 0 00-2 0zm5 0v9a1 1 0 002 0v-9a1 1 0 00-2 0zm5 0v9a1 1 0 002 0v-9a1 1 0 00-2 0z"
+      />
+    </svg>
+  </button>
+
+  <div>
+    <div style="display: flex; gap: 5px">
+      <span>Name:</span> <span> {{.Name}}</span>
+    </div>
+    <div style="display: flex; gap: 5px">
+      <span>Email:</span> <span> {{.Email}}</span>
+    </div>
+  </div>
+
+  <img
+    src="/images/bars.svg"
+    class="htmx-indicator"
+    id="delete-indicator-contact-{{ .Id }}"
+    alt="loading"
+    style="width: 1rem"
+  />
+
+  <button class="buttoncool" onclick="showForm(contact-{{.Id}}-update)">
+    Update Contact
+  </button>
+
+  <div id="contact-{{ .Id }}-update" class="hidden">Update contact form</div>
+</div>
+{{end}}
+
+<!--  -->
+{{ block "form-error" .}}
+<div hx-swap-oob="innerhtml" id="error-form">
+  <span style="color: red">{{ .ErrorText }}</span>
+</div>
+
+{{ end }} {{ block "form-success" .}}
+<div hx-swap-oob="innerhtml" id="error-form"></div>
+{{ end }}
