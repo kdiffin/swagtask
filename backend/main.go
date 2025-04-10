@@ -17,7 +17,7 @@ type Template struct {
 
 func newTemplate() *Template {
 	return &Template{
-		tmpl: template.Must(template.ParseGlob("../views/*.ghtml")),
+		tmpl: template.Must(template.ParseGlob("../views/*.go html")),
 	}
 }
 
