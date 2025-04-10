@@ -42,6 +42,7 @@ func main() {
     e.GET("/", func(c echo.Context) error {
 		return c.Render(200, "index", homePage)
 	})
+	
 
 	e.Logger.Fatal(e.Start(":42069"))
 }

@@ -11,6 +11,13 @@ import (
 
 
 
+ type TaskPage struct {
+	Task task_package.Task
+	PrevTaskExists bool
+	NextTaskExists bool
+	PrevId         int
+    NextId         int
+}
 
 func Tasks(e *echo.Echo, page *task_package.TasksContainer) {
 	e.DELETE("/tasks/:id", func(c echo.Context) error {
@@ -37,7 +44,7 @@ func Tasks(e *echo.Echo, page *task_package.TasksContainer) {
 		return c.NoContent(200)
 	})
 
-    e.PATCH("/tasks/:id", func(c echo.Context) error {
+    e.PUT("/tasks/:id", func(c echo.Context) error {
 		idStr := c.Param("id")
         id, err := strconv.Atoi(idStr)		
         if err != nil {
@@ -47,11 +54,15 @@ func Tasks(e *echo.Echo, page *task_package.TasksContainer) {
        
 
 		updated := false
-        index := 0
+        index := -1
 
 		for i, task := range page.Tasks {
 			if task.Id == id {
-                new_tags := append(task.Tags, c.FormValue("tag"))
+                new_tags := task.Tags
+				if(c.FormValue("tag") != "") {
+					new_tags = append(new_tags, c.FormValue("tag"))
+				}
+				
                 updatedTask := task_package.Task{
                     Name: utils.StringWithFallback(c.FormValue("name"), task.Name),
                     Idea: utils.StringWithFallback(c.FormValue("idea"), task.Idea),
@@ -70,6 +81,25 @@ func Tasks(e *echo.Echo, page *task_package.TasksContainer) {
 		}
 
 		return c.Render(200, "task", page.Tasks[index])
+	})
+
+	e.POST("/tasks/:id/toggle-complete", func(c echo.Context) error {
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		
+		if err != nil {
+			return c.String(400, "Id must be an integer")
+		}
+
+		index := -1
+		for i, task := range page.Tasks {
+			if(task.Id == id) {
+				page.Tasks[i].Completed = !task.Completed
+				index = i
+			}
+		}
+
+		return c.Render(200,"task", page.Tasks[index])
 	})
 
 	// default id
@@ -96,5 +126,31 @@ func Tasks(e *echo.Echo, page *task_package.TasksContainer) {
 		id++
 
 		return c.Render(200, "task", task)
+	})
+
+	
+	e.GET("/task/:id", func(c echo.Context) error {
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)	
+		if err != nil {
+			return c.String(400, "Id must be an integer")
+		}
+
+		var taskOfId TaskPage 
+		for _, task := range page.Tasks {
+			if(task.Id == id) {
+				var pexists, nexists bool
+				
+				if(task.Id > 1) {
+					pexists = true
+				}
+				if(task.Id<len(page.Tasks	)) {
+					nexists = true
+				}
+
+				taskOfId =  TaskPage{Task: task, PrevTaskExists: pexists, NextTaskExists: nexists, PrevId: task.Id-1, NextId: task.Id+1} 
+			}
+		}
+		return c.Render(200, "tasks-page", taskOfId)
 	})
 }

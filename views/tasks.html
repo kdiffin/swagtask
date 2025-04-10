@@ -1,0 +1,53 @@
+{{ block "tasks-page" . }}
+<html>
+  <head>
+    <title>Task {{.Task.Id}}</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="/js/scripts.js"></script>
+    <script
+      src="https://unpkg.com/htmx.org@2.0.4"
+      integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="/css/index.css" />
+
+    {{ template "styles" .}}
+  </head>
+  <body class="bg-zinc-800 text-white">
+    {{ template "navbar" .}}
+    <!--  -->
+    <div class="container py-4">
+      {{ template "show-task" .Task}} {{ template "bottom-task-nav" .}}
+    </div>
+  </body>
+</html>
+{{ end }}
+
+<!--  -->
+{{block "show-task" .}} {{template "task" .}} {{end}}
+
+<!--  -->
+{{block "bottom-task-nav" .}}
+<div class="mt-4 flex justify-between flex-wrap">
+  {{if .PrevTaskExists}}
+  <a
+    href="/task/{{.PrevId}}"
+    class="p-1 px-3 rounded-sm bg-blue-400"
+    type="submit"
+  >
+    Prev Task
+  </a>
+  {{end}}
+
+  <!--  -->
+  {{if .NextTaskExists}}
+  <a
+    href="/task/{{.NextId }}"
+    class="p-1 px-3 rounded-sm bg-blue-400"
+    type="submit"
+  >
+    Next Task
+  </a>
+  {{end}}
+</div>
+{{end}}
