@@ -1,7 +1,7 @@
 {{ block "index" . }}
 <html>
   <head>
-    <title>CONTACTS</title>
+    <title>TASKS</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script src="/js/scripts.js"></script>
     <script
@@ -15,11 +15,6 @@
       document.addEventListener("DOMContentLoaded", (event) => {
         document.body.addEventListener("htmx:beforeSwap", function (evt) {
           if (evt.detail.xhr.status === 422) {
-            // allow 422 responses to swap as we are using this as a signal that
-            // a form was submitted with bad data and want to rerender with the
-            // errors
-            //
-            // set isError to false to avoid error logging in console
             evt.detail.shouldSwap = true;
             evt.detail.isError = false;
           }
@@ -29,92 +24,128 @@
 
     {{ template "styles" .}}
   </head>
-  <body>
-    {{ template "navbar" .}} {{ template "create-contact" .}}
+  <body class="bg-zinc-800 text-white">
+    {{ template "navbar" .}} {{ template "create-task" .}}
     <hr />
-    {{ template "show-contacts" .}}
+    {{ template "show-tasks" .}}
   </body>
 </html>
 {{ end }}
 
 <!--  -->
-{{ block "create-contact" . }}
+{{ block "create-task" . }}
 <form
   id="ourform"
-  hx-target="#contacts"
+  hx-target="#tasks"
   hx-swap="afterbegin"
-  hx-post="/create-contact"
-  class="p-2 px-6"
+  hx-post="/tasks"
+  class="p-4 px-6 items-center"
   style="display: flex; gap: 16px"
 >
   <div>Name: <input type="text" class="border rounded-sm" name="name" /></div>
-  <div>Email:<input type="text" class="border rounded-sm" name="email" /></div>
+  <div>Idea:<input type="text" class="border rounded-sm" name="idea" /></div>
   <button class="p-1 px-3 rounded-sm bg-blue-400" type="submit">
-    Create Contact
+    Create Task
   </button>
   <div id="error-form"></div>
 </form>
 {{ end }}
 
 <!--  -->
-{{ block "show-contacts" .}}
-<div id="contacts" class="container py-4">
-  {{ range .Contacts}} {{ template "contact" .}} {{end}}
+{{ block "show-tasks" . }}
+<div id="tasks" class="container py-4">
+  {{ range .Tasks}} {{ template "task" .}} {{end}}
 </div>
 {{end}}
 
 <!--  -->
-{{ block "contact" .}}
+{{ block "task" . }}
+<div hx-swap="outerHTML" id="task-{{ .Id }}" class="task p-6 border">
+  <div class="flex items-center gap-2">
+    <button
+      hx-disabled-elt="this"
+      hx-delete="/tasks/{{ .Id }}"
+      hx-swap="outerHTML swap:500ms"
+      hx-indicator="#delete-indicator-task-{{ .Id }}"
+      hx-target="closest .task"
+      style="width: 18px; height: 18px"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path fill="none" d="M0 0h24v24H0z" />
+        <path
+          d="M4 2h16a1 1 0 011 1v1a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zM3 6h18v16a1 1 0 01-1 1H4a1 1 0 01-1-1V6zm3 3v9a1 1 0 002 0v-9a1 1 0 00-2 0zm5 0v9a1 1 0 002 0v-9a1 1 0 00-2 0zm5 0v9a1 1 0 002 0v-9a1 1 0 00-2 0z"
+        />
+      </svg>
+    </button>
 
-<div class="contact flex items-center gap-2">
-  <button
-    hx-disabled-elt="this"
-    hx-delete="/contacts/{{ .Id }}"
-    hx-swap="outerHTML swap:500ms"
-    hx-indicator="#delete-indicator-contact-{{ .Id }}"
-    hx-target="closest .contact"
-    class="reset-button"
-    style="width: 18px; height: 18px"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path fill="none" d="M0 0h24v24H0z" />
-      <path
-        d="M4 2h16a1 1 0 011 1v1a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zM3 6h18v16a1 1 0 01-1 1H4a1 1 0 01-1-1V6zm3 3v9a1 1 0 002 0v-9a1 1 0 00-2 0zm5 0v9a1 1 0 002 0v-9a1 1 0 00-2 0zm5 0v9a1 1 0 002 0v-9a1 1 0 00-2 0z"
-      />
-    </svg>
-  </button>
+    <div class="flex gap-4">
+      <div>
+        <div style="display: flex; gap: 5px">
+          <span>Name:</span> <span> {{.Name}}</span>
+        </div>
+        <div style="display: flex; gap: 5px">
+          <span>Idea:</span> <span> {{.Idea}}</span>
+        </div>
+      </div>
+      <div class="gap-2">
+        <div class="flex gap-2">
+          {{ range .Tags}}
+          <div class="rounded-full px-4 bg-purple-400">#{{.}}</div>
+          {{end}}
+        </div>
+      </div>
+    </div>
 
-  <div>
-    <div style="display: flex; gap: 5px">
-      <span>Name:</span> <span> {{.Name}}</span>
-    </div>
-    <div style="display: flex; gap: 5px">
-      <span>Email:</span> <span> {{.Email}}</span>
-    </div>
+    <img
+      src="/images/bars.svg"
+      class="htmx-indicator"
+      id="delete-indicator-task-{{ .Id }}"
+      alt="loading"
+      style="width: 1rem"
+    />
   </div>
 
-  <img
-    src="/images/bars.svg"
-    class="htmx-indicator"
-    id="delete-indicator-contact-{{ .Id }}"
-    alt="loading"
-    style="width: 1rem"
-  />
+  <form
+    id="change-task-{{.Id}}"
+    hx-target="#task-{{.Id}}"
+    hx-patch="/tasks/{{.Id}}"
+    class="mt-2 px-6 flex-col"
+    style="display: flex; gap: 16px"
+  >
+    <div class="flex items-center gap-4">
+      <div>
+        Change Task Name:
+        <input type="text" class="border rounded-sm" name="name" />
+      </div>
+      <div>
+        Change Task Idea:<input
+          type="text"
+          class="border rounded-sm"
+          name="idea"
+        />
+      </div>
+    </div>
 
-  <button class="buttoncool" onclick="showForm(contact-{{.Id}}-update)">
-    Update Contact
-  </button>
-
-  <div id="contact-{{ .Id }}-update" class="hidden">Update contact form</div>
+    <div class="flex items-center gap-4">
+      <div>
+        Add Tag:<input type="text" class="border rounded-sm" name="tag" />
+      </div>
+      <button class="p-1 px-3 rounded-sm bg-orange-400" type="submit">
+        ok update
+      </button>
+    </div>
+  </form>
 </div>
 {{end}}
 
 <!--  -->
-{{ block "form-error" .}}
+{{ block "form-error" . }}
 <div hx-swap-oob="innerhtml" id="error-form">
   <span style="color: red">{{ .ErrorText }}</span>
 </div>
+{{ end }}
 
-{{ end }} {{ block "form-success" .}}
+<!--  -->
+{{ block "form-success" . }}
 <div hx-swap-oob="innerhtml" id="error-form"></div>
 {{ end }}
