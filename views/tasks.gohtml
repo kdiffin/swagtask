@@ -15,19 +15,20 @@
     {{ template "navbar" .}}
     <!--  -->
     <div class="container py-4">
-      {{ template "show-task" .Task}} {{ template "bottom-task-nav" .}}
+      {{ template "show-task" .Task }}
+      {{ template "bottom-task-nav" .}}
     </div>
   </body>
 </html>
 {{ end }}
 
-<!--  -->
-{{block "show-task" .}} {{template "task" .}} {{end}}
+{{block "show-task" .}}
+{{template "task" .}}
+{{ end }}
 
-<!--  -->
 {{block "bottom-task-nav" .}}
 <div class="mt-4 flex justify-between flex-wrap">
-  {{if .PrevTaskExists}}
+  {{ if .PrevTaskExists }}
   <a
     href="/task/{{.PrevId}}"
     class="p-1 px-3 rounded-sm bg-blue-400"
@@ -35,10 +36,10 @@
   >
     Prev Task
   </a>
-  {{end}}
+  {{ end }}
 
   <!--  -->
-  {{if .NextTaskExists}}
+  {{ if .NextTaskExists }}
   <a
     href="/task/{{.NextId }}"
     class="p-1 px-3 rounded-sm bg-blue-400"
@@ -46,6 +47,6 @@
   >
     Next Task
   </a>
-  {{end}}
+  {{ end }}
 </div>
-{{end}}
+{{ end }}

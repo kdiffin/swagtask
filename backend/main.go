@@ -3,8 +3,8 @@ package main
 import (
 	"html/template"
 	"io"
-	task_package "myapp/task"
 
+	"myapp/database"
 	"myapp/router"
 
 	"github.com/labstack/echo/v4"
@@ -35,11 +35,11 @@ func main() {
 	e.Static("/css", "../css")
 	e.Static("/js", "../js")
 
-	homePage := task_package.NewHomePage()
-
-	router.Tasks(e, &homePage)
+	database := database.NewDatabase()
+	router.Tasks(e, &database)
+	router.Tags(e, &database)
 	e.GET("/", func(c echo.Context) error {
-		return c.Render(200, "index", homePage)
+		return c.Render(200, "index", database)
 	})
 
 	e.Logger.Fatal(e.Start(":42069"))

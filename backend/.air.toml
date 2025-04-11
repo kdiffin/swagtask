@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
   bin = "tmp/main.exe"
   cmd = "go build -o tmp/main.exe ."
-  include_ext = ["go", "html", "css"]
+  include_ext = ["go", "gohtml", "css"]
   include_dir = ["backend", "views", "css"]
 
   exclude_dir = ["tmp", "node_modules"]

@@ -23,7 +23,8 @@
     </script>
   </head>
   <body class="bg-zinc-800 text-white">
-    {{ template "navbar" .}} {{ template "create-task" .}}
+    {{ template "navbar" .}}
+    {{ template "create-task" .}}
     <hr />
     {{ template "show-tasks" .}}
   </body>
@@ -52,11 +53,12 @@
 <!--  -->
 {{ block "show-tasks" . }}
 <div id="tasks" class="container py-4">
-  {{ range.Tasks }} {{ template "task" .}} {{ end }}
+  {{ range.Tasks }}
+  {{ template "task" .}}
+  {{ end }}
 </div>
 {{ end }}
 
-<!--  -->
 {{ block "task" . }}
 <div
   hx-swap="outerHTML"
