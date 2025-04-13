@@ -31,7 +31,6 @@
 </html>
 {{ end }}
 
-<!--  -->
 {{ block "create-task" . }}
 <form
   id="ourform"
@@ -193,14 +192,12 @@
 </div>
 {{ end }}
 
-<!--  -->
 {{ block "form-error" . }}
 <div hx-swap-oob="innerhtml" id="error-form">
   <span style="color: red">{{ .ErrorText }}</span>
 </div>
 {{ end }}
 
-<!--  -->
 {{ block "form-success" . }}
 <div hx-swap-oob="innerhtml" id="error-form"></div>
 {{ end }}
