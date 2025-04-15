@@ -1,13 +1,5 @@
 package database
 
-import (
-	"context"
-	"fmt"
-	"os"
-
-	"github.com/jackc/pgx/v5/pgxpool"
-)
-
 // task creation functions
 type Task struct {
 	Name      string
@@ -17,16 +9,35 @@ type Task struct {
 	Completed bool
 }
 type Tasks = []Task
+type Database struct {
+	Tasks Tasks
+}
 
-func DatabaseInit() *pgxpool.Pool {
-	// pgx pool starts a pool thats concurrency safe
-	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+func NewTask(name string, idea string, id int, tags []string) Task {
+	return Task{
+		Name:      name,
+		Idea:      idea,
+		Id:        id,
+		Tags:      tags,
+		Completed: false,
+	}
+}
 
-	// connects to db via url
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+func (p Database) HasIdea(idea string) bool {
+	for _, task := range p.Tasks {
+		if task.Idea == idea {
+			return true
+		}
 	}
 
-	return dbpool
+	return false
+}
+
+func NewDatabase() Database {
+	return Database{
+		Tasks: []Task{
+			NewTask("ok bro", "read book", 2, []string{"academia", "mental"}),
+			NewTask("real", "do the dishes", 1, []string{"home", "physical"}),
+		},
+	}
 }

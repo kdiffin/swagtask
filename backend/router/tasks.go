@@ -1,15 +1,11 @@
 package router
 
 import (
-	"context"
-	"fmt"
 	"myapp/database"
 	"myapp/utils"
-	"net/http"
 	"strconv"
-	"strings"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -21,157 +17,134 @@ type TaskPage struct {
 	NextId         int
 }
 
-func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
-	e.POST("/tasks", func(c echo.Context) error {
-		var task database.Task
-		err := dbpool.QueryRow(context.Background(), "INSERT INTO tasks (name, idea) VALUES ($1, $2) RETURNING (name, idea, id, tags, completed)",
-			c.FormValue("name"),
-			c.FormValue("idea")).Scan(&task)
-
-		if err != nil {
-			return c.Render(422, "form-error", "U CANT PUT THE SAME IDEA TWICE")
-
-		}
-
-		c.Render(200, "form-success", nil)
-		return c.Render(200, "task", task)
-	})
-
-	e.GET("/tasks/:id", func(c echo.Context) error {
-		return getTaskHandler(c, dbpool)
-	})
-
-	e.POST("/tasks/:id/toggle-complete", func(c echo.Context) error {
-		idStr := c.Param("id")
-		id, errConv := strconv.Atoi(idStr)
-		if errConv != nil {
-			return c.String(http.StatusBadRequest, http.StatusText(http.StatusBadGateway))
-		}
-
-		var task database.Task
-		err := dbpool.QueryRow(context.Background(), "UPDATE tasks SET completed = NOT completed WHERE id = $1 RETURNING name,idea,id,tags,completed", id).Scan(&task.Name, &task.Idea, &task.Id, &task.Tags, &task.Completed)
-
-		if err != nil {
-			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		return c.Render(200, "task", task)
-	})
-
-	e.PUT("/tasks/:id", func(c echo.Context) error {
-		return editTaskHandler(c, dbpool)
-	})
-
+func Tasks(e *echo.Echo, db *database.Database) {
 	e.DELETE("/tasks/:id", func(c echo.Context) error {
+		time.Sleep(2 * time.Second)
 		idStr := c.Param("id")
-		id, errConv := strconv.Atoi(idStr)
-		if errConv != nil {
-			return c.String(http.StatusBadRequest, http.StatusText(http.StatusBadGateway))
+		id, err := strconv.Atoi(idStr)
+
+		if err != nil {
+			return c.String(400, "Id must be an integer")
 		}
 
-		_, err := dbpool.Exec(context.Background(), "DELETE FROM tasks WHERE id = $1", id)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		deleted := false
+		for i, task := range db.Tasks {
+			if task.Id == id {
+				db.Tasks = append(db.Tasks[:i], db.Tasks[i+1:]...)
+				deleted = true
+				break
+			}
+		}
+		if !deleted {
+			return c.String(400, "Task not found")
 		}
 
 		return c.NoContent(200)
 	})
-}
 
-func getTaskHandler(c echo.Context, dbpool *pgxpool.Pool) error {
-	idStr := c.Param("id")
-	id, errConv := strconv.Atoi(idStr)
-	if errConv != nil {
-		return c.String(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
-	}
+	e.PUT("/tasks/:id", func(c echo.Context) error {
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.String(400, "Id must be an integer")
+		}
 
-	var task database.Task
-	err := dbpool.QueryRow(context.Background(), "SELECT name, idea, tags, completed, id FROM tasks WHERE id = $1", id).Scan(&task.Name, &task.Idea, &task.Tags, &task.Completed, &task.Id)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
+		updated := false
+		index := -1
 
-	var prevId int
-	var nextId int
-	prevIdExists := true
-	nextIdExists := true
+		for i, task := range db.Tasks {
+			if task.Id == id {
+				new_tags := task.Tags
+				if c.FormValue("tag") != "" {
+					new_tags = append(new_tags, c.FormValue("tag"))
+				}
 
-	// Previous ID
-	errPrevId := dbpool.QueryRow(context.Background(),
-		"SELECT id FROM tasks WHERE id < $1 ORDER BY id DESC LIMIT 1", id,
-	).Scan(&prevId)
-	if errPrevId != nil {
-		prevIdExists = false
-	}
+				updatedTask := database.Task{
+					Name: utils.StringWithFallback(c.FormValue("name"), task.Name),
+					Idea: utils.StringWithFallback(c.FormValue("idea"), task.Idea),
+					Id:   id,
+					Tags: new_tags,
+				}
 
-	// Next ID
-	errNextId := dbpool.QueryRow(context.Background(),
-		"SELECT id FROM tasks WHERE id > $1 ORDER BY id ASC LIMIT 1", id,
-	).Scan(&nextId)
-	if errNextId != nil {
-		nextIdExists = false
-	}
+				db.Tasks[i] = updatedTask
+				index = i
+				updated = true
+				break
+			}
+		}
+		if !updated {
+			return c.String(400, "Task not found")
+		}
 
-	// fmt.Println(prevId)
-	// fmt.Println(nextId)
+		return c.Render(200, "task", db.Tasks[index])
+	})
 
-	page := TaskPage{
-		Task:           task,
-		PrevTaskExists: prevIdExists,
-		NextTaskExists: nextIdExists,
-		PrevId:         prevId,
-		NextId:         nextId,
-	}
-	return c.Render(200, "task-page", page)
-}
+	e.POST("/tasks/:id/toggle-complete", func(c echo.Context) error {
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
 
-func editTaskHandler(c echo.Context, dbpool *pgxpool.Pool) error {
-	// TODO: refactor
-	idStr := c.Param("id")
-	id, errConv := strconv.Atoi(idStr)
-	if errConv != nil {
-		return c.String(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
-	}
+		if err != nil {
+			return c.String(400, "Id must be an integer")
+		}
 
-	// dbpool requires any
-	var args []any
-	name := c.FormValue("name")
-	idea := c.FormValue("idea")
-	tag := c.FormValue("tag")
-	queryNovalues := "UPDATE tasks SET"
-	sum := 1
-	if name != "" {
-		queryNovalues += fmt.Sprintf(" name = $%d,", sum)
-		args = append(args, name)
-		sum++
-	}
-	if idea != "" {
-		queryNovalues += fmt.Sprintf(" idea = $%d,", sum)
-		args = append(args, idea)
-		sum++
-	}
-	if tag != "" {
-		queryNovalues += fmt.Sprintf(" tags = array_append(tags, $%d)", sum)
-		args = append(args, tag)
-		sum++
-	}
+		index := -1
+		for i, task := range db.Tasks {
+			if task.Id == id {
+				db.Tasks[i].Completed = !task.Completed
+				index = i
+			}
+		}
 
-	if len(args) == 0 {
-		// no updates
-		return c.NoContent(http.StatusNoContent)
-	}
-	queryNovalues = strings.TrimSuffix(queryNovalues, ",")
-	queryString := queryNovalues + fmt.Sprintf(" WHERE id = $%d RETURNING (name,idea,id,tags,completed)", sum)
-	args = append(args, id)
-	println(queryString)
-	utils.PrintList(args)
-	// have updates which dynamically generates the querynovalues,
+		return c.Render(200, "task", db.Tasks[index])
+	})
 
-	var task database.Task
-	err := dbpool.QueryRow(context.Background(), queryString, args...).Scan(&task)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
+	// default id
+	id := 3
+	e.POST("/tasks", func(c echo.Context) error {
+		name := c.FormValue("name")
+		idea := c.FormValue("idea")
 
-	return c.Render(200, "task", task)
+		task := database.Task{
+			Name: name,
+			Idea: idea,
+			Id:   id,
+		}
+
+		if db.HasIdea(idea) {
+			blockData := struct{ ErrorText string }{ErrorText: "STOP ERRORING"}
+			return c.Render(422, "form-error", blockData)
+		} else {
+			c.Render(200, "form-success", "")
+		}
+
+		db.Tasks = append([]database.Task{database.NewTask(name, idea, id, []string{})}, db.Tasks...)
+		id++
+
+		return c.Render(200, "task", task)
+	})
+
+	e.GET("/task/:id", func(c echo.Context) error {
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.String(400, "Id must be an integer")
+		}
+
+		var taskOfId TaskPage
+		for _, task := range db.Tasks {
+			if task.Id == id {
+				var pexists, nexists bool
+
+				if task.Id > 1 {
+					pexists = true
+				}
+				if task.Id < len(db.Tasks) {
+					nexists = true
+				}
+
+				taskOfId = TaskPage{Task: task, PrevTaskExists: pexists, NextTaskExists: nexists, PrevId: task.Id - 1, NextId: task.Id + 1}
+			}
+		}
+		return c.Render(200, "tasks-page", taskOfId)
+	})
 }
