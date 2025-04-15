@@ -1,7 +1,16 @@
 package router
 
 import (
+	"context"
+	"fmt"
 	"myapp/database"
+	"myapp/utils"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/labstack/echo/v4"
 )
 
 type TaskPage struct {
@@ -12,134 +21,157 @@ type TaskPage struct {
 	NextId         int
 }
 
-// func Tasks(e *echo.Echo, db *pgxpool.Pool) {
-// 	e.DELETE("/tasks/:id", func(c echo.Context) error {
-// 		time.Sleep(2 * time.Second)
-// 		idStr := c.Param("id")
-// 		id, err := strconv.Atoi(idStr)
+func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
+	e.POST("/tasks", func(c echo.Context) error {
+		var task database.Task
+		err := dbpool.QueryRow(context.Background(), "INSERT INTO tasks (name, idea) VALUES ($1, $2) RETURNING (name, idea, id, tags, completed)",
+			c.FormValue("name"),
+			c.FormValue("idea")).Scan(&task)
 
-// 		if err != nil {
-// 			return c.String(400, "Id must be an integer")
-// 		}
+		if err != nil {
+			return c.Render(422, "form-error", "U CANT PUT THE SAME IDEA TWICE")
 
-// 		deleted := false
-// 		for i, task := range db.Tasks {
-// 			if task.Id == id {
-// 				db.Tasks = append(db.Tasks[:i], db.Tasks[i+1:]...)
-// 				deleted = true
-// 				break
-// 			}
-// 		}
-// 		if !deleted {
-// 			return c.String(400, "Task not found")
-// 		}
+		}
 
-// 		return c.NoContent(200)
-// 	})
+		c.Render(200, "form-success", nil)
+		return c.Render(200, "task", task)
+	})
 
-// 	e.PUT("/tasks/:id", func(c echo.Context) error {
-// 		idStr := c.Param("id")
-// 		id, err := strconv.Atoi(idStr)
-// 		if err != nil {
-// 			return c.String(400, "Id must be an integer")
-// 		}
+	e.GET("/tasks/:id", func(c echo.Context) error {
+		return getTaskHandler(c, dbpool)
+	})
 
-// 		updated := false
-// 		index := -1
+	e.POST("/tasks/:id/toggle-complete", func(c echo.Context) error {
+		idStr := c.Param("id")
+		id, errConv := strconv.Atoi(idStr)
+		if errConv != nil {
+			return c.String(http.StatusBadRequest, http.StatusText(http.StatusBadGateway))
+		}
 
-// 		for i, task := range db.Tasks {
-// 			if task.Id == id {
-// 				new_tags := task.Tags
-// 				if c.FormValue("tag") != "" {
-// 					new_tags = append(new_tags, c.FormValue("tag"))
-// 				}
+		var task database.Task
+		err := dbpool.QueryRow(context.Background(), "UPDATE tasks SET completed = NOT completed WHERE id = $1 RETURNING name,idea,id,tags,completed", id).Scan(&task.Name, &task.Idea, &task.Id, &task.Tags, &task.Completed)
 
-// 				updatedTask := database.Task{
-// 					Name: utils.StringWithFallback(c.FormValue("name"), task.Name),
-// 					Idea: utils.StringWithFallback(c.FormValue("idea"), task.Idea),
-// 					Id:   id,
-// 					Tags: new_tags,
-// 				}
+		if err != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
 
-// 				db.Tasks[i] = updatedTask
-// 				index = i
-// 				updated = true
-// 				break
-// 			}
-// 		}
-// 		if !updated {
-// 			return c.String(400, "Task not found")
-// 		}
+		return c.Render(200, "task", task)
+	})
 
-// 		return c.Render(200, "task", db.Tasks[index])
-// 	})
+	e.PUT("/tasks/:id", func(c echo.Context) error {
+		return editTaskHandler(c, dbpool)
+	})
 
-// 	e.POST("/tasks/:id/toggle-complete", func(c echo.Context) error {
-// 		idStr := c.Param("id")
-// 		id, err := strconv.Atoi(idStr)
+	e.DELETE("/tasks/:id", func(c echo.Context) error {
+		idStr := c.Param("id")
+		id, errConv := strconv.Atoi(idStr)
+		if errConv != nil {
+			return c.String(http.StatusBadRequest, http.StatusText(http.StatusBadGateway))
+		}
 
-// 		if err != nil {
-// 			return c.String(400, "Id must be an integer")
-// 		}
+		_, err := dbpool.Exec(context.Background(), "DELETE FROM tasks WHERE id = $1", id)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
 
-// 		index := -1
-// 		for i, task := range db.Tasks {
-// 			if task.Id == id {
-// 				db.Tasks[i].Completed = !task.Completed
-// 				index = i
-// 			}
-// 		}
+		return c.NoContent(200)
+	})
+}
 
-// 		return c.Render(200, "task", db.Tasks[index])
-// 	})
+func getTaskHandler(c echo.Context, dbpool *pgxpool.Pool) error {
+	idStr := c.Param("id")
+	id, errConv := strconv.Atoi(idStr)
+	if errConv != nil {
+		return c.String(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+	}
 
-// 	// default id
-// 	id := 3
-// 	e.POST("/tasks", func(c echo.Context) error {
-// 		name := c.FormValue("name")
-// 		idea := c.FormValue("idea")
+	var task database.Task
+	err := dbpool.QueryRow(context.Background(), "SELECT name, idea, tags, completed, id FROM tasks WHERE id = $1", id).Scan(&task.Name, &task.Idea, &task.Tags, &task.Completed, &task.Id)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 
-// 		task := database.Task{
-// 			Name: name,
-// 			Idea: idea,
-// 			Id:   id,
-// 		}
+	var prevId int
+	var nextId int
+	prevIdExists := true
+	nextIdExists := true
 
-// 		if db.HasIdea(idea) {
-// 			blockData := struct{ ErrorText string }{ErrorText: "STOP ERRORING"}
-// 			return c.Render(422, "form-error", blockData)
-// 		} else {
-// 			c.Render(200, "form-success", "")
-// 		}
+	// Previous ID
+	errPrevId := dbpool.QueryRow(context.Background(),
+		"SELECT id FROM tasks WHERE id < $1 ORDER BY id DESC LIMIT 1", id,
+	).Scan(&prevId)
+	if errPrevId != nil {
+		prevIdExists = false
+	}
 
-// 		db.Tasks = append([]database.Task{database.NewTask(name, idea, id, []string{})}, db.Tasks...)
-// 		id++
+	// Next ID
+	errNextId := dbpool.QueryRow(context.Background(),
+		"SELECT id FROM tasks WHERE id > $1 ORDER BY id ASC LIMIT 1", id,
+	).Scan(&nextId)
+	if errNextId != nil {
+		nextIdExists = false
+	}
 
-// 		return c.Render(200, "task", task)
-// 	})
+	// fmt.Println(prevId)
+	// fmt.Println(nextId)
 
-// 	e.GET("/task/:id", func(c echo.Context) error {
-// 		idStr := c.Param("id")
-// 		id, err := strconv.Atoi(idStr)
-// 		if err != nil {
-// 			return c.String(400, "Id must be an integer")
-// 		}
+	page := TaskPage{
+		Task:           task,
+		PrevTaskExists: prevIdExists,
+		NextTaskExists: nextIdExists,
+		PrevId:         prevId,
+		NextId:         nextId,
+	}
+	return c.Render(200, "task-page", page)
+}
 
-// 		var taskOfId TaskPage
-// 		for _, task := range db.Tasks {
-// 			if task.Id == id {
-// 				var pexists, nexists bool
+func editTaskHandler(c echo.Context, dbpool *pgxpool.Pool) error {
+	// TODO: refactor
+	idStr := c.Param("id")
+	id, errConv := strconv.Atoi(idStr)
+	if errConv != nil {
+		return c.String(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+	}
 
-// 				if task.Id > 1 {
-// 					pexists = true
-// 				}
-// 				if task.Id < len(db.Tasks) {
-// 					nexists = true
-// 				}
+	// dbpool requires any
+	var args []any
+	name := c.FormValue("name")
+	idea := c.FormValue("idea")
+	tag := c.FormValue("tag")
+	queryNovalues := "UPDATE tasks SET"
+	sum := 1
+	if name != "" {
+		queryNovalues += fmt.Sprintf(" name = $%d,", sum)
+		args = append(args, name)
+		sum++
+	}
+	if idea != "" {
+		queryNovalues += fmt.Sprintf(" idea = $%d,", sum)
+		args = append(args, idea)
+		sum++
+	}
+	if tag != "" {
+		queryNovalues += fmt.Sprintf(" tags = array_append(tags, $%d)", sum)
+		args = append(args, tag)
+		sum++
+	}
 
-// 				taskOfId = TaskPage{Task: task, PrevTaskExists: pexists, NextTaskExists: nexists, PrevId: task.Id - 1, NextId: task.Id + 1}
-// 			}
-// 		}
-// 		return c.Render(200, "tasks-page", taskOfId)
-// 	})
-// }
+	if len(args) == 0 {
+		// no updates
+		return c.NoContent(http.StatusNoContent)
+	}
+	queryNovalues = strings.TrimSuffix(queryNovalues, ",")
+	queryString := queryNovalues + fmt.Sprintf(" WHERE id = $%d RETURNING (name,idea,id,tags,completed)", sum)
+	args = append(args, id)
+	println(queryString)
+	utils.PrintList(args)
+	// have updates which dynamically generates the querynovalues,
+
+	var task database.Task
+	err := dbpool.QueryRow(context.Background(), queryString, args...).Scan(&task)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	return c.Render(200, "task", task)
+}

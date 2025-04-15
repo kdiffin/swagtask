@@ -49,8 +49,8 @@ input::placeholder {
 }
 
 *.htmx-swapping {
-  opacity: 0;
-  transition: opacity 500ms ease-in;
+  opacity: 75%;
+  transition: opacity 200ms ease-in;
 }
 
 .htmx-request .htmx-indicator {

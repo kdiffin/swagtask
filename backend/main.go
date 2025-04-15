@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"myapp/database"
+	"myapp/router"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -48,13 +49,12 @@ func main() {
 	defer dbpool.Close()
 
 	// todo: reimplement
-	// router.Tasks(e, dbpool)
-	// router.Tags(e, dbpool)
+	router.Tasks(e, dbpool)
+	router.Tags(e, dbpool)
 	e.GET("/", func(c echo.Context) error {
-
-		rows, err := dbpool.Query(context.Background(), "SELECT (name, idea, id, tags, completed) FROM tasks")
+		rows, err := dbpool.Query(context.Background(), "SELECT (name, idea, id, tags, completed) FROM tasks ORDER BY id DESC")
 		if err != nil {
-			c.String(500, http.StatusText(500))
+			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 
 		type IndexPage struct {
@@ -65,13 +65,13 @@ func main() {
 		}
 
 		for rows.Next() {
-			var Task database.Task
-			errScan := rows.Scan(&Task)
+			var task database.Task
+			errScan := rows.Scan(&task)
 			if errScan != nil {
-				c.String(500, http.StatusText(500))
+				c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 			}
 
-			indexPage.Tasks = append(indexPage.Tasks, Task)
+			indexPage.Tasks = append(indexPage.Tasks, task)
 		}
 
 		return c.Render(200, "index", indexPage)

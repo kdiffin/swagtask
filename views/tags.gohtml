@@ -15,6 +15,10 @@
     {{ template "navbar" .}}
 
     <div class="container py-4">
+      <h1 class="text-3xl pb-4 font-semibold">
+        Tasks with tag:
+        <span class="text-purple-400">{{.Tag}}</span>
+      </h1>
       {{ template "show-tasks-with-tag" .Tasks }}
       {{ template "show-tags" .OtherTags }}
     </div>
