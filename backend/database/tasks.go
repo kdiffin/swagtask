@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -9,11 +10,12 @@ import (
 func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 	var taskWithTags TaskWithTags
 
+	// we need left join because some tasks dont have ids
 	rows, err := dbpool.Query(context.Background(), `
 		SELECT t.id, t.name, t.idea, t.completed, tg.id, tg.name
 		FROM tasks t
-		JOIN tag_task_relations rel ON t.id = rel.task_id
-		JOIN tags tg ON rel.tag_id = tg.id
+		LEFT JOIN tag_task_relations rel ON t.id = rel.task_id
+		LEFT JOIN tags tg ON rel.tag_id = tg.id
 		WHERE t.id = $1
 	`, id)
 
@@ -23,10 +25,14 @@ func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 		var tag_name *string // nullable or can be inexistant
 
 		rows.Scan(&task.Id, &task.Name, &task.Idea, &task.Completed, &tag_id, &tag_name)
+		fmt.Println(task)
 		if tag_id != nil && tag_name != nil {
 			taskWithTags = TaskWithTags{Task: task, Tags: append(taskWithTags.Tags, Tag{Id: *tag_id, Name: *tag_name})}
 		} else {
-			return nil, err
+			taskWithTags = TaskWithTags{
+				Task: task,
+				Tags: []Tag{},
+			}
 		}
 	}
 

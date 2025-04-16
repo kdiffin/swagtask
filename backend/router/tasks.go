@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"swagtask/database"
@@ -37,12 +38,25 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 
+		prevIdExists := true
+		nextIdExists := true
+		var prevId int
+		var nextId int
+		errPrevIdExists := dbpool.QueryRow(context.Background(), "SELECT id FROM tasks WHERE id < $1 ORDER BY id DESC LIMIT 1", id).Scan(&prevId)
+		errNextIdExists := dbpool.QueryRow(context.Background(), "SELECT id FROM tasks WHERE id > $1 ORDER BY id ASC LIMIT 1", id).Scan(&nextId)
+		if errPrevIdExists != nil {
+			prevIdExists = false
+		}
+		if errNextIdExists != nil {
+			nextIdExists = false
+		}
+
 		page := pages.TaskPage{
 			Task:           *task,
-			PrevTaskExists: true,
-			NextTaskExists: true,
-			PrevId:         1,
-			NextId:         1,
+			PrevTaskExists: prevIdExists,
+			NextTaskExists: nextIdExists,
+			PrevId:         prevId,
+			NextId:         nextId,
 		}
 		return c.Render(200, "task-page", page)
 	})
