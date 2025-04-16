@@ -3,7 +3,6 @@
   <head>
     <title>TASKS</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <script src="/js/scripts.js"></script>
     <script
       src="https://unpkg.com/htmx.org@2.0.4"
       integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
@@ -94,9 +93,9 @@
           <div class="flex gap-2">
             {{ range.Tags }}
             <a
-              href="/tags/{{.}}"
+              href="/tags/{{.Name}}"
               class="rounded-full hover:underline underline-offset-1x px-4 bg-purple-400"
-              >#{{.}}</a
+              >#{{.Name}}</a
             >
             {{ end }}
           </div>

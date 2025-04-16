@@ -1,4 +1,4 @@
-module myapp
+module swagtask
 
 go 1.24.0
 

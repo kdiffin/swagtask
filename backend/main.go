@@ -1,14 +1,14 @@
 package main
 
 import (
-	"context"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 
-	"myapp/database"
-	"myapp/router"
+	"swagtask/database"
+	"swagtask/pages"
+	"swagtask/router"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -50,31 +50,17 @@ func main() {
 
 	// todo: reimplement
 	router.Tasks(e, dbpool)
-	router.Tags(e, dbpool)
+	// router.Tags(e, dbpool)
 	e.GET("/", func(c echo.Context) error {
-		rows, err := dbpool.Query(context.Background(), "SELECT (name, idea, id, tags, completed) FROM tasks ORDER BY id DESC")
+		page := pages.IndexPage{
+			Tasks: []database.TaskWithTags{},
+		}
+		tagsWithTasks, err := database.GetAllTasksWithTags(dbpool)
 		if err != nil {
-			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
-
-		type IndexPage struct {
-			Tasks database.Tasks
-		}
-		indexPage := IndexPage{
-			Tasks: database.Tasks{},
-		}
-
-		for rows.Next() {
-			var task database.Task
-			errScan := rows.Scan(&task)
-			if errScan != nil {
-				c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-			}
-
-			indexPage.Tasks = append(indexPage.Tasks, task)
-		}
-
-		return c.Render(200, "index", indexPage)
+		page.Tasks = tagsWithTasks
+		return c.Render(200, "index", page)
 	})
 
 	e.Logger.Fatal(e.Start(":42069"))

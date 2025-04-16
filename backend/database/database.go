@@ -9,14 +9,6 @@ import (
 )
 
 // task creation functions
-type Task struct {
-	Name      string
-	Idea      string
-	Id        int
-	Tags      []string
-	Completed bool
-}
-type Tasks = []Task
 
 func DatabaseInit() *pgxpool.Pool {
 	// pgx pool starts a pool thats concurrency safe
