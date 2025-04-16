@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// read
 func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 	var taskWithTags TaskWithTags
 
@@ -90,4 +91,15 @@ func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
 	}
 
 	return finalTasks, nil
+}
+
+func CreateTask(dbpool *pgxpool.Pool, name string, idea string) (*Task, error) {
+	var task Task
+	err := dbpool.QueryRow(context.Background(), "INSERT INTO tasks (name, idea) VALUES ($1, $2) RETURNING name, idea, id, completed",
+		name, idea).Scan(&task.Name, &task.Idea, &task.Id, &task.Completed)
+	if err != nil {
+		return nil, err
+	}
+
+	return &task, nil
 }

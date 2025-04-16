@@ -1,3 +1,10 @@
+## TODOS:
+
+- [ ] finish the main page and abstract the update logic of the tags
+- [ ] split the task updating and tag creation/relation endpoints
+
+---
+
 chat gippity made the readme
 im doing this to learn htmx and golang i hate react now im a based htmxpilled dev now f the virtual dom
 

@@ -1,5 +1,5 @@
 CREATE TABLE tasks(
-    id INT PRIMARY KEY NOT NULL,
+    id INT SERIAL PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     idea TEXT NOT NULL,
     completed BOOLEAN
@@ -7,7 +7,7 @@ CREATE TABLE tasks(
 
 
 CREATE TABLE tags(
-    id INT PRIMARY KEY NOT NULL,
+    id INT SERIAL PRIMARY KEY NOT NULL,
     name TEXT NOT NULL UNIQUE
 );
 
@@ -28,3 +28,6 @@ JOIN
     tag_task_relations rel ON t.id = rel.task_id
 JOIN 
     tags tg ON rel.tag_id = tg.id;
+
+
+

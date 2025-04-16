@@ -1,50 +1,66 @@
 {{ block "task-page" . }}
 <html>
   <head>
-    <title>Task {{.Task.Id}}</title>
+    <title>Task - {{.Task.Name}} - {{.Task.Id}}</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script
       src="https://unpkg.com/htmx.org@2.0.4"
       integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
       crossorigin="anonymous"
     ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/css/index.css" />
   </head>
-  <body class="bg-zinc-800 text-white">
+  <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" .}}
     <!--  -->
-    <div class="container py-4">
+    <div class="container mx-auto px-4 py-4 max-w-5xl">
       {{ template "show-task" .Task }}
-      {{ template "bottom-task-nav" .}}
+      {{ template "bottom-task-nav" .Buttons}}
     </div>
   </body>
 </html>
 {{ end }}
 
-{{block "show-task" .}}
-{{template "task" .}}
+{{ block "show-task" . }}
+<div class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700">
+  <div class="p-4 border-b border-zinc-700">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center">
+        <h2 class="text-lg font-semibold text-white">Your Task</h2>
+      </div>
+    </div>
+
+    <div id="tasks" class="space-y-4">
+      {{ template "task" .}}
+    </div>
+  </div>
+</div>
 {{ end }}
 
-{{block "bottom-task-nav" .}}
+{{ block "bottom-task-nav" . }}
 <div class="mt-4 flex justify-between flex-wrap">
-  {{ if .PrevTaskExists }}
+  {{ if .PrevButton.Exists }}
   <a
-    href="/tasks/{{.PrevId}}"
-    class="p-1 px-3 rounded-sm bg-blue-400"
+    href="/tasks/{{.PrevButton.Id}}"
+    class="p-2 px-4 rounded-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
     type="submit"
   >
-    Prev Task
+    Prev Task ({{.PrevButton.Name}})
   </a>
   {{ end }}
 
   <!--  -->
-  {{ if .NextTaskExists }}
+  {{ if .NextButton.Exists }}
   <a
-    href="/tasks/{{.NextId }}"
-    class="p-1 px-3 rounded-sm bg-blue-400"
+    href="/tasks/{{.NextButton.Id}}"
+    class="p-2 px-4 rounded-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
     type="submit"
   >
-    Next Task
+    Next Task ({{.NextButton.Name}})
   </a>
   {{ end }}
 </div>

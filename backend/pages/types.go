@@ -11,11 +11,17 @@ type TagsPage struct {
 
 // task.gohtml
 type TaskPage struct {
-	Task           database.TaskWithTags
-	PrevTaskExists bool
-	NextTaskExists bool
-	PrevId         int
-	NextId         int
+	Task    database.TaskWithTags
+	Buttons struct {
+		PrevButton TaskButton
+		NextButton TaskButton
+	}
+}
+
+type TaskButton struct {
+	Id     int
+	Name   string
+	Exists bool
 }
 
 type IndexPage struct {
