@@ -3,11 +3,13 @@ package database
 import (
 	"context"
 	"fmt"
+	"strings"
+	"swagtask/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// read
+// ---- READ ----
 func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 	var taskWithTags TaskWithTags
 
@@ -93,6 +95,24 @@ func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
 	return finalTasks, nil
 }
 
+func GetTagsOfTask(dbpool *pgxpool.Pool, id int) ([]Tag, error) {
+	tagsOfTask := []Tag{}
+
+	rows, errTags := dbpool.Query(context.Background(), `SELECT tg.name, tg.id FROM tags tg JOIN tag_task_relations rel ON rel.tag_id = tg.id WHERE rel.task_id = $1`, id)
+	if errTags != nil {
+		return nil, errTags
+	}
+	for rows.Next() {
+		var tag Tag
+		rows.Scan(&tag.Name, &tag.Id)
+		tagsOfTask = append(tagsOfTask, tag)
+	}
+
+	return tagsOfTask, nil
+
+}
+
+// ---- CREATE ----
 func CreateTask(dbpool *pgxpool.Pool, name string, idea string) (*Task, error) {
 	var task Task
 	err := dbpool.QueryRow(context.Background(), "INSERT INTO tasks (name, idea) VALUES ($1, $2) RETURNING name, idea, id, completed",
@@ -102,4 +122,44 @@ func CreateTask(dbpool *pgxpool.Pool, name string, idea string) (*Task, error) {
 	}
 
 	return &task, nil
+}
+
+// ---- UPDATE ---
+
+func UpdateTask(dbpool *pgxpool.Pool, name string, idea string, id int) (*Task, error) {
+	var task Task
+	args := []interface{}{}
+	n := 1
+
+	updateTaskString := "UPDATE tasks SET"
+
+	if name != "" {
+		updateTaskString += fmt.Sprintf(" name = $%v,", n)
+		args = append(args, name)
+		n++
+	}
+	if idea != "" {
+		updateTaskString += fmt.Sprintf(" idea = $%v,", n)
+		args = append(args, idea)
+		n++
+	}
+	// nothing to update if no args added
+	if len(args) == 0 {
+		return nil, ErrNoUpdateFields
+	}
+
+	args = append(args, id)
+
+	// remove trailing comma
+	updateTaskString = strings.TrimSuffix(updateTaskString, ",")
+	str := updateTaskString + fmt.Sprintf(" WHERE id = $%v RETURNING name,idea,id,completed", n)
+	errTask := dbpool.QueryRow(context.Background(), str, args...).Scan(&task.Name, &task.Idea, &task.Id, &task.Completed)
+	utils.PrintList(args)
+	fmt.Println(str)
+	if errTask != nil {
+		return nil, errTask
+	}
+
+	return &task, nil
+
 }

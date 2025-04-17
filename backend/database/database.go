@@ -8,8 +8,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// task creation functions
-
 func DatabaseInit() *pgxpool.Pool {
 	// pgx pool starts a pool thats concurrency safe
 	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))

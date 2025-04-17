@@ -2,6 +2,11 @@
 
 - [ ] finish the main page and abstract the update logic of the tags
 - [ ] split the task updating and tag creation/relation endpoints
+- [ ] make ui composable
+
+### long term
+
+- [ ] add openapi specs
 
 ---
 

@@ -2,13 +2,12 @@ package router
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 	"swagtask/database"
 	"swagtask/pages"
-	"swagtask/utils"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
@@ -39,6 +38,7 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 	})
 
 	e.POST("/tasks/:id/toggle-complete", func(c echo.Context) error {
+		time.Sleep(2 * time.Second)
 		id, errConv := getIdAsStr(c)
 		if errConv != nil {
 			return c.String(http.StatusBadRequest, "bad id")
@@ -83,77 +83,31 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 
 	// TODO: refactor this function
 	e.PUT("/tasks/:id", func(c echo.Context) error {
-		updateTaskString := "UPDATE tasks SET"
-		var task database.Task
-		tagsOfTask := []database.Tag{}
-		args := []interface{}{}
-		n := 1
-
 		id, errConv := getIdAsStr(c)
 		if errConv != nil {
 			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
 		}
+
+		// update the task first (no relations)
 		name := c.FormValue("name")
 		idea := c.FormValue("idea")
-		tag := c.FormValue("tag")
-		updateTags := false
+		task, errUpdateTask := database.UpdateTask(dbpool, name, idea, id)
+		if errUpdateTask != nil {
+			// return no contents
+			// if theres no update to tasks skip
+			if !errors.Is(errUpdateTask, database.ErrNoUpdateFields) {
+				return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+			}
 
-		if name != "" {
-			updateTaskString += fmt.Sprintf(" name = $%v,", n)
-			args = append(args, name)
-			n++
 		}
-		if idea != "" {
-			updateTaskString += fmt.Sprintf(" idea = $%v,", n)
-			args = append(args, idea)
-			n++
-		}
-		if tag != "" {
-			updateTags = true
-		}
-		args = append(args, id)
 
-		// remove trailing comma
-		updateTaskString = strings.TrimSuffix(updateTaskString, ",")
-		str := updateTaskString + fmt.Sprintf(" WHERE id = $%v RETURNING name,idea,id,completed", n)
-		errTask := dbpool.QueryRow(context.Background(), str, args...).Scan(&task.Name, &task.Idea, &task.Id, &task.Completed)
-		utils.PrintList(args)
-		fmt.Println(str)
-		if errTask != nil {
+		tagsOfTask, errTagsOfTask := database.GetTagsOfTask(dbpool, id)
+		if errTagsOfTask != nil {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		var taskWithTags database.TaskWithTags
-
-		rows, errTags := dbpool.Query(context.Background(), `SELECT tg.name, tg.id FROM tags tg JOIN tag_task_relations rel ON rel.tag_id = tg.id WHERE rel.task_id = $1`, id)
-		if errTags != nil {
-			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-		for rows.Next() {
-			var tag database.Tag
-			rows.Scan(&tag.Name, &tag.Id)
-			tagsOfTask = append(tagsOfTask, tag)
 		}
 
 		// add tag logic
-		if updateTags {
-			var tagObj database.Tag
-
-			errCreateTag := dbpool.QueryRow(context.Background(), "INSERT INTO tags (name) VALUES($1) RETURNING name,id", tag).Scan(&tagObj.Name, &tagObj.Id)
-			if errCreateTag != nil {
-				return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-			}
-
-			_, errCreateTagToTaskRelation := dbpool.Exec(context.Background(), "INSERT INTO tag_task_relations (tag_id, task_id) VALUES($1, $2)", tagObj.Id, task.Id)
-			if errCreateTagToTaskRelation != nil {
-				return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-			}
-
-			tagsOfTask = append(tagsOfTask, tagObj)
-		}
-
-		taskWithTags = database.TaskWithTags{Task: task, Tags: tagsOfTask}
-
+		taskWithTags := database.TaskWithTags{Task: *task, Tags: tagsOfTask}
 		// dbpool.Query(,str)
 		return c.Render(200, "task", taskWithTags)
 	})
