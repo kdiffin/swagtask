@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"swagtask/database"
@@ -28,10 +29,16 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 			return c.Render(422, "form-error", "U CANT PUT THE SAME IDEA TWICE")
 		}
 
-		taskWithTag := database.TaskWithTags{
-			Task: *task,
-			Tags: []database.Tag{},
+		allTags, errAllTags := database.GetAllTags(dbpool)
+		if errAllTags != nil {
+			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
+
+		taskWithTag := database.NewTaskWithTags(
+			*task,
+			[]database.Tag{},
+			allTags,
+		)
 
 		c.Render(200, "form-success", nil)
 		return c.Render(200, "task", taskWithTag)
@@ -73,11 +80,72 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 			tags = append(tags, tag)
 		}
 
-		// Task with or without tag still render
-		taskWithTags := database.TaskWithTags{
-			Task: task,
-			Tags: tags,
+		allTags, errAllTags := database.GetAllTags(dbpool)
+		if errAllTags != nil {
+			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
+		// Task with or without tag still render
+		taskWithTags := database.NewTaskWithTags(
+			task,
+			tags,
+			allTags,
+		)
+		return c.Render(200, "task", taskWithTags)
+	})
+
+	e.POST("/tasks/:id/add-tag", func(c echo.Context) error {
+		id, errConv := getIdAsStr(c)
+		tagIdStr := c.FormValue("tag")
+		tagId, errConvTag := strconv.Atoi(tagIdStr)
+
+		if errConvTag != nil {
+			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+		}
+		if errConv != nil {
+			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+		}
+
+		// add task relation
+		_, err := dbpool.Exec(context.Background(), "INSERT INTO tag_task_relations (task_id, tag_id) VALUES($1, $2)", id, tagId)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		// get updated task
+		taskWithTags, errTasks := database.GetTaskWithTagsById(dbpool, id)
+		if errTasks != nil {
+			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		return c.Render(200, "task", taskWithTags)
+	})
+
+	e.POST("/tasks/:id/remove-tag", func(c echo.Context) error {
+		id, errConv := getIdAsStr(c)
+		tagIdStr := c.FormValue("tag")
+		tagId, errConvTag := strconv.Atoi(tagIdStr)
+		fmt.Println(id)
+		fmt.Println(tagId)
+
+		if errConvTag != nil {
+			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+		}
+		if errConv != nil {
+			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+		}
+
+		// delete task relation
+		_, err := dbpool.Exec(context.Background(), "DELETE FROM tag_task_relations WHERE task_id = $1 AND tag_id = $2", id, tagId)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		// get updated task
+		taskWithTags, errTasks := database.GetTaskWithTagsById(dbpool, id)
+		if errTasks != nil {
+			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
 		return c.Render(200, "task", taskWithTags)
 	})
 
@@ -107,7 +175,11 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 		}
 
 		// add tag logic
-		taskWithTags := database.TaskWithTags{Task: *task, Tags: tagsOfTask}
+		allTags, errAllTags := database.GetAllTags(dbpool)
+		if errAllTags != nil {
+			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		taskWithTags := database.NewTaskWithTags(*task, tagsOfTask, allTags)
 		// dbpool.Query(,str)
 		return c.Render(200, "task", taskWithTags)
 	})

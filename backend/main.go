@@ -50,7 +50,7 @@ func main() {
 
 	// todo: reimplement
 	router.Tasks(e, dbpool)
-	// router.Tags(e, dbpool)
+	router.Tags(e, dbpool)
 	e.GET("/", func(c echo.Context) error {
 		page := pages.IndexPage{
 			Tasks: []database.TaskWithTags{},

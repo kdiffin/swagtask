@@ -1,0 +1,98 @@
+{{ block "task-form-card".  }}
+<div class="bg-zinc-800 rounded-sm">
+  <div class="p-4">
+    <div class="flex items-center">
+      <i
+        class="fa-brands fa-wpforms mr-1.5 grid place-items-center text-blue-500"
+      ></i>
+      <h2 class="text-lg font-semibold text-white">Forms</h2>
+    </div>
+    <hr class="border border-zinc-600 my-4" />
+
+    <div class="flex flex-wrap gap-2 justify-center items-center">
+      {{ template "create-task" . }}
+      {{ template "create-tag" . }}
+    </div>
+  </div>
+</div>
+{{ end }}
+
+{{ block "create-tag" . }}
+<form
+  id="tagform"
+  hx-post="/tags"
+  hx-swap="outerHTML swap:200ms transition:true"
+  hx-target="#tasks-container"
+  class="flex flex-col md:flex-row items-center gap-3"
+>
+  <div class="w-full md:w-auto relative">
+    <span
+      class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+    >
+      <i class="fas fa-tag"></i>
+    </span>
+    <input
+      type="text"
+      class="w-full pl-9 pr-3 py-2 bg-zinc-700 border border-zinc-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white"
+      name="tag"
+      placeholder="Tag name"
+      required
+    />
+  </div>
+  <div>
+    <button
+      class="w-full md:w-auto px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-sm transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg"
+      type="submit"
+    >
+      <i class="fas fa-plus mr-2"></i> Tag
+    </button>
+  </div>
+  <div id="tag-error-form" class="text-red-400"></div>
+</form>
+{{ end }}
+
+{{ block "create-task" . }}
+<form
+  id="ourform"
+  hx-target="#tasks"
+  hx-swap="afterbegin swap:200ms transition:true"
+  hx-post="/tasks"
+  class="flex flex-col md:flex-row items-center gap-3"
+>
+  <div class="w-full md:w-auto relative">
+    <span
+      class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+    >
+      <i class="fas fa-pencil-alt"></i>
+    </span>
+    <input
+      type="text"
+      class="w-full pl-9 pr-3 py-2 bg-zinc-700 border border-zinc-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white"
+      name="name"
+      placeholder="Task name"
+    />
+  </div>
+  <div class="w-full md:w-auto relative">
+    <span
+      class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+    >
+      <i class="fas fa-lightbulb"></i>
+    </span>
+    <input
+      type="text"
+      class="w-full pl-9 pr-3 py-2 bg-zinc-700 border border-zinc-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white"
+      name="idea"
+      placeholder="Task description"
+    />
+  </div>
+  <div>
+    <button
+      class="w-full md:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-sm transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg"
+      type="submit"
+    >
+      <i class="fas fa-plus mr-2"></i> Create
+    </button>
+  </div>
+  <div id="error-form" class="text-red-400"></div>
+</form>
+{{ end }}

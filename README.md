@@ -1,8 +1,8 @@
 ## TODOS:
 
-- [ ] finish the main page and abstract the update logic of the tags
-- [ ] split the task updating and tag creation/relation endpoints
-- [ ] make ui composable
+- [x] finish the main page and abstract the update logic of the tags
+- [x] split the task updating and tag creation/relation endpoints
+- [x] make ui composable
 
 ### long term
 

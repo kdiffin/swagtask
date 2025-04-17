@@ -15,5 +15,14 @@ type Tag struct {
 // composed types
 type TaskWithTags struct {
 	Task
-	Tags []Tag
+	Tags    []Tag
+	AllTags []Tag
+}
+
+func NewTaskWithTags(task Task, tags []Tag, allTags []Tag) TaskWithTags {
+	return TaskWithTags{
+		Task:    task,
+		Tags:    tags,
+		AllTags: allTags,
+	}
 }

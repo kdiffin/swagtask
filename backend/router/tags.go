@@ -1,5 +1,37 @@
 package router
 
+import (
+	"context"
+	"net/http"
+	"swagtask/database"
+	"swagtask/pages"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/labstack/echo/v4"
+)
+
+func Tags(e *echo.Echo, dbpool *pgxpool.Pool) {
+	e.POST("/tags", func(c echo.Context) error {
+		_, err := dbpool.Exec(context.Background(), "INSERT INTO tags (name) VALUES($1)", c.FormValue("tag"))
+		if err != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		// invalidate cache
+		tasksWithTags, errTasks := database.GetAllTasksWithTags(dbpool)
+		if errTasks != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		page := pages.IndexPage{
+			Tasks: tasksWithTags,
+		}
+
+		return c.Render(200, "tasks-container", page)
+
+	})
+
+}
+
 // func Tags(e *echo.Echo, dbpool *pgxpool.Pool) {
 // 	e.GET("/tags/:tag", func(c echo.Context) error {
 // 		tag := c.Param("tag")

@@ -22,6 +22,11 @@ func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 		WHERE t.id = $1
 	`, id)
 
+	allTags, errTags := GetAllTags(dbpool)
+	if errTags != nil {
+		return nil, errTags
+	}
+
 	for rows.Next() {
 		var task Task
 		var tag_id *int      // nullable or can be inexistant
@@ -30,12 +35,13 @@ func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 		rows.Scan(&task.Id, &task.Name, &task.Idea, &task.Completed, &tag_id, &tag_name)
 		fmt.Println(task)
 		if tag_id != nil && tag_name != nil {
-			taskWithTags = TaskWithTags{Task: task, Tags: append(taskWithTags.Tags, Tag{Id: *tag_id, Name: *tag_name})}
+			taskWithTags = NewTaskWithTags(task, append(taskWithTags.Tags, Tag{Id: *tag_id, Name: *tag_name}), allTags)
 		} else {
-			taskWithTags = TaskWithTags{
-				Task: task,
-				Tags: []Tag{},
-			}
+			taskWithTags = NewTaskWithTags(
+				task,
+				[]Tag{},
+				allTags,
+			)
 		}
 	}
 
@@ -73,10 +79,15 @@ func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
 			return nil, err
 		}
 
+		allTags, errTags := GetAllTags(dbpool)
+		if errTags != nil {
+			return nil, err
+		}
+
 		_, exists := taskMap[taskId]
 		if !exists {
 			task := Task{Id: taskId, Name: taskName, Idea: idea, Completed: completed}
-			taskWithTags := TaskWithTags{Task: task, Tags: []Tag{}}
+			taskWithTags := NewTaskWithTags(task, []Tag{}, allTags)
 			taskMap[taskId] = &taskWithTags
 			orderedTasks = append(orderedTasks, taskWithTags)
 		}
@@ -93,23 +104,6 @@ func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
 	}
 
 	return finalTasks, nil
-}
-
-func GetTagsOfTask(dbpool *pgxpool.Pool, id int) ([]Tag, error) {
-	tagsOfTask := []Tag{}
-
-	rows, errTags := dbpool.Query(context.Background(), `SELECT tg.name, tg.id FROM tags tg JOIN tag_task_relations rel ON rel.tag_id = tg.id WHERE rel.task_id = $1`, id)
-	if errTags != nil {
-		return nil, errTags
-	}
-	for rows.Next() {
-		var tag Tag
-		rows.Scan(&tag.Name, &tag.Id)
-		tagsOfTask = append(tagsOfTask, tag)
-	}
-
-	return tagsOfTask, nil
-
 }
 
 // ---- CREATE ----
