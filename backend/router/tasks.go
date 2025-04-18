@@ -23,6 +23,35 @@ func getIdAsStr(c echo.Context) (int, error) {
 }
 
 func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
+	e.GET("/tasks", func(c echo.Context) error {
+		param := c.QueryParam("tags")
+
+		fmt.Println(param)
+		if param == "" {
+			taskWithTags, err := database.GetAllTasksWithTags(dbpool)
+			if err != nil {
+				return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			}
+
+			page := pages.NewTasksPage(
+				taskWithTags,
+			)
+			return c.Render(200, "tasks-page", page)
+		}
+
+		taskWithTags, errFilteredTasks := database.GetAllFilteredTasksWithTags(dbpool, param)
+		if errFilteredTasks != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		page := pages.NewTasksPage(taskWithTags)
+		return c.Render(200, "tasks-page", page)
+	})
+
+	e.GET("tags", func(c echo.Context) error {
+		return c.String(200, "0")
+	})
+
 	e.POST("/tasks", func(c echo.Context) error {
 		task, err := database.CreateTask(dbpool, c.FormValue("name"), c.FormValue("idea"))
 		if err != nil {
@@ -93,7 +122,7 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 		return c.Render(200, "task", taskWithTags)
 	})
 
-	e.POST("/tasks/:id/add-tag", func(c echo.Context) error {
+	e.POST("/tasks/:id/tags", func(c echo.Context) error {
 		id, errConv := getIdAsStr(c)
 		tagIdStr := c.FormValue("tag")
 		tagId, errConvTag := strconv.Atoi(tagIdStr)
@@ -120,12 +149,10 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 		return c.Render(200, "task", taskWithTags)
 	})
 
-	e.POST("/tasks/:id/remove-tag", func(c echo.Context) error {
+	e.DELETE("/tasks/:id/tags", func(c echo.Context) error {
 		id, errConv := getIdAsStr(c)
 		tagIdStr := c.FormValue("tag")
 		tagId, errConvTag := strconv.Atoi(tagIdStr)
-		fmt.Println(id)
-		fmt.Println(tagId)
 
 		if errConvTag != nil {
 			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
@@ -225,16 +252,11 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 			nextButton.Exists = false
 		}
 
-		page := pages.TaskPage{
-			Task: *task,
-			Buttons: struct {
-				PrevButton pages.TaskButton
-				NextButton pages.TaskButton
-			}{
-				PrevButton: prevButton,
-				NextButton: nextButton,
-			},
-		}
+		page := pages.NewTaskPage(
+			*task,
+			prevButton,
+			nextButton,
+		)
 		return c.Render(200, "task-page", page)
 	})
 

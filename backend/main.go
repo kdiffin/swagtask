@@ -4,10 +4,8 @@ import (
 	"html/template"
 	"io"
 	"log"
-	"net/http"
 
 	"swagtask/database"
-	"swagtask/pages"
 	"swagtask/router"
 
 	"github.com/joho/godotenv"
@@ -51,17 +49,10 @@ func main() {
 	// todo: reimplement
 	router.Tasks(e, dbpool)
 	router.Tags(e, dbpool)
-	e.GET("/", func(c echo.Context) error {
-		page := pages.IndexPage{
-			Tasks: []database.TaskWithTags{},
-		}
-		tagsWithTasks, err := database.GetAllTasksWithTags(dbpool)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-		page.Tasks = tagsWithTasks
-		return c.Render(200, "index", page)
-	})
+	// e.GET("/", func(c echo.Context) error {
 
-	e.Logger.Fatal(e.Start(":4000"))
+	// 	return c.Render(200, "index", page)
+	// })
+
+	e.Logger.Fatal(e.Start(":42069"))
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"swagtask/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -33,7 +32,6 @@ func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 		var tag_name *string // nullable or can be inexistant
 
 		rows.Scan(&task.Id, &task.Name, &task.Idea, &task.Completed, &tag_id, &tag_name)
-		fmt.Println(task)
 		if tag_id != nil && tag_name != nil {
 			taskWithTags = NewTaskWithTags(task, append(taskWithTags.Tags, Tag{Id: *tag_id, Name: *tag_name}), allTags)
 		} else {
@@ -106,6 +104,51 @@ func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
 	return finalTasks, nil
 }
 
+func GetAllFilteredTasksWithTags(dbpool *pgxpool.Pool, tagFilter string) ([]TaskWithTags, error) {
+	var tagFilterId string
+	errGetIdOfFilter := dbpool.QueryRow(context.Background(), `
+		SELECT id  
+		FROM tags 
+		WHERE tags.name = $1 
+		LIMIT 1`, tagFilter).Scan(&tagFilterId)
+
+	// TODO: maybe implement a badgateway error with
+	if errGetIdOfFilter != nil {
+		return nil, errGetIdOfFilter
+	}
+
+	// get the tasks related to this tag
+	rowsIdOfTasksWithTag, errGettingTasks := dbpool.Query(context.Background(), `SELECT task_id FROM tag_task_relations rel WHERE rel.tag_id = $1`, tagFilterId)
+	if errGettingTasks != nil {
+		return nil, errGettingTasks
+	}
+
+	idOfTasksToQuery := []int{}
+	for rowsIdOfTasksWithTag.Next() {
+		var taskId int
+		errIdOfTaskScan := rowsIdOfTasksWithTag.Scan(&taskId)
+		if errIdOfTaskScan != nil {
+			return nil, errIdOfTaskScan
+		}
+
+		idOfTasksToQuery = append(idOfTasksToQuery, taskId)
+	}
+
+	finalTasks := []TaskWithTags{}
+	for _, id := range idOfTasksToQuery {
+		taskWithTags, errGetTask := GetTaskWithTagsById(dbpool, id)
+
+		if errGetTask != nil {
+			return nil, errGetTask
+		}
+
+		finalTasks = append(finalTasks, *taskWithTags)
+
+	}
+
+	return finalTasks, nil
+}
+
 // ---- CREATE ----
 func CreateTask(dbpool *pgxpool.Pool, name string, idea string) (*Task, error) {
 	var task Task
@@ -148,8 +191,6 @@ func UpdateTask(dbpool *pgxpool.Pool, name string, idea string, id int) (*Task, 
 	updateTaskString = strings.TrimSuffix(updateTaskString, ",")
 	str := updateTaskString + fmt.Sprintf(" WHERE id = $%v RETURNING name,idea,id,completed", n)
 	errTask := dbpool.QueryRow(context.Background(), str, args...).Scan(&task.Name, &task.Idea, &task.Id, &task.Completed)
-	utils.PrintList(args)
-	fmt.Println(str)
 	if errTask != nil {
 		return nil, errTask
 	}

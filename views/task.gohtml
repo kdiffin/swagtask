@@ -173,10 +173,12 @@
   <div
     class="text-xs group bg-purple-600 flex items-center gap-1 hover:bg-purple-500 text-white px-2 py-1 rounded-full"
   >
-    <a class="hover:underline" href="/tags/{{ .Name }}">#{{ .Name }} {{.Id}}</a>
+    <a class="hover:underline" href="/tasks?tags={{.Name}}"
+      >#{{ .Name }} {{.Id}}</a
+    >
 
     <form
-      hx-post="/tasks/{{ $.Id }}/remove-tag"
+      hx-delete="/tasks/{{ $.Id }}/tags"
       hx-swap="outerHTML"
       hx-target="#task-{{ $.Id }}"
     >
@@ -194,7 +196,7 @@
 
   {{ block "add-task-to-tag" . }}
   <form
-    hx-post="/tasks/{{.Id}}/add-tag"
+    hx-post="/tasks/{{.Id}}/tags"
     hx-target="#task-{{.Id}}"
     hx-trigger="change"
     hx-indicator="#add-tag-indicator-task-{{.Id}}"

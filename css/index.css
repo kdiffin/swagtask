@@ -18,3 +18,22 @@ button {
 *:disabled {
   cursor: not-allowed;
 }
+select {
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #ccc transparent; /* For Firefox */
+  cursor: pointer;
+}
+
+/* For WebKit browsers */
+select::-webkit-scrollbar {
+  width: 6px;
+}
+
+select::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+select::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 4px;
+}

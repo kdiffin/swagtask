@@ -1,4 +1,4 @@
-{{ block "index" . }}
+{{ block "tasks-page" . }}
 <html class="bg-zinc-900">
   <head>
     <title>SwagTask - Task Manager</title>
@@ -67,30 +67,6 @@
     </div>
   </div>
 </div>
-{{ end }}
-
-{{ block "add-task-to-tag" . }}
-<form
-  hx-post="/tasks/{{.Id}}/add-tag"
-  hx-target="#task-{{.Id}}"
-  hx-trigger="change"
-  hx-indicator="#add-tag-indicator-task-{{.Id}}"
-  hx-swap="outerHTML"
->
-  <select
-    name="tag"
-    class="text-xs bg-zinc-800 border border-zinc-700 text-white px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-600"
-  >
-    <option disabled selected class="text-zinc-500">+ add tag</option>
-    {{
-      range.AllTags
-    }}
-    <option value="{{ .Id }}">{{ .Name }}</option>
-    {{
-      end
-    }}
-  </select>
-</form>
 {{ end }}
 
 {{ block "form-error" . }}

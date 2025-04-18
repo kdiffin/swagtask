@@ -3,6 +3,11 @@
 - [x] finish the main page and abstract the update logic of the tags
 - [x] split the task updating and tag creation/relation endpoints
 - [x] make ui composable
+- [ ] implement the get task by tags page
+- [ ] implement manage tasks page
+  - [ ] implement CRUD on tags, make it a card based ui for CRUDing tags
+- [ ] make toggle-completed RESTful and Remove tag from task DELETE /tasks/:taskId/tags/:tagId Clean removal route
+- [ ] refactor everything
 
 ### long term
 

@@ -22,14 +22,28 @@ func Tags(e *echo.Echo, dbpool *pgxpool.Pool) {
 		if errTasks != nil {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
-		page := pages.IndexPage{
-			Tasks: tasksWithTags,
-		}
+		page := pages.NewTasksPage(tasksWithTags)
 
 		return c.Render(200, "tasks-container", page)
-
 	})
 
+	e.GET("/tags", func(c echo.Context) error {
+		tags, err := database.GetAllTags(dbpool)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		return c.Render(200, "tags-page", tags)
+	})
+
+	// e.GET("/tags", func(c echo.Context) error {
+	// 	allTags, errTags := database.GetAllTags(dbpool)
+	// 	if errTags != nil {
+	// 		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	// 	}
+
+	// 	return
+	// })
 }
 
 // func Tags(e *echo.Echo, dbpool *pgxpool.Pool) {

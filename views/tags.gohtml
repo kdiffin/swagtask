@@ -1,7 +1,7 @@
 {{ block "tags-page" . }}
 <html>
   <head>
-    <title>Tasks with tag {{.Tag}}</title>
+    <title>Tags Manager</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <link
       rel="stylesheet"
@@ -14,32 +14,24 @@
     ></script>
     <link rel="stylesheet" href="/css/index.css" />
   </head>
-  <body class="bg-zinc-800 text-white">
+  <body class="text-white">
     {{ template "navbar" .}}
 
     <div class="container py-4">
-      <h1 class="text-3xl pb-4 font-semibold">
-        Tasks with tag:
-        <span class="text-purple-400">{{.Tag}}</span>
-      </h1>
-      {{ template "show-tasks-with-tag" .Tasks }}
-      {{ template "show-tags" .OtherTags }}
+      <h1 class="text-3xl pb-4 font-semibold">Tags:</h1>
+      {{ template "show-tags" . }}
     </div>
   </body>
 </html>
 {{ end }}
 
-{{ block "show-tasks-with-tag" . }}
-{{ range. }} {{ template "task" .}} {{ end }}
-{{ end }}
-
 {{block "show-tags" .}}
-<div class="flex items-center gap-2 mt-4">
+<div class="flex flex-col gap-2 mt-4">
   {{ range. }}
   <a
     class="rounded-full bg-purple-400 px-4 hover:underline"
-    href="/tags/{{ . }}"
-    >#{{.}}</a
+    href="/tasks?tags={{ .Name }}"
+    >#{{.Name}}</a
   >
   {{ end }}
 </div>
