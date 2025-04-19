@@ -4,12 +4,12 @@ import "swagtask/database"
 
 // tags.gohtml
 type tagsPage struct {
-	AllTags []database.Tag
+	TagsWithTasks []database.TagWithTasks
 }
 
-func NewTagsPage(allTags []database.Tag) tagsPage {
+func NewTagsPage(allTags []database.TagWithTasks) tagsPage {
 	return tagsPage{
-		AllTags: allTags,
+		TagsWithTasks: allTags,
 	}
 }
 

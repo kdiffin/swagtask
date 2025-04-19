@@ -21,6 +21,7 @@
 <form
   id="tagform"
   hx-post="/tags"
+  hx-vals='{"source": "/tasks"}'
   hx-swap="outerHTML swap:200ms transition:true"
   hx-target="#tasks-container"
   class="flex flex-col md:flex-row items-center gap-3"

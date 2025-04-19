@@ -24,7 +24,7 @@ func GetTagsOfTask(dbpool *pgxpool.Pool, id int) ([]Tag, error) {
 
 func GetAllTags(dbpool *pgxpool.Pool) ([]Tag, error) {
 	allTags := []Tag{}
-	rows, errTags := dbpool.Query(context.Background(), `SELECT name, id FROM tags`)
+	rows, errTags := dbpool.Query(context.Background(), `SELECT name, id FROM tags ORDER BY id DESC`)
 	if errTags != nil {
 		return nil, errTags
 	}
@@ -50,4 +50,28 @@ func GetTagById(dbpool *pgxpool.Pool) ([]Tag, error) {
 	}
 
 	return allTags, nil
+}
+
+func GetAllTagsWithTasks(dbpool *pgxpool.Pool) ([]TagWithTasks, error) {
+	tags, err := GetAllTags(dbpool)
+	rows, errTasks := dbpool.Query(context.Background(), "SELECT name,id FROM tasks")
+	if err != nil || errTasks != nil {
+		return nil, err
+	}
+
+	allTags := []TagRelationOption{}
+	for rows.Next() {
+		var taskName string
+		var taskId int
+		rows.Scan(&taskName, &taskId)
+		allTags = append(allTags, TagRelationOption{Name: taskName, Id: taskId})
+	}
+	tagsWithTasksOptions := []TagWithTasks{}
+	for _, tag := range tags {
+		tagWithTasks := NewTagWithTasks(tag.Id, tag.Name, allTags)
+		tagsWithTasksOptions = append(tagsWithTasksOptions, tagWithTasks)
+
+	}
+
+	return tagsWithTasksOptions, nil
 }

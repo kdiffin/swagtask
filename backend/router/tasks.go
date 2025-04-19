@@ -3,7 +3,6 @@ package router
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"swagtask/database"
@@ -14,19 +13,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// funny right
-func getIdAsStr(c echo.Context) (int, error) {
-	idStr := c.Param("id")
-	id, errConv := strconv.Atoi(idStr)
-
-	return id, errConv
-}
-
 func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 	e.GET("/tasks", func(c echo.Context) error {
 		param := c.QueryParam("tags")
 
-		fmt.Println(param)
 		if param == "" {
 			taskWithTags, err := database.GetAllTasksWithTags(dbpool)
 			if err != nil {

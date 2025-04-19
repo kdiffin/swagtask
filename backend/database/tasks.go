@@ -14,10 +14,10 @@ func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 
 	// we need left join because some tasks dont have ids
 	rows, err := dbpool.Query(context.Background(), `
-		SELECT t.id, t.name, t.idea, t.completed, tg.id, tg.name
-		FROM tasks t
-		LEFT JOIN tag_task_relations rel ON t.id = rel.task_id
-		LEFT JOIN tags tg ON rel.tag_id = tg.id
+			SELECT t.id, t.name, t.idea, t.completed, tg.id, tg.name
+			FROM tasks t
+			LEFT JOIN tag_task_relations rel ON t.id = rel.task_id
+			LEFT JOIN tags tg ON rel.tag_id = tg.id
 		WHERE t.id = $1
 	`, id)
 

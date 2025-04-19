@@ -3,11 +3,18 @@
 - [x] finish the main page and abstract the update logic of the tags
 - [x] split the task updating and tag creation/relation endpoints
 - [x] make ui composable
-- [ ] implement the get task by tags page
-- [ ] implement manage tasks page
-  - [ ] implement CRUD on tags, make it a card based ui for CRUDing tags
-- [ ] make toggle-completed RESTful and Remove tag from task DELETE /tasks/:taskId/tags/:tagId Clean removal route
+- [x] implement the get task by tags page
+- [ ] implement manage tags page
+  - [x] implement CRUD on tags, make it a card based ui for CRUDing tags
+- [ ] make the dropdowns for adding relations only show items which havent been added already as tags
+- [ ] add many to many relationship thing and show tasks related to tag in the card
+- [ ] make the footer work
+
+- [ ] IMPLEMENT ACTUAL FILTERING ON TASKS PAGE
+- [ ] implement actual database migrations and logging
 - [ ] refactor everything
+- [ ] add barebones auth using cookies then jwt
+- [ ] add live editing via websockets or polling between 2 users
 
 ### long term
 
@@ -17,6 +24,7 @@
 
 chat gippity made the readme
 im doing this to learn htmx and golang i hate react now im a based htmxpilled dev now f the virtual dom
+chat gippity made my frontends styles btw
 
 ---
 

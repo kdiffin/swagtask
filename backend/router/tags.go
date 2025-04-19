@@ -12,125 +12,103 @@ import (
 
 func Tags(e *echo.Echo, dbpool *pgxpool.Pool) {
 	e.POST("/tags", func(c echo.Context) error {
-		_, err := dbpool.Exec(context.Background(), "INSERT INTO tags (name) VALUES($1)", c.FormValue("tag"))
-		if err != nil {
-			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		tagValue := c.FormValue("tag")
+		sourceValue := c.FormValue("source")
+
+		if sourceValue == "/tasks" {
+			return tasksPageTagPostHandler(dbpool, c, tagValue)
+		} else if sourceValue == "/tags" {
+			return tagsPageTagPostHandler(dbpool, c, tagValue)
 		}
 
-		// invalidate cache
-		tasksWithTags, errTasks := database.GetAllTasksWithTags(dbpool)
-		if errTasks != nil {
-			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-		page := pages.NewTasksPage(tasksWithTags)
+		return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
 
-		return c.Render(200, "tasks-container", page)
 	})
 
 	e.GET("/tags", func(c echo.Context) error {
-		tags, err := database.GetAllTags(dbpool)
+		tagsWithTasksOptions, err := database.GetAllTagsWithTasks(dbpool)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 
-		return c.Render(200, "tags-page", tags)
+		page := pages.NewTagsPage(tagsWithTasksOptions)
+		return c.Render(200, "tags-page", page)
 	})
 
-	// e.GET("/tags", func(c echo.Context) error {
-	// 	allTags, errTags := database.GetAllTags(dbpool)
-	// 	if errTags != nil {
-	// 		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	// 	}
+	e.DELETE("/tags/:id", func(c echo.Context) error {
+		id, errConv := getIdAsStr(c)
+		if errConv != nil {
+			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+		}
 
-	// 	return
-	// })
+		_, errRelations := dbpool.Exec(context.Background(), "DELETE FROM tag_task_relations WHERE tag_id = $1", id)
+		_, err := dbpool.Exec(context.Background(), "DELETE FROM tags WHERE id = $1", id)
+
+		if err != nil || errRelations != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		return c.NoContent(200)
+	})
+
+	e.PUT("/tags/:id", func(c echo.Context) error {
+		id, errConv := getIdAsStr(c)
+		if errConv != nil {
+			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+		}
+
+		var tag database.Tag
+		err := dbpool.QueryRow(context.Background(), "UPDATE tags SET  name=$1 WHERE id = $2 RETURNING id,name", c.FormValue("name"), id).Scan(&tag.Id, &tag.Name)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		rows, errTasks := dbpool.Query(context.Background(), "SELECT name,id FROM tasks")
+		if errTasks != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
+		allTasks := []database.TagRelationOption{}
+		for rows.Next() {
+			var option database.TagRelationOption
+			rows.Scan(&option.Name, &option.Id)
+
+			allTasks = append(allTasks, option)
+		}
+
+		tagWithTasks := database.NewTagWithTasks(tag.Id, tag.Name, allTasks)
+		return c.Render(200, "tag-card", tagWithTasks)
+	})
+
 }
 
-// func Tags(e *echo.Echo, dbpool *pgxpool.Pool) {
-// 	e.GET("/tags/:tag", func(c echo.Context) error {
-// 		tag := c.Param("tag")
+func tasksPageTagPostHandler(dbpool *pgxpool.Pool, c echo.Context, tagValue string) error {
+	_, err := dbpool.Exec(context.Background(), "INSERT INTO tags (name) VALUES($1)", tagValue)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 
-// 		rows, err := dbpool.Query(context.Background(), "SELECT id,name,idea,tags,completed FROM tasks WHERE $1 = ANY(tags)", tag)
-// 		rowsOtherTags, errOtherTags := dbpool.Query(context.Background(), "SELECT tags FROM tasks WHERE $1 NOT = ANY(tags)", tag)
+	// invalidate cache
+	tasksWithTags, errTasks := database.GetAllTasksWithTags(dbpool)
+	if errTasks != nil {
+		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+	page := pages.NewTasksPage(tasksWithTags)
 
-// 		if errOtherTags != nil {
-// 			// If there's an error executing the query, log it and handle gracefully
-// 			log.Printf("Error executing query: %v", errOtherTags)
-// 		}
-// 		if err != nil {
-// 			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-// 		}
+	return c.Render(200, "tasks-container", page)
+}
 
-// 		var tasks []database.Task
-// 		for rows.Next() {
-// 			var task database.Task
-// 			err := rows.Scan(&task.Id, &task.Name, &task.Idea, &task.Tags, &task.Completed)
-// 			if err != nil {
-// 				c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-// 			}
+func tagsPageTagPostHandler(dbpool *pgxpool.Pool, c echo.Context, tagValue string) error {
+	_, err := dbpool.Exec(context.Background(), "INSERT INTO tags (name) VALUES($1)", tagValue)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 
-// 			tasks = append(tasks, task)
-// 		}
+	// invalidate cache
+	tagsWithTasks, errTags := database.GetAllTagsWithTasks(dbpool)
+	if errTags != nil {
+		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
 
-// 		var otherTags []string
-// 		for rowsOtherTags.Next() {
-// 			var tag string
-// 			err := rows.Scan(&tag)
-
-// 			// gracefully hanndle the error
-// 			if err != nil {
-// 				log.Printf("Error scanning row: %v", err)
-// 			}
-
-// 			otherTags = append(otherTags, tag)
-// 		}
-
-// 		page := pages.TagsPage{
-// 			Tasks:     tasks,
-// 			Tag:       tag,
-// 			OtherTags: otherTags,
-// 		}
-// 		return c.Render(200, "tags-page", page)
-// 	})
-// }
-
-// func Tags(e *echo.Echo, db *pgxpool.Pool) {
-// 	e.GET("/tags/:tag", func(c echo.Context) error {
-// 		tag := c.Param("tag")
-
-// 		// set which maps the key to the value (both are the same thing cuz this is a set)
-// 		tags := make(map[string]string)
-
-// 		var tasksWithTag database.Tasks
-// 		for _, task := range db.Tasks {
-// 			tagInTask := false
-
-// 			// add tag so it can be passed onto html
-
-// 			for _, tagOfTask := range task.Tags {
-// 				tags[tagOfTask] = tagOfTask
-// 				if tagOfTask == tag {
-// 					tagInTask = true
-// 					delete(tags, tagOfTask)
-// 				}
-
-// 			}
-
-// 			if tagInTask {
-// 				tasksWithTag = append(tasksWithTag, task)
-// 			}
-// 		}
-
-// 		var otherTags []string
-// 		for _, value := range tags {
-// 			otherTags = append(otherTags, value)
-// 		}
-
-// 		taskPage := TagsPage{
-// 			Tasks:     tasksWithTag,
-// 			OtherTags: otherTags,
-// 			Tag:       tag,
-// 		}
-// 		return c.Render(200, "tags-page", taskPage)
-// 	})
-// }
+	return c.Render(200, "tags-list-container", tagsWithTasks)
+}
