@@ -12,6 +12,7 @@
 
 - [ ] IMPLEMENT ACTUAL FILTERING ON TASKS PAGE
 - [ ] implement actual database migrations and logging
+- [ ] maybe add sqlc
 - [ ] refactor everything
 - [ ] add barebones auth using cookies then jwt
 - [ ] add live editing via websockets or polling between 2 users
