@@ -4,7 +4,7 @@
 - [x] split the task updating and tag creation/relation endpoints
 - [x] make ui composable
 - [x] implement the get task by tags page
-- [ ] implement manage tags page
+- [x] implement manage tags page
   - [x] implement CRUD on tags, make it a card based ui for CRUDing tags
 - [ ] make the dropdowns for adding relations only show items which havent been added already as tags
 - [ ] add many to many relationship thing and show tasks related to tag in the card

@@ -46,13 +46,8 @@ func main() {
 	// close db pool when the funciton main ends
 	defer dbpool.Close()
 
-	// todo: reimplement
 	router.Tasks(e, dbpool)
 	router.Tags(e, dbpool)
-	// e.GET("/", func(c echo.Context) error {
-
-	// 	return c.Render(200, "index", page)
-	// })
 
 	e.Logger.Fatal(e.Start(":42069"))
 }

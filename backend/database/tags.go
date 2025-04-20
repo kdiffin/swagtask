@@ -37,19 +37,18 @@ func GetAllTags(dbpool *pgxpool.Pool) ([]Tag, error) {
 	return allTags, nil
 }
 
-func GetTagById(dbpool *pgxpool.Pool) ([]Tag, error) {
-	allTags := []Tag{}
-	rows, errTags := dbpool.Query(context.Background(), `SELECT name, id FROM tags`)
+func GetTagById(dbpool *pgxpool.Pool, id int) (*Tag, error) {
+	var tag Tag
+	errTags := dbpool.QueryRow(context.Background(), `
+		SELECT name, id 
+		FROM tags 
+		WHERE id = $1`, id).Scan(&tag.Name, &tag.Id)
+
 	if errTags != nil {
 		return nil, errTags
 	}
-	for rows.Next() {
-		var tag Tag
-		rows.Scan(&tag.Name, &tag.Id)
-		allTags = append(allTags, tag)
-	}
 
-	return allTags, nil
+	return &tag, nil
 }
 
 func GetAllTagsWithTasks(dbpool *pgxpool.Pool) ([]TagWithTasks, error) {

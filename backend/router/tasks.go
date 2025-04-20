@@ -45,7 +45,7 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 	e.POST("/tasks", func(c echo.Context) error {
 		task, err := database.CreateTask(dbpool, c.FormValue("name"), c.FormValue("idea"))
 		if err != nil {
-			return c.Render(422, "form-error", "U CANT PUT THE SAME IDEA TWICE")
+			return c.Render(http.StatusUnprocessableEntity, "form-error", "U CANT PUT THE SAME IDEA TWICE")
 		}
 
 		allTags, errAllTags := database.GetAllTags(dbpool)

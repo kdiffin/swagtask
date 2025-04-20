@@ -18,7 +18,7 @@ func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 			FROM tasks t
 			LEFT JOIN tag_task_relations rel ON t.id = rel.task_id
 			LEFT JOIN tags tg ON rel.tag_id = tg.id
-		WHERE t.id = $1
+			WHERE t.id = $1
 	`, id)
 
 	allTags, errTags := GetAllTags(dbpool)
@@ -50,58 +50,71 @@ func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 	return &taskWithTags, nil
 }
 
+// redo this whole thing
+// TODO: fixed the n+1 by querying all tags, ill do it with joins again later
 func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
-	rows, err := dbpool.Query(context.Background(), `
-		SELECT t.id, t.name, t.idea, t.completed, tg.id, tg.name
-		FROM tasks t
-		LEFT JOIN tag_task_relations rel ON t.id = rel.task_id
-		LEFT JOIN tags tg ON rel.tag_id = tg.id
-		ORDER BY t.id DESC
-	`)
-	if err != nil {
-		return nil, err
+	// get the tasks
+	// get the relation table
+	// fetch and append any tag in the rel table whichs task_id to the respective task
+
+	rows, errTasks := dbpool.Query(context.Background(), "SELECT name,idea,id,completed FROM tasks ORDER BY id DESC")
+	if errTasks != nil {
+		return nil, errTasks
+	}
+	rowsRel, errRel := dbpool.Query(context.Background(), "SELECT task_id, tag_id FROM tag_task_relations")
+	if errRel != nil {
+		return nil, errRel
+	}
+	tags, errTags := GetAllTags(dbpool)
+	if errTags != nil {
+		return nil, errTags
 	}
 
-	taskMap := make(map[int]*TaskWithTags)
-	var orderedTasks []TaskWithTags
-
+	tasks := []Task{}
+	tasksTags := make(map[int][]Tag)
 	for rows.Next() {
+		var task Task
+		rows.Scan(&task.Name, &task.Idea, &task.Id, &task.Completed)
+		tasks = append(tasks, task)
+		tasksTags[task.Id] = []Tag{}
+
+	}
+
+	// for fast lookup
+	idToTag := make(map[int]Tag)
+	for _, tag := range tags {
+		idToTag[tag.Id] = tag
+	}
+	for rowsRel.Next() {
 		var taskId int
-		var taskName, idea string
-		var completed bool
-		var tagId *int      // nullable
-		var tagName *string // nullable
-
-		err := rows.Scan(&taskId, &taskName, &idea, &completed, &tagId, &tagName)
-		if err != nil {
-			return nil, err
-		}
-
-		allTags, errTags := GetAllTags(dbpool)
-		if errTags != nil {
-			return nil, err
-		}
-
-		_, exists := taskMap[taskId]
-		if !exists {
-			task := Task{Id: taskId, Name: taskName, Idea: idea, Completed: completed}
-			taskWithTags := NewTaskWithTags(task, []Tag{}, allTags)
-			taskMap[taskId] = &taskWithTags
-			orderedTasks = append(orderedTasks, taskWithTags)
-		}
-
-		if tagId != nil && tagName != nil {
-			tag := Tag{Id: *tagId, Name: *tagName}
-			taskMap[taskId].Tags = append(taskMap[taskId].Tags, tag)
-		}
+		var tagId int
+		rowsRel.Scan(&taskId, &tagId)
+		tasksTags[taskId] = append(tasksTags[taskId], idToTag[tagId])
 	}
 
-	var finalTasks []TaskWithTags
-	for _, t := range orderedTasks {
-		finalTasks = append(finalTasks, *taskMap[t.Task.Id])
+	tasksWithTags := []TaskWithTags{}
+
+	// maybe make this faster
+	for _, task := range tasks {
+		availableTags := []Tag{}
+		for _, tag := range tags {
+			notInTask := true
+			for _, taskTag := range tasksTags[task.Id] {
+				if taskTag == tag {
+					notInTask = false
+				}
+			}
+
+			if notInTask {
+				availableTags = append(availableTags, tag)
+			}
+		}
+		taskWithTag := NewTaskWithTags(task, tasksTags[task.Id], availableTags)
+		tasksWithTags = append(tasksWithTags, taskWithTag)
 	}
 
-	return finalTasks, nil
+	return tasksWithTags, nil
+
 }
 
 func GetAllFilteredTasksWithTags(dbpool *pgxpool.Pool, tagFilter string) ([]TaskWithTags, error) {
@@ -112,7 +125,7 @@ func GetAllFilteredTasksWithTags(dbpool *pgxpool.Pool, tagFilter string) ([]Task
 		WHERE tags.name = $1 
 		LIMIT 1`, tagFilter).Scan(&tagFilterId)
 
-	// TODO: maybe implement a badgateway error with
+	// TODO: maybe implement a badgateway error with errors
 	if errGetIdOfFilter != nil {
 		return nil, errGetIdOfFilter
 	}
@@ -136,6 +149,8 @@ func GetAllFilteredTasksWithTags(dbpool *pgxpool.Pool, tagFilter string) ([]Task
 
 	finalTasks := []TaskWithTags{}
 	for _, id := range idOfTasksToQuery {
+		// n+1 query eliyende oglanlar
+		// TODO: FIX THIS STUPID AHH N+1 ISSUE!
 		taskWithTags, errGetTask := GetTaskWithTagsById(dbpool, id)
 
 		if errGetTask != nil {

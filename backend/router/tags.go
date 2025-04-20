@@ -58,7 +58,7 @@ func Tags(e *echo.Echo, dbpool *pgxpool.Pool) {
 		}
 
 		var tag database.Tag
-		err := dbpool.QueryRow(context.Background(), "UPDATE tags SET  name=$1 WHERE id = $2 RETURNING id,name", c.FormValue("name"), id).Scan(&tag.Id, &tag.Name)
+		err := dbpool.QueryRow(context.Background(), "UPDATE tags SET name=$1 WHERE id = $2 RETURNING id,name", c.FormValue("name"), id).Scan(&tag.Id, &tag.Name)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}

@@ -16,15 +16,15 @@ type Tag struct {
 // tasks
 type TaskWithTags struct {
 	Task
-	Tags    []Tag
-	AllTags []Tag
+	Tags          []Tag
+	AvailableTags []Tag
 }
 
-func NewTaskWithTags(task Task, tags []Tag, allTags []Tag) TaskWithTags {
+func NewTaskWithTags(task Task, tags []Tag, availableTags []Tag) TaskWithTags {
 	return TaskWithTags{
-		Task:    task,
-		Tags:    tags,
-		AllTags: allTags,
+		Task:          task,
+		Tags:          tags,
+		AvailableTags: availableTags,
 	}
 }
 
@@ -35,15 +35,15 @@ type TagRelationOption struct {
 }
 type TagWithTasks struct {
 	Tag
-	AllTasks []TagRelationOption
+	AvailableTasks []TagRelationOption
 }
 
-func NewTagWithTasks(id int, name string, allTasks []TagRelationOption) TagWithTasks {
+func NewTagWithTasks(id int, name string, availableTasks []TagRelationOption) TagWithTasks {
 	return TagWithTasks{
 		Tag: Tag{
 			Id:   id,
 			Name: name,
 		},
-		AllTasks: allTasks,
+		AvailableTasks: availableTasks,
 	}
 }
