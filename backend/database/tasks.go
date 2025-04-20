@@ -10,8 +10,6 @@ import (
 
 // ---- READ ----
 func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
-	var taskWithTags TaskWithTags
-
 	// we need left join because some tasks dont have ids
 	rows, err := dbpool.Query(context.Background(), `
 			SELECT t.id, t.name, t.idea, t.completed, tg.id, tg.name
@@ -20,38 +18,40 @@ func GetTaskWithTagsById(dbpool *pgxpool.Pool, id int) (*TaskWithTags, error) {
 			LEFT JOIN tags tg ON rel.tag_id = tg.id
 			WHERE t.id = $1
 	`, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var task Task
+	tagsOfTask := []Tag{}
 
 	allTags, errTags := GetAllTags(dbpool)
 	if errTags != nil {
 		return nil, errTags
 	}
-
 	for rows.Next() {
-		var task Task
 		var tag_id *int      // nullable or can be inexistant
 		var tag_name *string // nullable or can be inexistant
 
-		rows.Scan(&task.Id, &task.Name, &task.Idea, &task.Completed, &tag_id, &tag_name)
+		errScan := rows.Scan(&task.Id, &task.Name, &task.Idea, &task.Completed, &tag_id, &tag_name)
+		if errScan != nil {
+			return nil, errScan
+		}
+
 		if tag_id != nil && tag_name != nil {
-			taskWithTags = NewTaskWithTags(task, append(taskWithTags.Tags, Tag{Id: *tag_id, Name: *tag_name}), allTags)
-		} else {
-			taskWithTags = NewTaskWithTags(
-				task,
-				[]Tag{},
-				allTags,
-			)
+			tagsOfTask = append(tagsOfTask, Tag{Id: *tag_id, Name: *tag_name})
 		}
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
+	availableTags := GetTaskAvailableTags(allTags, tagsOfTask)
+	taskWithTags := NewTaskWithTags(task, tagsOfTask, availableTags)
 	return &taskWithTags, nil
 }
 
 func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
-	// get the taskswiththeirtags
+	// 1. gets the task with their related tags
+	// 2. gets all tags
+	// 3. finds the non related tags for the dropdown and then sends them
 	// TODO: make these run in paralell
 	rowsTasks, errTasks := dbpool.Query(context.Background(), `
 		SELECT t.name, t.idea, t.id, t.completed, tg.id, tg.name
@@ -74,8 +74,10 @@ func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
 	taskIdToTags := make(map[int][]Tag)
 	// for easy lookup
 	idToTask := make(map[int]Task)
-	// so that we can make the items ordered
+	// so that we can make the items ordered (this is kindof a set)
 	orderedIds := []int{}
+	// so that we can mimic the set logic
+	idSeen := make(map[int]bool)
 	for rowsTasks.Next() {
 		var task Task
 		var tagId *int      // nullable
@@ -91,8 +93,13 @@ func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
 			taskIdToTags[task.Id] = append(taskIdToTags[task.Id], Tag{Id: *tagId, Name: *tagName})
 		}
 
-		orderedIds = append(orderedIds, task.Id)
+		// mimic a set
+		if !idSeen[task.Id] {
+			orderedIds = append(orderedIds, task.Id)
+		}
+
 		idToTask[task.Id] = task
+		idSeen[task.Id] = true
 	}
 
 	for _, id := range orderedIds {
@@ -107,51 +114,80 @@ func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
 	return tasksWithTags, nil
 }
 
-func GetAllFilteredTasksWithTags(dbpool *pgxpool.Pool, tagFilter string) ([]TaskWithTags, error) {
-	var tagFilterId string
-	errGetIdOfFilter := dbpool.QueryRow(context.Background(), `
-		SELECT id  
-		FROM tags 
-		WHERE tags.name = $1 
-		LIMIT 1`, tagFilter).Scan(&tagFilterId)
+func GetAllFilteredTasksWithTags(dbpool *pgxpool.Pool, param string) ([]TaskWithTags, error) {
+	// 0. gets the tags id by name
+	// 1. gets the tasks with the param tag
+	// 2. gets all tags
+	// 3. finds the non related tags for the dropdown and then sends them
 
-	// TODO: maybe implement a badgateway error with errors
-	if errGetIdOfFilter != nil {
-		return nil, errGetIdOfFilter
+	// 0.
+	var tagId int
+	// TODO: implement custom errors here
+	errTagId := dbpool.QueryRow(context.Background(), `SELECT id FROM tags WHERE name = $1`, param).Scan(&tagId)
+	if errTagId != nil {
+		return nil, errTagId
 	}
 
-	// get the tasks related to this tag
-	rowsIdOfTasksWithTag, errGettingTasks := dbpool.Query(context.Background(), `SELECT task_id FROM tag_task_relations rel WHERE rel.tag_id = $1`, tagFilterId)
-	if errGettingTasks != nil {
-		return nil, errGettingTasks
+	rowsTasks, errTasks := dbpool.Query(context.Background(), `
+		SELECT t.name, t.idea, t.id, t.completed, tg.id, tg.name
+		FROM tasks t
+		LEFT JOIN tag_task_relations rel 
+			ON t.id = rel.task_id 
+		LEFT JOIN tags tg 
+			ON tg.id = rel.tag_id
+		WHERE tg.id = $1
+		ORDER BY t.id DESC`, tagId)
+	if errTasks != nil {
+		return nil, errTasks
 	}
 
-	idOfTasksToQuery := []int{}
-	for rowsIdOfTasksWithTag.Next() {
-		var taskId int
-		errIdOfTaskScan := rowsIdOfTasksWithTag.Scan(&taskId)
-		if errIdOfTaskScan != nil {
-			return nil, errIdOfTaskScan
+	allTags, errAllTags := GetAllTags(dbpool)
+	if errAllTags != nil {
+		return nil, errAllTags
+	}
+
+	tasksWithTags := []TaskWithTags{}
+	taskIdToTags := make(map[int][]Tag)
+	// for easy lookup
+	idToTask := make(map[int]Task)
+	// so that we can make the items ordered (this is kindof a set)
+	orderedIds := []int{}
+	// so that we can mimic the set logic
+	idSeen := make(map[int]bool)
+	for rowsTasks.Next() {
+		var task Task
+		var tagId *int      // nullable
+		var tagName *string // nullable
+
+		errScanTask := rowsTasks.Scan(&task.Name, &task.Idea, &task.Id, &task.Completed, &tagId, &tagName)
+		if errScanTask != nil {
+			return nil, errScanTask
 		}
 
-		idOfTasksToQuery = append(idOfTasksToQuery, taskId)
-	}
-
-	finalTasks := []TaskWithTags{}
-	for _, id := range idOfTasksToQuery {
-		// n+1 query eliyende oglanlar
-		// TODO: FIX THIS STUPID AHH N+1 ISSUE!
-		taskWithTags, errGetTask := GetTaskWithTagsById(dbpool, id)
-
-		if errGetTask != nil {
-			return nil, errGetTask
+		if tagId != nil && tagName != nil {
+			// add tag if it exists
+			taskIdToTags[task.Id] = append(taskIdToTags[task.Id], Tag{Id: *tagId, Name: *tagName})
 		}
 
-		finalTasks = append(finalTasks, *taskWithTags)
+		// mimic a set
+		if !idSeen[task.Id] {
+			orderedIds = append(orderedIds, task.Id)
+		}
 
+		idToTask[task.Id] = task
+		idSeen[task.Id] = true
 	}
 
-	return finalTasks, nil
+	for _, id := range orderedIds {
+		task := idToTask[id]
+		tagsOfTask := taskIdToTags[id]
+		avaialbleTags := GetTaskAvailableTags(allTags, tagsOfTask)
+
+		taskWithTags := NewTaskWithTags(task, tagsOfTask, avaialbleTags)
+		tasksWithTags = append(tasksWithTags, taskWithTags)
+	}
+
+	return tasksWithTags, nil
 }
 
 // ---- CREATE ----

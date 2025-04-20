@@ -25,3 +25,5 @@ INSERT INTO tag_task_relations (task_id, tag_id) VALUES
 (4, 1), -- Presentation - urgent
 (5, 4), -- Read notes - long-term
 (5, 5); -- Read notes - school
+
+

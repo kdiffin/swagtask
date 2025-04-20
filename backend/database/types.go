@@ -29,21 +29,24 @@ func NewTaskWithTags(task Task, tags []Tag, availableTags []Tag) TaskWithTags {
 }
 
 // tags
-type TagRelationOption struct {
+type AvailableTask struct {
+	Name string
+	Id   int
+}
+type RelatedTask struct {
 	Name string
 	Id   int
 }
 type TagWithTasks struct {
 	Tag
-	AvailableTasks []TagRelationOption
+	RelatedTasks   []RelatedTask
+	AvailableTasks []AvailableTask
 }
 
-func NewTagWithTasks(id int, name string, availableTasks []TagRelationOption) TagWithTasks {
+func NewTagWithTasks(tag Tag, relatedTasks []RelatedTask, availableTasks []AvailableTask) TagWithTasks {
 	return TagWithTasks{
-		Tag: Tag{
-			Id:   id,
-			Name: name,
-		},
+		Tag:            tag,
+		RelatedTasks:   relatedTasks,
 		AvailableTasks: availableTasks,
 	}
 }

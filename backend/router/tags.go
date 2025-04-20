@@ -68,15 +68,20 @@ func Tags(e *echo.Echo, dbpool *pgxpool.Pool) {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 
-		allTasks := []database.TagRelationOption{}
+		allTasks := []database.AvailableTask{}
 		for rows.Next() {
-			var option database.TagRelationOption
+			var option database.AvailableTask
 			rows.Scan(&option.Name, &option.Id)
 
 			allTasks = append(allTasks, option)
 		}
 
-		tagWithTasks := database.NewTagWithTasks(tag.Id, tag.Name, allTasks)
+		relatedTasks, errRelatedTasks := database.GetRelatedTasksOfTag(dbpool, id)
+		if errRelatedTasks != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		availableTasks := database.GetTagAvailableTasks(allTasks, relatedTasks)
+		tagWithTasks := database.NewTagWithTasks(tag, relatedTasks, availableTasks)
 		return c.Render(200, "tag-card", tagWithTasks)
 	})
 
@@ -98,6 +103,7 @@ func tasksPageTagPostHandler(dbpool *pgxpool.Pool, c echo.Context, tagValue stri
 	return c.Render(200, "tasks-container", page)
 }
 
+// TODO: refactor this to just send a single tagWithTasks back
 func tagsPageTagPostHandler(dbpool *pgxpool.Pool, c echo.Context, tagValue string) error {
 	_, err := dbpool.Exec(context.Background(), "INSERT INTO tags (name) VALUES($1)", tagValue)
 	if err != nil {

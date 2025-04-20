@@ -38,10 +38,6 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 		return c.Render(200, "tasks-page", page)
 	})
 
-	e.GET("tags", func(c echo.Context) error {
-		return c.String(200, "0")
-	})
-
 	e.POST("/tasks", func(c echo.Context) error {
 		task, err := database.CreateTask(dbpool, c.FormValue("name"), c.FormValue("idea"))
 		if err != nil {
@@ -103,11 +99,13 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 		if errAllTags != nil {
 			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
+
+		availableTags := database.GetTaskAvailableTags(allTags, tags)
 		// Task with or without tag still render
 		taskWithTags := database.NewTaskWithTags(
 			task,
 			tags,
-			allTags,
+			availableTags,
 		)
 		return c.Render(200, "task", taskWithTags)
 	})
@@ -196,7 +194,8 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 		if errAllTags != nil {
 			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
-		taskWithTags := database.NewTaskWithTags(*task, tagsOfTask, allTags)
+		availableTags := database.GetTaskAvailableTags(allTags, tagsOfTask)
+		taskWithTags := database.NewTaskWithTags(*task, tagsOfTask, availableTags)
 		// dbpool.Query(,str)
 		return c.Render(200, "task", taskWithTags)
 	})
