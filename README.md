@@ -8,6 +8,7 @@
   - [x] implement CRUD on tags, make it a card based ui for CRUDing tags
 - [x] make the dropdowns for adding relations only show items which havent been added already as tags
 - [ ] add many to many relationship thing and show tasks related to tag in the card
+- [ ] implement tags page tag relation to task
 - [ ] make the footer work
 
 - [ ] IMPLEMENT ACTUAL FILTERING ON TASKS PAGE

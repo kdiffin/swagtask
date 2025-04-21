@@ -122,6 +122,7 @@ func GetAllTagsWithTasks(dbpool *pgxpool.Pool) ([]TagWithTasks, error) {
 			orderedIds = append(orderedIds, tag.Id)
 		}
 
+		seenId[tag.Id] = true
 		idToTag[tag.Id] = tag
 	}
 
