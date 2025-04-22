@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -51,8 +52,9 @@ func GetRelatedTasksOfTag(dbpool *pgxpool.Pool, id int) ([]RelatedTask, error) {
 	relatedTasks := []RelatedTask{}
 	for rows.Next() {
 		var relatedTask RelatedTask
-		errScan := rows.Scan(relatedTask.Name, relatedTask.Id)
+		errScan := rows.Scan(&relatedTask.Name, &relatedTask.Id)
 		if errScan != nil {
+			fmt.Println("err on rows scan")
 			return nil, errScan
 		}
 		relatedTasks = append(relatedTasks, relatedTask)
@@ -75,6 +77,35 @@ func GetTagById(dbpool *pgxpool.Pool, id int) (*Tag, error) {
 	return &tag, nil
 }
 
+func GetTagWithTasks(dbpool *pgxpool.Pool, id int) (*TagWithTasks, error) {
+	rows, errTasks := dbpool.Query(context.Background(), "SELECT name,id FROM tasks")
+	if errTasks != nil {
+		fmt.Println("error here tasks query")
+		return nil, errTasks
+	}
+
+	allTasks := []AvailableTask{}
+	for rows.Next() {
+		var option AvailableTask
+		rows.Scan(&option.Name, &option.Id)
+
+		allTasks = append(allTasks, option)
+	}
+
+	relatedTasks, errRelatedTasks := GetRelatedTasksOfTag(dbpool, id)
+	if errRelatedTasks != nil {
+		fmt.Println("error here relations")
+		return nil, errRelatedTasks
+	}
+
+	tag, errTag := GetTagById(dbpool, id)
+	if errTag != nil {
+		return nil, errTag
+	}
+	availableTasks := GetTagAvailableTasks(allTasks, relatedTasks)
+	tagWithTasks := NewTagWithTasks(*tag, relatedTasks, availableTasks)
+	return &tagWithTasks, nil
+}
 func GetAllTagsWithTasks(dbpool *pgxpool.Pool) ([]TagWithTasks, error) {
 	// 1. get tags with their relations to tasks
 	// 2. get all tasks as options

@@ -7,11 +7,16 @@
 - [x] implement manage tags page
   - [x] implement CRUD on tags, make it a card based ui for CRUDing tags
 - [x] make the dropdowns for adding relations only show items which havent been added already as tags
-- [ ] add many to many relationship thing and show tasks related to tag in the card
-- [ ] implement tags page tag relation to task
-- [ ] make the footer work
+- [x] add many to many relationship thing and show tasks related to tag in the card
+- [x] implement tags page tag relation to task
+- [x] make the footer work
+- [x] IMPLEMENT ACTUAL FILTERING ON TASKS PAGE
 
-- [ ] IMPLEMENT ACTUAL FILTERING ON TASKS PAGE
+  - [x] implement searching by name
+  - [x] implement filtering by tag
+  - [ ] implement filtering by completed (cba)
+
+- [ ] read the other md files rq
 - [ ] implement actual database migrations and logging
 - [ ] maybe add sqlc
 - [ ] refactor everything

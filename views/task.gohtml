@@ -192,30 +192,32 @@
   {{ end }}
   {{ end }}
 
-  {{ block "add-task-to-tag" . }}
-  <form
-    hx-post="/tasks/{{.Id}}/tags"
-    hx-target="#task-{{.Id}}"
-    hx-trigger="change"
-    hx-indicator="#add-tag-indicator-task-{{.Id}}"
-    hx-swap="outerHTML"
-  >
-    <select
-      name="tag"
-      class="text-xs bg-zinc-800 border border-zinc-700 text-white px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-600"
-    >
-      <option disabled selected class="text-zinc-500">+ add tag</option>
-      {{
-        range.AvailableTags
-      }}
-      <option value="{{ .Id }}">{{ .Name }}</option>
-      {{
-        end
-      }}
-    </select>
-  </form>
-  {{ end }}
+  {{ template "add-task-to-tag" . }}
 </div>
+{{ end }}
+
+{{ block "add-task-to-tag" . }}
+<form
+  hx-post="/tasks/{{.Id}}/tags"
+  hx-target="#task-{{.Id}}"
+  hx-trigger="change"
+  hx-indicator="#add-tag-indicator-task-{{.Id}}"
+  hx-swap="outerHTML"
+>
+  <select
+    name="tag"
+    class="text-xs bg-zinc-800 border border-zinc-700 text-white px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-600"
+  >
+    <option disabled selected class="text-zinc-500">+ add tag</option>
+    {{
+      range.AvailableTags
+    }}
+    <option value="{{ .Id }}">{{ .Name }}</option>
+    {{
+      end
+    }}
+  </select>
+</form>
 {{ end }}
 
 {{ block "task-edit-form" . }}

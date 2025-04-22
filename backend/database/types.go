@@ -50,3 +50,16 @@ func NewTagWithTasks(tag Tag, relatedTasks []RelatedTask, availableTasks []Avail
 		AvailableTasks: availableTasks,
 	}
 }
+
+type TasksPageFilters struct {
+	tagName  string
+	taskName string
+}
+
+func NewTasksPageFilters(tagName string, taskName string) TasksPageFilters {
+
+	return TasksPageFilters{
+		tagName:  tagName,
+		taskName: taskName,
+	}
+}

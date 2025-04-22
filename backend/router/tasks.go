@@ -15,9 +15,10 @@ import (
 
 func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 	e.GET("/tasks", func(c echo.Context) error {
-		param := c.QueryParam("tags")
+		tagNameParam := c.QueryParam("tags")
+		taskNameParam := c.QueryParam("taskName")
 
-		if param == "" {
+		if tagNameParam == "" && taskNameParam == "" {
 			taskWithTags, err := database.GetAllTasksWithTags(dbpool)
 			if err != nil {
 				return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -29,7 +30,8 @@ func Tasks(e *echo.Echo, dbpool *pgxpool.Pool) {
 			return c.Render(200, "tasks-page", page)
 		}
 
-		taskWithTags, errFilteredTasks := database.GetAllFilteredTasksWithTags(dbpool, param)
+		filters := database.NewTasksPageFilters(tagNameParam, taskNameParam)
+		taskWithTags, errFilteredTasks := database.GetAllFilteredTasksWithTags(dbpool, filters)
 		if errFilteredTasks != nil {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}

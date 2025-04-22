@@ -2,7 +2,9 @@ package router
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strconv"
 	"swagtask/database"
 	"swagtask/pages"
 
@@ -54,34 +56,69 @@ func Tags(e *echo.Echo, dbpool *pgxpool.Pool) {
 	e.PUT("/tags/:id", func(c echo.Context) error {
 		id, errConv := getIdAsStr(c)
 		if errConv != nil {
+			fmt.Println("error here id")
 			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
 		}
 
-		var tag database.Tag
-		err := dbpool.QueryRow(context.Background(), "UPDATE tags SET name=$1 WHERE id = $2 RETURNING id,name", c.FormValue("name"), id).Scan(&tag.Id, &tag.Name)
+		_, err := dbpool.Exec(context.Background(), "UPDATE tags SET name=$1 WHERE id = $2", c.FormValue("name"), id)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 
-		rows, errTasks := dbpool.Query(context.Background(), "SELECT name,id FROM tasks")
-		if errTasks != nil {
+		tagWithTasks, errTag := database.GetTagWithTasks(dbpool, id)
+		if errTag != nil {
+			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+		return c.Render(200, "tag-card", tagWithTasks)
+	})
+
+	e.POST("/tags/:id/tasks", func(c echo.Context) error {
+		// TODO: switched from returning on the insert to an exec and then a full fetch
+		// bit less performant but more readable, honestly i should switch to sqlc this boilerplate is getting hectic
+		id, errConv := getIdAsStr(c)
+		taskIdStr := c.FormValue("task_id")
+		taskId, errConvTag := strconv.Atoi(taskIdStr)
+
+		if errConvTag != nil || errConv != nil {
+			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+		}
+
+		// add task relation
+		_, err := dbpool.Exec(context.Background(), "INSERT INTO tag_task_relations (tag_id, task_id) VALUES($1, $2)", id, taskId)
+		if err != nil {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 
-		allTasks := []database.AvailableTask{}
-		for rows.Next() {
-			var option database.AvailableTask
-			rows.Scan(&option.Name, &option.Id)
-
-			allTasks = append(allTasks, option)
+		// get updated task
+		tagWithTasks, errTags := database.GetTagWithTasks(dbpool, id)
+		if errTags != nil {
+			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 
-		relatedTasks, errRelatedTasks := database.GetRelatedTasksOfTag(dbpool, id)
-		if errRelatedTasks != nil {
+		return c.Render(200, "tag-card", tagWithTasks)
+	})
+
+	e.DELETE("/tags/:id/tasks", func(c echo.Context) error {
+		id, errConv := getIdAsStr(c)
+		tagIdStr := c.FormValue("task_id")
+		taskId, errConvTag := strconv.Atoi(tagIdStr)
+
+		if errConvTag != nil || errConv != nil {
+			return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+		}
+
+		// delete task relation
+		_, err := dbpool.Exec(context.Background(), "DELETE FROM tag_task_relations WHERE tag_id = $1 AND task_id = $2", id, taskId)
+		if err != nil {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
-		availableTasks := database.GetTagAvailableTasks(allTasks, relatedTasks)
-		tagWithTasks := database.NewTagWithTasks(tag, relatedTasks, availableTasks)
+
+		// get updated task
+		tagWithTasks, errTags := database.GetTagWithTasks(dbpool, id)
+		if errTags != nil {
+			c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		}
+
 		return c.Render(200, "tag-card", tagWithTasks)
 	})
 

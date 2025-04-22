@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"swagtask/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -114,29 +115,40 @@ func GetAllTasksWithTags(dbpool *pgxpool.Pool) ([]TaskWithTags, error) {
 	return tasksWithTags, nil
 }
 
-func GetAllFilteredTasksWithTags(dbpool *pgxpool.Pool, param string) ([]TaskWithTags, error) {
+func GetAllFilteredTasksWithTags(dbpool *pgxpool.Pool, params TasksPageFilters) ([]TaskWithTags, error) {
 	// 0. gets the tags id by name
 	// 1. gets the tasks with the param tag
 	// 2. gets all tags
 	// 3. finds the non related tags for the dropdown and then sends them
+	index := 1
+	var constraintStr string
+	args := []interface{}{}
 
-	// 0.
-	var tagId int
-	// TODO: implement custom errors here
-	errTagId := dbpool.QueryRow(context.Background(), `SELECT id FROM tags WHERE name = $1`, param).Scan(&tagId)
-	if errTagId != nil {
-		return nil, errTagId
-	}
+	if params.tagName != "" && params.taskName != "" {
+		constraintStr += fmt.Sprintf(" tg.name = $%v", index)
+		index++
+		args = append(args, params.tagName)
+		// sql wildcard
+		constraintStr += fmt.Sprintf(" AND t.name ILIKE $%v", index)
+		args = append(args, "%"+params.taskName+"%")
+	} else if params.taskName != "" {
+		constraintStr += fmt.Sprintf(" t.name ILIKE $%v", index)
+		args = append(args, "%"+params.taskName+"%")
+	} else if params.tagName != "" {
+		constraintStr += fmt.Sprintf(" tg.name = $%v", index)
+		args = append(args, params.tagName)
+	} // handle the else case before u call this code
 
-	rowsTasks, errTasks := dbpool.Query(context.Background(), `
-		SELECT t.name, t.idea, t.id, t.completed, tg.id, tg.name
+	utils.PrintList(args)
+	queryString := `SELECT t.name, t.idea, t.id, t.completed, tg.id, tg.name
 		FROM tasks t
 		LEFT JOIN tag_task_relations rel 
 			ON t.id = rel.task_id 
 		LEFT JOIN tags tg 
 			ON tg.id = rel.tag_id
-		WHERE tg.id = $1
-		ORDER BY t.id DESC`, tagId)
+		WHERE` + constraintStr + " ORDER BY t.id DESC"
+	fmt.Println(queryString)
+	rowsTasks, errTasks := dbpool.Query(context.Background(), queryString, args...)
 	if errTasks != nil {
 		return nil, errTasks
 	}

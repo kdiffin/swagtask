@@ -7,19 +7,19 @@
       src="https://unpkg.com/htmx.org@2.0.4"
       crossorigin="anonymous"
     ></script>
-    <!-- <link
+    <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
-    /> -->
+    />
     <link rel="stylesheet" href="/css/index.css" />
   </head>
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" . }}
 
     <main class="container mx-auto px-4 py-6 max-w-5xl space-y-6">
-      {{ template "add-tag-card" .TagsWithTasks }}
+      {{ template "add-tag-card" . }}
       {{ template "tags-list-container" .TagsWithTasks }}
-      {{ template "footer" .TagsWithTasks }}
+      {{ template "footer" . }}
     </main>
   </body>
 </html>
@@ -88,40 +88,82 @@
 {{ block "tag-card" . }}
 <article
   id="tag-{{.Id}}"
-  class="bg-zinc-900 border border-zinc-700 rounded-sm p-4 shadow-sm flex flex-col justify-between hover:shadow-zinc-700/20 transition-shadow duration-300"
+  class="bg-zinc-900 border border-zinc-700 rounded-sm p-4 shadow-sm flex flex-col hover:shadow-zinc-700/20 transition-shadow duration-300"
   role="listitem"
   aria-labelledby="tag-title-{{ .Id }}"
 >
-  <header class="flex justify-between items-center mb-4">
-    <h2
-      id="tag-title-{{ .Id }}"
-      class="text-lg font-semibold truncate select-text"
-      title="#{{ .Name }}"
-    >
-      <span class="text-purple-400">#</span>{{ .Name }}
-    </h2>
-    <div class="flex items-center gap-2">
-      <span
-        class="text-xs text-zinc-400 bg-zinc-700 px-2 py-1 rounded hover:text-white hover:bg-zinc-600"
-        >#{{ .Id }}</span
+  <div class="">
+    <header class="flex justify-between items-center mb-4">
+      <h2
+        id="tag-title-{{ .Id }}"
+        class="text-lg font-semibold truncate select-text"
+        title="#{{ .Name }}"
       >
-      <button
-        class="text-red-400 hover:text-red-300 p-1 rounded hover:bg-zinc-700 transition-colors duration-200"
-        hx-delete="/tags/{{ .Id }}"
-        hx-target="closest article"
-        hx-swap="outerHTML swap:200ms transition:true"
-        title="Delete tag #{{ .Name }}"
-        aria-label="Delete tag #{{ .Name }}"
-        type="button"
-      >
-        <i class="fas fa-trash text-base"></i>
-      </button>
-      {{ template "attach-task-form" . }}
-    </div>
-  </header>
+        <span class="text-purple-400">#</span>{{ .Name }}
+      </h2>
+      <div class="flex items-center gap-2">
+        <span
+          class="text-xs text-zinc-400 bg-zinc-700 px-2 py-1 rounded hover:text-white hover:bg-zinc-600"
+          >#{{ .Id }}</span
+        >
+        <button
+          class="text-red-400 hover:text-red-300 p-1 rounded hover:bg-zinc-700 transition-colors duration-200"
+          hx-delete="/tags/{{ .Id }}"
+          hx-target="closest article"
+          hx-swap="outerHTML swap:200ms transition:true"
+          title="Delete tag #{{ .Name }}"
+          aria-label="Delete tag #{{ .Name }}"
+          type="button"
+        >
+          <i class="fas fa-trash text-base"></i>
+        </button>
+
+        {{ template "attach-task-form" . }}
+      </div>
+    </header>
+  </div>
 
   {{ template "rename-tag-form" . }}
+  {{ template "tag-tasks" .}}
 </article>
+{{ end }}
+
+<!-- pass in RelatedTasks -->
+{{ block "tag-tasks" .}}
+<div class="flex flex-wrap gap-2">
+  {{ if .RelatedTasks }}
+  {{ range.RelatedTasks }}
+  <div
+    class="text-xs group bg-blue-600 flex items-center gap-1 hover:bg-blue-500 text-white px-2 py-1 rounded-full"
+  >
+    <a class="hover:underline" href="/tasks/{{.Id}}">
+      <i class="fa-solid fa-clipboard"></i> {{ .Name }}</a
+    >
+
+    <form
+      hx-delete="/tags/{{ $.Id }}/tasks"
+      hx-swap="outerHTML"
+      hx-target="#tag-{{ $.Id }}"
+    >
+      <button
+        name="task_id"
+        value="{{.Id}}"
+        class="group-hover:flex hidden font-semibold"
+      >
+        x
+      </button>
+    </form>
+  </div>
+  {{ end }}
+  {{ else }}
+  <div
+    class="text-xs text-zinc-500 group flex items-center gap-1 bg-transparent border border-zinc-700 text-white px-2 py-1 rounded-full"
+  >
+    <span class="font-semibold"> x </span>
+    no tasks
+  </div>
+  {{ end }}
+</div>
 {{ end }}
 
 {{ block "rename-tag-form" . }}
@@ -161,28 +203,23 @@
 
 {{ block "attach-task-form"  . }}
 <form
-  hx-post="/tasks/add-tag"
-  hx-swap="none"
-  novalidate
+  hx-post="/tags/{{.Id}}/tasks"
+  hx-target="#tag-{{.Id}}"
+  hx-trigger="change"
+  hx-swap="outerHTML"
   class="space-y-2 flex flex-col"
 >
-  <input type="hidden" name="tag_id" value="{{ .Id }}" />
   <select
-    id="attach-task-{{ .Id }}"
     name="task_id"
-    required
     class="self-start text-xs border bg-zinc-900 border-zinc-700 text-white px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
-    hx-trigger="change"
-    hx-post="/tasks/add-tag"
-    hx-swap="none"
   >
-    <option value="" disabled selected>Attach to task</option>
+    <option disabled selected>Attach to task</option>
 
     <!-- Dynamically populate tasks here -->
     {{
       range.AvailableTasks
     }}
-    <option value="">{{.Name}}</option>
+    <option value="{{.Id}}">{{.Name}}</option>
     {{
       end
     }}
