@@ -1,3 +1,6 @@
+-- this file is for the default inserts into the schema if you ever wanna wipe the db and start it again
+
+
 -- Insert sample tags
 INSERT INTO tags (id, name) VALUES
 (1, 'urgent'),
