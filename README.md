@@ -18,7 +18,9 @@
 
 - [ ] read the other md files rq
 - [ ] implement actual database migrations and logging
-- [ ] maybe add sqlc
+- [ ] add sqlc
+  - [ ] 
+- [ ] add net/http and remove echo
 - [ ] refactor everything
 - [ ] add barebones auth using cookies then jwt
 - [ ] add live editing via websockets or polling between 2 users

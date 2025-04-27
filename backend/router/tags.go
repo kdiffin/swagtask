@@ -144,12 +144,14 @@ func tasksPageTagPostHandler(dbpool *pgxpool.Pool, c echo.Context, tagValue stri
 func tagsPageTagPostHandler(dbpool *pgxpool.Pool, c echo.Context, tagValue string) error {
 	_, err := dbpool.Exec(context.Background(), "INSERT INTO tags (name) VALUES($1)", tagValue)
 	if err != nil {
+		fmt.Println("error here at 147")
 		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
 	// invalidate cache
 	tagsWithTasks, errTags := database.GetAllTagsWithTasks(dbpool)
 	if errTags != nil {
+		fmt.Println("error here at 154")
 		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 

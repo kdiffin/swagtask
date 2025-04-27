@@ -9,9 +9,9 @@ INSERT INTO tags (id, name) VALUES
 -- Insert sample tasks
 INSERT INTO tasks (id, name, idea, completed) VALUES
 (1, 'Buy groceries', 'Get milk, eggs, and bread', false),
-(2, 'Finish CS homework', 'Implement Dijkstra’s algorithm', false),
+(2, 'Finish CS homework', 'Implement Dijkstras algorithm', false),
 (3, 'Clean the garage', 'Organize tools and sweep the floor', true),
-(4, 'Prepare presentation', 'Slides for Monday’s team meeting', false),
+(4, 'Prepare presentation', 'Slides for Mondays team meeting', false),
 (5, 'Read networking notes', 'Review TCP/IP before quiz', true);
 
 -- Link tags to tasks
