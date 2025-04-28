@@ -53,7 +53,7 @@ ALTER SEQUENCE public.tag_task_relations_id_seq OWNER TO postgres;
 -- Name: tag_task_relations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.tag_task_relations_id_seq OWNED BY public.tag_task_relations.id;
+ALTER SEQUENCE public.tag_task_relations_id_seq OWNED BY public.tag_task_relations.ID;
 
 
 --
@@ -62,7 +62,7 @@ ALTER SEQUENCE public.tag_task_relations_id_seq OWNED BY public.tag_task_relatio
 
 CREATE TABLE public.tags (
     id integer NOT NULL,
-    name text
+    name text NOT NULL
 );
 
 
@@ -87,7 +87,7 @@ ALTER SEQUENCE public.tags_id_seq OWNER TO postgres;
 -- Name: tags_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.id;
+ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.ID;
 
 
 --
@@ -123,7 +123,7 @@ ALTER SEQUENCE public.tasks_id_seq OWNER TO postgres;
 -- Name: tasks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.tasks_id_seq OWNED BY public.tasks.id;
+ALTER SEQUENCE public.tasks_id_seq OWNED BY public.tasks.ID;
 
 
 --

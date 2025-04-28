@@ -1,13 +1,11 @@
-package pages
-
-import "swagtask/database"
+package models
 
 // tags.gohtml
 type tagsPage struct {
-	TagsWithTasks []database.TagWithTasks
+	TagsWithTasks []TagWithTasks
 }
 
-func NewTagsPage(allTags []database.TagWithTasks) tagsPage {
+func NewTagsPage(allTags []TagWithTasks) tagsPage {
 	return tagsPage{
 		TagsWithTasks: allTags,
 	}
@@ -24,11 +22,11 @@ type TaskPageButtons struct {
 	NextButton TaskButton
 }
 type taskPage struct {
-	Task    database.TaskWithTags
+	Task    TaskWithTags
 	Buttons TaskPageButtons
 }
 
-func NewTaskPage(task database.TaskWithTags, prevButton, nextButton TaskButton) taskPage {
+func NewTaskPage(task TaskWithTags, prevButton, nextButton TaskButton) taskPage {
 	return taskPage{
 		Task: task,
 		Buttons: TaskPageButtons{
@@ -39,12 +37,12 @@ func NewTaskPage(task database.TaskWithTags, prevButton, nextButton TaskButton) 
 }
 
 // tasks.gohtml
-type tasksPage struct {
-	Tasks []database.TaskWithTags
+type TasksPage struct {
+	Tasks []TaskWithTags
 }
 
-func NewTasksPage(tasks []database.TaskWithTags) tasksPage {
-	return tasksPage{
+func NewTasksPage(tasks []TaskWithTags) TasksPage {
+	return TasksPage{
 		Tasks: tasks,
 	}
 }

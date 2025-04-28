@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getAllTags = `-- name: GetAllTags :many
-SELECT id, name FROM tags
+const getAllTagsDesc = `-- name: GetAllTagsDesc :many
+SELECT id, name FROM tags ORDER BY id DESC
 `
 
-func (q *Queries) GetAllTags(ctx context.Context) ([]Tag, error) {
-	rows, err := q.db.Query(ctx, getAllTags)
+func (q *Queries) GetAllTagsDesc(ctx context.Context) ([]Tag, error) {
+	rows, err := q.db.Query(ctx, getAllTagsDesc)
 	if err != nil {
 		return nil, err
 	}

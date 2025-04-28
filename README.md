@@ -16,12 +16,17 @@
   - [x] implement filtering by tag
   - [ ] implement filtering by completed (cba)
 
-- [ ] read the other md files rq
-- [ ] implement actual database migrations and logging
-- [ ] add sqlc
-  - [ ] 
-- [ ] add net/http and remove echo
-- [ ] refactor everything
+- [x] read the other md files rq
+- [ ] refactor v2
+
+  - [x] add net/http and remove echo
+  - [ ] implement actual database migrations
+  - [x] add decent logging on errors
+    - [x] add error logging on render functions
+  - [x] move handler logic outside of the router
+  - [x] add sqlc
+  - [] complete the rest of the app, get it back to how it was
+
 - [ ] add barebones auth using cookies then jwt
 - [ ] add live editing via websockets or polling between 2 users
 

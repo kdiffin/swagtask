@@ -1,2 +1,3 @@
--- name: GetAllTags :many
-SELECT * FROM tags;
+-- name: GetAllTagsDesc :many
+SELECT * FROM tags ORDER BY id DESC;
+

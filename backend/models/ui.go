@@ -1,26 +1,41 @@
-package database
+package models
 
-// db types
+import (
+	db "swagtask/db/generated"
+)
+
+// ---- DB TO UI MAPPING ----
 type Task struct {
+	ID        int32
 	Name      string
 	Idea      string
-	Id        int
 	Completed bool
 }
-type Tag struct {
-	Id   int
-	Name string
+
+func NewUITask(task db.Task) Task{
+	if !task.Completed.Valid {
+		panic("this wasnt supposed to happen since the db has false as its default")
+	}
+
+	return Task{
+		ID: task.ID,
+		Name: task.Name,
+		Idea:  task.Idea,
+		Completed: task.Completed.Bool,
+
+	}
 }
+
 
 // ---- FOR UI ----
 // tasks
 type TaskWithTags struct {
 	Task
-	Tags          []Tag
-	AvailableTags []Tag
+	Tags          []db.Tag
+	AvailableTags []db.Tag
 }
 
-func NewTaskWithTags(task Task, tags []Tag, availableTags []Tag) TaskWithTags {
+func NewTaskWithTags(task Task, tags []db.Tag, availableTags []db.Tag) TaskWithTags {
 	return TaskWithTags{
 		Task:          task,
 		Tags:          tags,
@@ -38,12 +53,12 @@ type RelatedTask struct {
 	Id   int
 }
 type TagWithTasks struct {
-	Tag
+	db.Tag
 	RelatedTasks   []RelatedTask
 	AvailableTasks []AvailableTask
 }
 
-func NewTagWithTasks(tag Tag, relatedTasks []RelatedTask, availableTasks []AvailableTask) TagWithTasks {
+func NewTagWithTasks(tag db.Tag, relatedTasks []RelatedTask, availableTasks []AvailableTask) TagWithTasks {
 	return TagWithTasks{
 		Tag:            tag,
 		RelatedTasks:   relatedTasks,

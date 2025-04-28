@@ -10,7 +10,7 @@ import (
 
 type Tag struct {
 	ID   int32
-	Name pgtype.Text
+	Name string
 }
 
 type TagTaskRelation struct {

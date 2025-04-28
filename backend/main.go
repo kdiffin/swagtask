@@ -1,16 +1,20 @@
 package main
 
 import (
-	"html/template"
-	"io"
+	"context"
+	"fmt"
 	"log"
+	"net/http"
+	"os"
+	"strconv"
 
-	"swagtask/database"
-	"swagtask/router"
+	db "swagtask/db/generated"
+	"swagtask/handlers"
+	"swagtask/middleware"
+	"swagtask/models"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 func init() {
@@ -20,34 +24,71 @@ func init() {
 	}
 }
 
-type Template struct {
-	tmpl *template.Template
-}
 
-func newTemplate() *Template {
-	return &Template{
-		tmpl: template.Must(template.ParseGlob("../views/*.gohtml")),
-	}
-}
 
-func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.tmpl.ExecuteTemplate(w, name, data)
-}
 
 func main() {
-	e := echo.New()
-	e.Renderer = newTemplate()
-	e.Use(middleware.Logger())
-	e.Static("/images", "../images")
-	e.Static("/css", "../css")
-	e.Static("/js", "../js")
-
-	dbpool := database.DatabaseInit()
-	// close db pool when the funciton main ends
+	// DB INIT START
+	// pgx pool starts a pool thats concurrency safe
+	dbpool, errDbConn := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	// connects to db via url
+	if errDbConn != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", errDbConn)
+		os.Exit(1)
+	}
 	defer dbpool.Close()
+	queries := db.New(dbpool)
+	// DB INIT END
+	
+	
+	log.SetFlags(log.LstdFlags)
+	templates := models.NewTemplate()
+	mux := http.NewServeMux()
+	// e.Renderer = newTemplate() implement
+	// .Use(middleware.Logger()) implement
+	// .Static("/images", "../images")
+	// e.Static("/css", "../css")
+	// e.Static("/js", "../js")
+	// router.Tasks(mux, queries, templates)
 
-	router.Tasks(e, dbpool)
-	router.Tags(e, dbpool)
+	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("../images"))))
+	mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("../css"))))
+	mux.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("../js"))))
 
-	e.Logger.Fatal(e.Start(":42069"))
+	mux.HandleFunc("GET /tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.HandlerGetTasks(w, r, queries, templates)
+	})
+	mux.HandleFunc("POST /tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.HandlerCreateTask(w, r, queries, templates)
+	})
+	mux.HandleFunc("POST /tasks/{id}/toggle-complete/{$}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, _ := strconv.Atoi(idStr) // f the error
+		handlers.HandlerTaskToggleComplete(w, r, queries, templates, int32(id))
+	})
+	mux.HandleFunc("POST /tasks/{id}/tags/{$}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, _ := strconv.Atoi(idStr) // f the error
+		tagIdStr := r.FormValue("tag")
+		tagId, _ := strconv.Atoi(tagIdStr) // f the error
+
+		handlers.HandlerAddTagToTask(w,r,queries, templates, int32(id), int32(tagId))
+	})
+	mux.HandleFunc("DELETE /tasks/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, _ := strconv.Atoi(idStr) // f the error
+
+		handlers.HandlerDeleteTask(w,r,queries, templates, int32(id))
+	})
+
+	
+
+	server := http.Server{
+		Addr: ":42069",
+		Handler: middleware.Logging(mux),
+	}
+	fmt.Println("running server")
+	log.Fatal(server.ListenAndServe())
+	fmt.Println("not running server")
+
 }

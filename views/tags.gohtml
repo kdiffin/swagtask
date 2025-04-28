@@ -87,15 +87,15 @@
 
 {{ block "tag-card" . }}
 <article
-  id="tag-{{.Id}}"
+  id="tag-{{.ID}}"
   class="bg-zinc-900 border border-zinc-700 rounded-sm p-4 shadow-sm flex flex-col hover:shadow-zinc-700/20 transition-shadow duration-300"
   role="listitem"
-  aria-labelledby="tag-title-{{ .Id }}"
+  aria-labelledby="tag-title-{{ .ID }}"
 >
   <div class="">
     <header class="flex justify-between items-center mb-4">
       <h2
-        id="tag-title-{{ .Id }}"
+        id="tag-title-{{ .ID }}"
         class="text-lg font-semibold truncate select-text"
         title="#{{ .Name }}"
       >
@@ -104,11 +104,11 @@
       <div class="flex items-center gap-2">
         <span
           class="text-xs text-zinc-400 bg-zinc-700 px-2 py-1 rounded hover:text-white hover:bg-zinc-600"
-          >#{{ .Id }}</span
+          >#{{ .ID }}</span
         >
         <button
           class="text-red-400 hover:text-red-300 p-1 rounded hover:bg-zinc-700 transition-colors duration-200"
-          hx-delete="/tags/{{ .Id }}"
+          hx-delete="/tags/{{ .ID }}/"
           hx-target="closest article"
           hx-swap="outerHTML swap:200ms transition:true"
           title="Delete tag #{{ .Name }}"
@@ -136,18 +136,18 @@
   <div
     class="text-xs group bg-blue-600 flex items-center gap-1 hover:bg-blue-500 text-white px-2 py-1 rounded-full"
   >
-    <a class="hover:underline" href="/tasks/{{.Id}}">
+    <a class="hover:underline" href="/tasks/{{.ID}}/">
       <i class="fa-solid fa-clipboard"></i> {{ .Name }}</a
     >
 
     <form
-      hx-delete="/tags/{{ $.Id }}/tasks"
+      hx-delete="/tags/{{ $.ID }}/tasks/"
       hx-swap="outerHTML"
-      hx-target="#tag-{{ $.Id }}"
+      hx-target="#tag-{{ $.ID }}"
     >
       <button
         name="task_id"
-        value="{{.Id}}"
+        value="{{.ID}}"
         class="group-hover:flex hidden font-semibold"
       >
         x
@@ -169,20 +169,20 @@
 {{ block "rename-tag-form" . }}
 <form
   class="mb-4 space-y-2"
-  hx-target="#tag-{{.Id}}"
-  hx-put="/tags/{{ .Id }}"
+  hx-target="#tag-{{.ID}}"
+  hx-put="/tags/{{ .ID }}"
   hx-swap="outerHTML swap:200ms transition:true"
   novalidate
 >
   <label
-    for="rename-tag-{{ .Id }}"
+    for="rename-tag-{{ .ID }}"
     class="block text-xs font-semibold text-zinc-400"
   >
     Rename tag
   </label>
   <div class="flex gap-2">
     <input
-      id="rename-tag-{{ .Id }}"
+      id="rename-tag-{{ .ID }}"
       name="name"
       type="text"
       value="{{ .Name }}"
@@ -203,8 +203,8 @@
 
 {{ block "attach-task-form"  . }}
 <form
-  hx-post="/tags/{{.Id}}/tasks"
-  hx-target="#tag-{{.Id}}"
+  hx-post="/tags/{{.ID}}/tasks"
+  hx-target="#tag-{{.ID}}"
   hx-trigger="change"
   hx-swap="outerHTML"
   class="space-y-2 flex flex-col"
@@ -219,7 +219,7 @@
     {{
       range.AvailableTasks
     }}
-    <option value="{{.Id}}">{{.Name}}</option>
+    <option value="{{.ID}}">{{.Name}}</option>
     {{
       end
     }}
