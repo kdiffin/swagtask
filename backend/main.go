@@ -77,8 +77,16 @@ func main() {
 	mux.HandleFunc("DELETE /tasks/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
 		id, _ := strconv.Atoi(idStr) // f the error
-
+		
 		handlers.HandlerDeleteTask(w,r,queries, templates, int32(id))
+	})
+	mux.HandleFunc("DELETE /tasks/{id}/tags/{$}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, _ := strconv.Atoi(idStr) // f the error
+		tagIdStr := r.FormValue("tag")
+		tagId, _ := strconv.Atoi(tagIdStr) // f the error
+		
+		handlers.HandlerRemoveTagFromTask(w,r,queries, templates, int32(id), int32(tagId))
 	})
 
 	

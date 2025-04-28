@@ -241,11 +241,10 @@ func AddTagToTask(queries *db.Queries, tagId int32, taskId int32)  (*models.Task
 
 // DELETE
 func DeleteTask(queries *db.Queries, taskId int32) error {
-	errRelations := queries.DeleteTagTaskRelation(context.Background(), Int32ToInt4Psql(taskId))
+	errRelations := queries.DeleteAllTagRelationsForTask(context.Background(), Int32ToInt4Psql(taskId))
 	if errRelations != nil {
 		return errRelations
 	}
-
 	
 	err := queries.DeleteTask(context.Background(), taskId)
 	if err != nil {
@@ -253,4 +252,22 @@ func DeleteTask(queries *db.Queries, taskId int32) error {
 	}
 
 	return nil
+}
+
+func DeleteTagRelationFromTask(queries *db.Queries, tagId int32, taskId int32) (*models.TaskWithTags, error) {
+	errRelations := queries.DeleteSingleTagRelation(context.Background(), db.DeleteSingleTagRelationParams{
+		TaskID: Int32ToInt4Psql(taskId),
+		TagID: Int32ToInt4Psql(tagId)})
+			
+	if errRelations != nil {
+		return  nil,errRelations
+	}
+	
+	
+	taskWithTags, err := GetTaskWithTagsById(queries, taskId)
+	if err != nil {
+		return nil,err
+	}
+
+	return taskWithTags, nil
 }

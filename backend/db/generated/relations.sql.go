@@ -25,12 +25,26 @@ func (q *Queries) CreateTagTaskRelation(ctx context.Context, arg CreateTagTaskRe
 	return err
 }
 
-const deleteTagTaskRelation = `-- name: DeleteTagTaskRelation :exec
+const deleteAllTagRelationsForTask = `-- name: DeleteAllTagRelationsForTask :exec
 DELETE FROM tag_task_relations WHERE task_id = $1
 `
 
-func (q *Queries) DeleteTagTaskRelation(ctx context.Context, taskID pgtype.Int4) error {
-	_, err := q.db.Exec(ctx, deleteTagTaskRelation, taskID)
+func (q *Queries) DeleteAllTagRelationsForTask(ctx context.Context, taskID pgtype.Int4) error {
+	_, err := q.db.Exec(ctx, deleteAllTagRelationsForTask, taskID)
+	return err
+}
+
+const deleteSingleTagRelation = `-- name: DeleteSingleTagRelation :exec
+DELETE FROM tag_task_relations WHERE task_id = $1 AND tag_id = $2
+`
+
+type DeleteSingleTagRelationParams struct {
+	TaskID pgtype.Int4
+	TagID  pgtype.Int4
+}
+
+func (q *Queries) DeleteSingleTagRelation(ctx context.Context, arg DeleteSingleTagRelationParams) error {
+	_, err := q.db.Exec(ctx, deleteSingleTagRelation, arg.TaskID, arg.TagID)
 	return err
 }
 

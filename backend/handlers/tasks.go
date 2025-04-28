@@ -55,18 +55,6 @@ func HandlerTaskToggleComplete(w http.ResponseWriter, r *http.Request ,queries *
 	templates.Render(w, "task", taskWithTags)
 }
 
-func HandlerAddTagToTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32, tagId int32) {
-	taskWithTags, err := service.AddTagToTask(queries, tagId, taskId)
-	if err != nil {
-		utils.LogError("Updating Task completion", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	templates.Render(w, "task", taskWithTags)
-}
-
-
 //  ---- DELETE ----
 func HandlerDeleteTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32) {
 	err := 	service.DeleteTask(queries, taskId)
@@ -75,7 +63,7 @@ func HandlerDeleteTask(w http.ResponseWriter, r *http.Request ,queries *db.Queri
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	
+
 	w.WriteHeader(200)
 	w.Write([]byte(nil))
 }

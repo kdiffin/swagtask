@@ -10,32 +10,6 @@ func Tasks(mux *http.ServeMux, queries *db.Queries, templates *models.Template) 
 
 
 	
-	// e.DELETE("/tasks/:id/tags", func(c echo.Context) error {
-	// 	id, errConv := getIdAsStr(c)
-	// 	tagIdStr := c.FormValue("tag")
-	// 	tagId, errConvTag := strconv.Atoi(tagIdStr)
-
-	// 	if errConvTag != nil {
-	// 		return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
-	// 	}
-	// 	if errConv != nil {
-	// 		return c.String(http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
-	// 	}
-
-	// 	// delete task relation
-	// 	_, err := dbpool.Exec(context.Background(), "DELETE FROM tag_task_relations WHERE task_id = $1 AND tag_id = $2", id, tagId)
-	// 	if err != nil {
-	// 		return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	// 	}
-
-	// 	// get updated task
-	// 	taskWithTags, errTasks := database.GetTaskWithTagsById(dbpool, id)
-	// 	if errTasks != nil {
-	// 		c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	// 	}
-
-	// 	return c.Render(200, "task", taskWithTags)
-	// })
 
 	// // TODO: refactor this function
 	// e.PUT("/tasks/:id", func(c echo.Context) error {
@@ -73,23 +47,6 @@ func Tasks(mux *http.ServeMux, queries *db.Queries, templates *models.Template) 
 	// 	return c.Render(200, "task", taskWithTags)
 	// })
 
-	// e.DELETE("/tasks/:id", func(c echo.Context) error {
-	// 	id, errConv := getIdAsStr(c)
-	// 	if errConv != nil {
-	// 		return c.String(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
-	// 	}
-
-	// 	_, errRelations := dbpool.Exec(context.Background(), "DELETE FROM tag_task_relations WHERE task_id = $1", id)
-	// 	if errRelations != nil {
-	// 		return c.String(http.StatusInternalServerError, "grug got confused on relation deletion")
-	// 	}
-	// 	_, err := dbpool.Exec(context.Background(), "DELETE FROM tasks WHERE id = $1", id)
-	// 	if err != nil {
-	// 		return c.String(http.StatusInternalServerError, "grug couldnt delete id")
-	// 	}
-
-	// 	return c.NoContent(200)
-	// })
 	// e.GET("/tasks/:id", func(c echo.Context) error {
 	// 	id, errConv := getIdAsStr(c)
 	// 	if errConv != nil {
