@@ -48,10 +48,25 @@ func getTagAvailableTasks(allTasksOptions []db.GetAllTaskOptionsRow, relatedTask
 }
 
 
-func int32ToInt4Psql(i int32) pgtype.Int4 {
+// type to pg type stuff
+func int32ToPgInt4(i int32) pgtype.Int4 {
 	var pgi pgtype.Int4
 	pgi.Int32 = i	
 	pgi.Valid = true
 
 	return pgi
 }
+
+
+func stringtoPgText(str string) pgtype.Text {
+	var pgs pgtype.Text
+	if str == "" {
+		pgs.Valid = false 
+	} else {
+		pgs.String = str
+		pgs.Valid = true
+	}
+	return pgs
+}
+
+

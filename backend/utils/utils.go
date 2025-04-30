@@ -29,7 +29,7 @@ func LogError(context string, err error) {
 	if err == nil {
 		return
 	}
-	_, file, line, ok := runtime.Caller(1)
+	_, file, line, ok := runtime.Caller(2)
 	if !ok {
 		file = "unknown_file"
 		line = 0

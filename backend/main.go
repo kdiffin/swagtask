@@ -133,13 +133,13 @@ func main() {
 	})
 	mux.HandleFunc("PUT /tags/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
+		name := r.FormValue("tag_name")
 		id, errConv := strconv.Atoi(idStr) 
 		if errConv != nil  {
 			utils.LogError("couldnt convert to str", errConv)
 			return
 		}
-		name := r.FormValue("tag_name")
-
+		
 		handlers.HandlerUpdateTag(w,r,queries,templates,  name, int32(id))	
 	})
 	mux.HandleFunc("DELETE /tags/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {

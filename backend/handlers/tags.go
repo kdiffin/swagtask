@@ -43,7 +43,7 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 
 	switch source {
 	case "/tasks":
-		tasksWithTags, errTasks := service.GetTasksWithTags(queries)
+		tasksWithTags, errTasks := service.GetFilteredTasksWithTags(queries, nil)
 		if checkErrors(w,errTasks) {
 			return
 		}

@@ -14,7 +14,8 @@
 
   - [x] implement searching by name
   - [x] implement filtering by tag
-  - [ ] implement filtering by completed (cba)
+
+- [ ] implement filtering by completed (cba)
 
 - [x] read the other md files rq
 - [ ] refactor v2

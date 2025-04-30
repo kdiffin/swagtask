@@ -43,8 +43,71 @@ func (q *Queries) DeleteTask(ctx context.Context, id int32) error {
 	return err
 }
 
+const getFilteredTasks = `-- name: GetFilteredTasks :many
+SELECT t.ID, t.name, t.idea, t.completed, tg.ID as tag_id, tg.name AS tag_name
+FROM tasks t
+LEFT JOIN tag_task_relations rel ON rel.task_id = t.ID
+LEFT JOIN tags tg ON tg.ID = rel.tag_id
+WHERE
+	-- where the name is like the task filter (if the filter exists)
+	(t.name ILIKE '%' || COALESCE($1::text, t.name) || '%')
+	AND
+	-- if the tag filter exists, return the rows of the tasks who have a relation to that tag  
+	($2::text IS NULL OR 
+		EXISTS (
+			SELECT 1
+			FROM tag_task_relations r2
+			-- to get tag id from name
+			JOIN tags tg2 
+				ON tg2.name = $2::text
+			WHERE r2.task_id = t.ID AND r2.tag_id = tg2.id 
+		)
+	)
+`
+
+type GetFilteredTasksParams struct {
+	TaskName pgtype.Text
+	TagName  pgtype.Text
+}
+
+type GetFilteredTasksRow struct {
+	ID        int32
+	Name      string
+	Idea      string
+	Completed pgtype.Bool
+	TagID     pgtype.Int4
+	TagName   pgtype.Text
+}
+
+func (q *Queries) GetFilteredTasks(ctx context.Context, arg GetFilteredTasksParams) ([]GetFilteredTasksRow, error) {
+	rows, err := q.db.Query(ctx, getFilteredTasks, arg.TaskName, arg.TagName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFilteredTasksRow
+	for rows.Next() {
+		var i GetFilteredTasksRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Idea,
+			&i.Completed,
+			&i.TagID,
+			&i.TagName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTaskWithTagRelations = `-- name: GetTaskWithTagRelations :many
-SELECT t.ID, t.name, t.Idea, t.completed, tg.ID AS tag_id, tg.name AS tag_name
+SELECT t.ID, t.name, t.idea, t.completed, tg.ID AS tag_id, tg.name AS tag_name
 	FROM tasks t
 	LEFT JOIN tag_task_relations rel
 		ON t.ID = rel.task_id

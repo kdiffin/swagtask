@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"strings"
 	db "swagtask/db/generated"
 	"swagtask/models"
 	"swagtask/service"
@@ -11,11 +12,14 @@ import (
 // ---- READ ----
 
 func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template)   {
-	tasks, err := service.GetTasksWithTags(queries)
+	tag := strings.TrimSuffix(r.URL.Query().Get("tags") ,"/")
+	task := strings.TrimSuffix(r.URL.Query().Get("taskName") ,"/")
+	filters := models.NewTasksPageFilters(tag, task)
+	tasks, err := service.GetFilteredTasksWithTags(queries, &filters)
 	if checkErrors(w,err) {
 		return
 	}
-
+	
 	page := models.NewTasksPage(tasks)
 	templates.Render(w, "tasks-page", page)
 }

@@ -106,7 +106,7 @@ func UpdateTag(queries *db.Queries, tagId int32, tagName string) (*models.TagWit
 }
 
 func DeleteTag(queries *db.Queries, tagId int32) error {
-    err := queries.DeleteAllTagRelations(context.Background(), int32ToInt4Psql(tagId))
+    err := queries.DeleteAllTagRelations(context.Background(), int32ToPgInt4(tagId))
     if err != nil {
 
         return fmt.Errorf("%w: %v", ErrBadRequest, err)
@@ -123,8 +123,8 @@ func DeleteTag(queries *db.Queries, tagId int32) error {
 
 func DeleteTaskRelationFromTag(queries *db.Queries, tagId int32, taskId int32) (*models.TagWithTasks, error) {
 	err := queries.DeleteTagTaskRelation(context.Background(), db.DeleteTagTaskRelationParams{
-		TaskID: int32ToInt4Psql(taskId),
-		TagID: int32ToInt4Psql(tagId) ,
+		TaskID: int32ToPgInt4(taskId),
+		TagID: int32ToPgInt4(tagId) ,
 	})
 	
 
@@ -142,8 +142,8 @@ func DeleteTaskRelationFromTag(queries *db.Queries, tagId int32, taskId int32) (
 
 func AddTaskToTag(queries *db.Queries, tagId int32, taskId int32) (*models.TagWithTasks, error) {
 	err := queries.CreateTagTaskRelation(context.Background(), db.CreateTagTaskRelationParams{
-		TaskID: int32ToInt4Psql(taskId),
-		TagID: int32ToInt4Psql(tagId),
+		TaskID: int32ToPgInt4(taskId),
+		TagID: int32ToPgInt4(tagId),
 	})
 
 	if err != nil {
