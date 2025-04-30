@@ -53,7 +53,7 @@ ALTER SEQUENCE public.tag_task_relations_id_seq OWNER TO postgres;
 -- Name: tag_task_relations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.tag_task_relations_id_seq OWNED BY public.tag_task_relations.ID;
+ALTER SEQUENCE public.tag_task_relations_id_seq OWNED BY public.tag_task_relations.id;
 
 
 --
@@ -87,7 +87,7 @@ ALTER SEQUENCE public.tags_id_seq OWNER TO postgres;
 -- Name: tags_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.ID;
+ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.id;
 
 
 --
@@ -123,7 +123,7 @@ ALTER SEQUENCE public.tasks_id_seq OWNER TO postgres;
 -- Name: tasks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.tasks_id_seq OWNED BY public.tasks.ID;
+ALTER SEQUENCE public.tasks_id_seq OWNED BY public.tasks.id;
 
 
 --
@@ -185,6 +185,14 @@ ALTER TABLE ONLY public.tasks
 
 ALTER TABLE ONLY public.tasks
     ADD CONSTRAINT tasks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tags uniquename; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tags
+    ADD CONSTRAINT uniquename UNIQUE (name);
 
 
 --

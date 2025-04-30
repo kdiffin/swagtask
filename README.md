@@ -20,13 +20,13 @@
 - [ ] refactor v2
 
   - [x] add net/http and remove echo
-  - [ ] implement actual database migrations
   - [x] add decent logging on errors
-    - [x] add error logging on render functions
   - [x] move handler logic outside of the router
   - [x] add sqlc
-  - [] complete the rest of the app, get it back to how it was
+  - [x] complete the rest of the app, get it back to how it was
 
+- [ ] implement actual database migrations
+- [ ] add the actual http response and request in the logging middleware so i know http strings are being sent and recieved over http
 - [ ] add barebones auth using cookies then jwt
 - [ ] add live editing via websockets or polling between 2 users
 

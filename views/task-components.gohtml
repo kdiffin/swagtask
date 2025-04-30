@@ -20,7 +20,7 @@
 {{ block "create-tag" . }}
 <form
   id="tagform"
-  hx-post="/tags"
+  hx-post="/tags/"
   hx-vals='{"source": "/tasks"}'
   hx-swap="outerHTML swap:200ms transition:true"
   hx-target="#tasks-container"
@@ -35,7 +35,7 @@
     <input
       type="text"
       class="w-full pl-9 pr-3 py-2 bg-zinc-700 border border-zinc-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white"
-      name="tag"
+      name="tag_name"
       placeholder="Tag name"
       required
     />
@@ -69,7 +69,7 @@
     <input
       type="text"
       class="w-full pl-9 pr-3 py-2 bg-zinc-700 border border-zinc-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white"
-      name="name"
+      name="task_name"
       placeholder="Task name"
     />
   </div>
@@ -82,7 +82,7 @@
     <input
       type="text"
       class="w-full pl-9 pr-3 py-2 bg-zinc-700 border border-zinc-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white"
-      name="idea"
+      name="task_idea"
       placeholder="Task description"
     />
   </div>

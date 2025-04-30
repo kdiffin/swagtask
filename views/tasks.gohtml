@@ -36,6 +36,24 @@
 </html>
 {{ end }}
 
+{{ block "tasks-container-error" .}}
+<div hx-swap-oob="innerhtml" id="tasks-container-error">
+  <div
+    class="bg-red-900 text-red-200 p-2 px-3 rounded-sm border border-red-700 text-xs flex items-center shadow-md"
+  >
+    <i class="fas fa-exclamation-circle text-xs mr-2"></i>{{ . }}
+  </div>
+</div>
+{{ end }}
+{{ block "tasks-container-success" .}}
+<div hx-swap-oob="innerhtml" id="tasks-container-error">
+  <div
+    class="bg-green-900 text-green-200 p-2 px-3 rounded-sm border border-green-700 text-xs flex items-center shadow-md"
+  >
+    <i class="fas fa-exclamation-circle text-xs mr-2"></i>{{ . }}
+  </div>
+</div>
+{{ end }}
 {{ block "tasks-container" . }}
 <div
   id="tasks-container"
@@ -59,6 +77,7 @@
           <i class="fas fa-sort mr-1"></i> Sort
         </button>
       </div> -->
+      <div id="tasks-container-error"></div>
     </div>
     <div id="tasks" class="space-y-4">
       {{ range.Tasks }}

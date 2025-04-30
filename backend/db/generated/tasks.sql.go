@@ -145,3 +145,22 @@ func (q *Queries) ToggleTaskCompletion(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, toggleTaskCompletion, id)
 	return err
 }
+
+const updateTask = `-- name: UpdateTask :exec
+UPDATE tasks
+SET
+  name = COALESCE($1, name),
+  idea = COALESCE($2, idea)
+WHERE id = $3
+`
+
+type UpdateTaskParams struct {
+	Name pgtype.Text
+	Idea pgtype.Text
+	ID   int32
+}
+
+func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) error {
+	_, err := q.db.Exec(ctx, updateTask, arg.Name, arg.Idea, arg.ID)
+	return err
+}

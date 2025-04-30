@@ -30,7 +30,6 @@
   </head>
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" .}}
-    <!--  -->
     <div class="container mx-auto px-4 py-4 max-w-5xl">
       {{ template "show-task" .Task }}
       {{ template "bottom-task-nav" .Buttons}}
@@ -181,7 +180,7 @@
       hx-target="#task-{{ $.ID }}"
     >
       <button
-        name="tag"
+        name="tag_id"
         value="{{.ID}}"
         class="group-hover:flex hidden font-semibold"
       >
@@ -205,7 +204,7 @@
   hx-swap="outerHTML"
 >
   <select
-    name="tag"
+    name="tag_id"
     class="text-xs bg-zinc-800 border border-zinc-700 text-white px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-600"
   >
     <option disabled selected class="text-zinc-500">+ add tag</option>
@@ -220,10 +219,20 @@
 </form>
 {{ end }}
 
+{{ block "error-indicator" .}}
+<div hx-swap-oob="outerHTML" id="error-indicator">
+  <div
+    class="bg-red-900 text-red-200 p-2 px-3 rounded-sm border border-red-700 text-sm flex items-center shadow-md"
+  >
+    <i class="fas fa-exclamation-circle mr-2"></i>{{ . }}
+  </div>
+</div>
+{{ end }}
+
 {{ block "task-edit-form" . }}
 <form
   id="change-task-{{ .ID }}"
-  hx-put="/tasks/{{ .ID }}"
+  hx-put="/tasks/{{ .ID }}/"
   hx-target="#task-{{ .ID }}"
   hx-swap="outerHTML swap:200ms transition:true"
   class="mt-4"
@@ -231,13 +240,13 @@
   <div class="flex flex-col md:flex-row gap-3 mb-3">
     <input
       type="text"
-      name="name"
+      name="task_name"
       placeholder="Change name"
       class="flex-1 bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded placeholder-zinc-500 text-sm"
     />
     <input
       type="text"
-      name="idea"
+      name="task_idea"
       placeholder="Change description"
       class="flex-1 bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded placeholder-zinc-500 text-sm"
     />

@@ -5,9 +5,9 @@ type tagsPage struct {
 	TagsWithTasks []TagWithTasks
 }
 
-func NewTagsPage(allTags []TagWithTasks) tagsPage {
+func NewTagsPage(tagsWithTasks []TagWithTasks) tagsPage {
 	return tagsPage{
-		TagsWithTasks: allTags,
+		TagsWithTasks: tagsWithTasks,
 	}
 }
 

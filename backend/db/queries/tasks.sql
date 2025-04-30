@@ -27,6 +27,12 @@ INSERT INTO tasks (name, idea) VALUES ($1, $2) RETURNING *;
 -- name: ToggleTaskCompletion :exec
 UPDATE tasks SET completed = NOT completed WHERE id = $1;
 
+-- name: UpdateTask :exec
+UPDATE tasks
+SET
+  name = COALESCE(sqlc.narg('name'), name),
+  idea = COALESCE(sqlc.narg('idea'), idea)
+WHERE id = sqlc.arg('id');
 
 -- DELETE 
 -- name: DeleteTask :exec

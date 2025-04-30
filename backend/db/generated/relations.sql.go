@@ -25,27 +25,66 @@ func (q *Queries) CreateTagTaskRelation(ctx context.Context, arg CreateTagTaskRe
 	return err
 }
 
-const deleteAllTagRelationsForTask = `-- name: DeleteAllTagRelationsForTask :exec
-DELETE FROM tag_task_relations WHERE task_id = $1
+const deleteAllTagRelations = `-- name: DeleteAllTagRelations :exec
+DELETE FROM tag_task_relations WHERE tag_id = $1
 `
 
-func (q *Queries) DeleteAllTagRelationsForTask(ctx context.Context, taskID pgtype.Int4) error {
-	_, err := q.db.Exec(ctx, deleteAllTagRelationsForTask, taskID)
+func (q *Queries) DeleteAllTagRelations(ctx context.Context, tagID pgtype.Int4) error {
+	_, err := q.db.Exec(ctx, deleteAllTagRelations, tagID)
 	return err
 }
 
-const deleteSingleTagRelation = `-- name: DeleteSingleTagRelation :exec
+const deleteAllTaskRelations = `-- name: DeleteAllTaskRelations :exec
+DELETE FROM tag_task_relations WHERE task_id = $1
+`
+
+func (q *Queries) DeleteAllTaskRelations(ctx context.Context, taskID pgtype.Int4) error {
+	_, err := q.db.Exec(ctx, deleteAllTaskRelations, taskID)
+	return err
+}
+
+const deleteTagTaskRelation = `-- name: DeleteTagTaskRelation :exec
 DELETE FROM tag_task_relations WHERE task_id = $1 AND tag_id = $2
 `
 
-type DeleteSingleTagRelationParams struct {
+type DeleteTagTaskRelationParams struct {
 	TaskID pgtype.Int4
 	TagID  pgtype.Int4
 }
 
-func (q *Queries) DeleteSingleTagRelation(ctx context.Context, arg DeleteSingleTagRelationParams) error {
-	_, err := q.db.Exec(ctx, deleteSingleTagRelation, arg.TaskID, arg.TagID)
+func (q *Queries) DeleteTagTaskRelation(ctx context.Context, arg DeleteTagTaskRelationParams) error {
+	_, err := q.db.Exec(ctx, deleteTagTaskRelation, arg.TaskID, arg.TagID)
 	return err
+}
+
+const getAllTaskOptions = `-- name: GetAllTaskOptions :many
+SELECT name, id from tasks ORDER BY id DESC
+`
+
+type GetAllTaskOptionsRow struct {
+	Name string
+	ID   int32
+}
+
+// this is for the UI whenever we wanna add a relation from a task to a tag
+func (q *Queries) GetAllTaskOptions(ctx context.Context) ([]GetAllTaskOptionsRow, error) {
+	rows, err := q.db.Query(ctx, getAllTaskOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllTaskOptionsRow
+	for rows.Next() {
+		var i GetAllTaskOptionsRow
+		if err := rows.Scan(&i.Name, &i.ID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getTagsOfTask = `-- name: GetTagsOfTask :many

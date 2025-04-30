@@ -7,7 +7,27 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createTag = `-- name: CreateTag :exec
+INSERT INTO tags (name) VALUES($1)
+`
+
+func (q *Queries) CreateTag(ctx context.Context, name string) error {
+	_, err := q.db.Exec(ctx, createTag, name)
+	return err
+}
+
+const deleteTag = `-- name: DeleteTag :exec
+DELETE FROM tags WHERE id = $1
+`
+
+func (q *Queries) DeleteTag(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteTag, id)
+	return err
+}
 
 const getAllTagsDesc = `-- name: GetAllTagsDesc :many
 SELECT id, name FROM tags ORDER BY id DESC
@@ -31,4 +51,101 @@ func (q *Queries) GetAllTagsDesc(ctx context.Context) ([]Tag, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTagWithTaskRelations = `-- name: GetTagWithTaskRelations :many
+SELECT tg.ID, tg.name, t.ID AS task_id, t.name AS task_name 
+    FROM tags tg
+    LEFT JOIN tag_task_relations rel 
+        ON tg.ID = rel.tag_id
+    LEFT JOIN tasks t 
+        ON t.ID = rel.task_id
+    WHERE tg.id = $1
+`
+
+type GetTagWithTaskRelationsRow struct {
+	ID       int32
+	Name     string
+	TaskID   pgtype.Int4
+	TaskName pgtype.Text
+}
+
+func (q *Queries) GetTagWithTaskRelations(ctx context.Context, id int32) ([]GetTagWithTaskRelationsRow, error) {
+	rows, err := q.db.Query(ctx, getTagWithTaskRelations, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTagWithTaskRelationsRow
+	for rows.Next() {
+		var i GetTagWithTaskRelationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.TaskID,
+			&i.TaskName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTagsWithTaskRelations = `-- name: GetTagsWithTaskRelations :many
+SELECT tg.ID, tg.name, t.ID AS task_id, t.name AS task_name 
+    FROM tags tg
+    LEFT JOIN tag_task_relations rel 
+        ON tg.ID = rel.tag_id
+    LEFT JOIN tasks t 
+        ON t.ID = rel.task_id
+`
+
+type GetTagsWithTaskRelationsRow struct {
+	ID       int32
+	Name     string
+	TaskID   pgtype.Int4
+	TaskName pgtype.Text
+}
+
+func (q *Queries) GetTagsWithTaskRelations(ctx context.Context) ([]GetTagsWithTaskRelationsRow, error) {
+	rows, err := q.db.Query(ctx, getTagsWithTaskRelations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTagsWithTaskRelationsRow
+	for rows.Next() {
+		var i GetTagsWithTaskRelationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.TaskID,
+			&i.TaskName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateTag = `-- name: UpdateTag :exec
+UPDATE tags SET name = $1 WHERE id = $2
+`
+
+type UpdateTagParams struct {
+	Name string
+	ID   int32
+}
+
+func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) error {
+	_, err := q.db.Exec(ctx, updateTag, arg.Name, arg.ID)
+	return err
 }

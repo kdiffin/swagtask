@@ -46,11 +46,11 @@ func NewTaskWithTags(task Task, tags []db.Tag, availableTags []db.Tag) TaskWithT
 // tags
 type AvailableTask struct {
 	Name string
-	Id   int
+	ID   int32
 }
 type RelatedTask struct {
 	Name string
-	Id   int
+	ID   int32
 }
 type TagWithTasks struct {
 	db.Tag

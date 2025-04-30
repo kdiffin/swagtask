@@ -1,21 +1,18 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	db "swagtask/db/generated"
 	"swagtask/models"
 	"swagtask/service"
-	"swagtask/utils"
 )
 
 // ---- READ ----
 
 func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template)   {
-	tasks, err := service.GetAllTasksWithTags(queries)
-
-	if err != nil {
-		utils.LogError("getting all tasks with tags", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	tasks, err := service.GetTasksWithTags(queries)
+	if checkErrors(w,err) {
 		return
 	}
 
@@ -24,43 +21,65 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries
 }
 
 
-// ---- UPDATE ----
+// ---- CREATE ----
 
 func HandlerCreateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template)   {
-	name := r.FormValue("name")
-	idea := r.FormValue("idea")
-
+	name := r.FormValue("task_name")
+	idea := r.FormValue("task_idea")
+	
 	task, err := service.CreateTask(queries, name, idea)
-
 	if err != nil {
-		utils.LogError("Creating Task", err)
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		templates.Render(w, "form-error", "DONT ADD A TASK WITH THE SAME IDEA BRO.")
-		return
+		if errors.Is(err, service.ErrUnprocessable) {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			templates.Render(w, "form-error", "DONT ADD THE TASK WITH THE SAME IDEA VRO")
+			return
+		} else {
+			checkErrors(w, err)
+			return
+		}
 	}
-
 	templates.Render(w, "form-success", nil)
 	templates.Render(w, "task", task)
 }
 
+// ---- UPDATE ----
+
 func HandlerTaskToggleComplete(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32)   {
 	taskWithTags, err := service.UpdateTaskCompletion(queries, taskId)
-
-	if err != nil {
-		utils.LogError("Updating Task completion", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	if checkErrors(w,err) {
 		return
 	}
 
 	templates.Render(w, "task", taskWithTags)
 }
 
+func HandlerUpdateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32, idea string, name string) {
+	taskWithTags, errUpdate := service.UpdateTask(queries, taskId, name, idea)
+	if errUpdate != nil {
+		// return no contents
+		// if theres no update to tasks skip
+		if errors.Is(errUpdate, service.ErrNoUpdateFields) {
+			w.WriteHeader(http.StatusNoContent)
+			w.Write([]byte(nil)) 
+			return
+		}  else if errors.Is(errUpdate, service.ErrUnprocessable) {
+			templates.Render(w, "tasks-container-error", "Task has same idea: " + idea)
+			taskWithTags,_ := service.GetTaskWithTagsById(queries, taskId)
+			templates.Render(w, "task", taskWithTags)
+			return
+		} else if checkErrors(w,errUpdate) {
+			return
+		}
+	}
+	
+	templates.Render(w, "tasks-container-success", "Successfully updated task: " + taskWithTags.Name)
+	templates.Render(w, "task", taskWithTags)
+}
+
 //  ---- DELETE ----
 func HandlerDeleteTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32) {
 	err := 	service.DeleteTask(queries, taskId)
-	if err != nil {
-		utils.LogError("Updating Task completion", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	if checkErrors(w,err) {
 		return
 	}
 

@@ -33,7 +33,7 @@
   </div>
 
   <form
-    hx-post="/tags"
+    hx-post="/tags/"
     hx-vals='{"source": "/tags"}'
     hx-target="#tags-list-container"
     hx-swap="outerHTML transition:true swap:200ms"
@@ -42,7 +42,7 @@
     <div class="flex flex-col sm:flex-row gap-3">
       <input
         type="text"
-        name="tag"
+        name="tag_name"
         placeholder="Tag name (e.g., work, personal)"
         required
         class="flex-grow rounded-sm border border-zinc-800 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition"
@@ -170,7 +170,7 @@
 <form
   class="mb-4 space-y-2"
   hx-target="#tag-{{.ID}}"
-  hx-put="/tags/{{ .ID }}"
+  hx-put="/tags/{{ .ID }}/"
   hx-swap="outerHTML swap:200ms transition:true"
   novalidate
 >
@@ -183,7 +183,7 @@
   <div class="flex gap-2">
     <input
       id="rename-tag-{{ .ID }}"
-      name="name"
+      name="tag_name"
       type="text"
       value="{{ .Name }}"
       required
@@ -203,7 +203,7 @@
 
 {{ block "attach-task-form"  . }}
 <form
-  hx-post="/tags/{{.ID}}/tasks"
+  hx-post="/tags/{{.ID}}/tasks/"
   hx-target="#tag-{{.ID}}"
   hx-trigger="change"
   hx-swap="outerHTML"

@@ -1,125 +1,159 @@
 package service
 
-// import (
-// 	"context"
-// 	"fmt"
+import (
+	"context"
+	"fmt"
+	db "swagtask/db/generated"
+	"swagtask/models"
+)
 
-// 	"github.com/jackc/pgx/v5/pgxpool"
-// )
+func GetTagWithTasksById(queries *db.Queries, tagId int32) (*models.TagWithTasks, error) {
+    tagsWithTaskRelations, err := queries.GetTagWithTaskRelations(context.Background(), tagId)
+    if err != nil {
+        return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
+    }
+    if len(tagsWithTaskRelations) == 0 {
+        return nil, ErrNotFound
+    }
 
-// func GetRelatedTasksOfTag(dbpool *pgxpool.Pool, id int) ([]RelatedTask, error) {
-// 	rows, err := dbpool.Query(context.Background(), `
-// 		SELECT t.name, t.ID FROM tasks t
-// 		JOIN tag_task_relations rel ON t.ID = rel.task_id
-// 		JOIN tags tg ON tg.ID = rel.tag_id
-// 		WHERE tg.ID = $1`, id)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+    var tag db.Tag
+    relatedTasks := []models.RelatedTask{}
+    for _, tagWithTaskRelation := range tagsWithTaskRelations {
+        tag = db.Tag{
+            ID:   tagWithTaskRelation.ID,
+            Name: tagWithTaskRelation.Name,
+        }
+		if tagWithTaskRelation.TaskID.Valid && tagWithTaskRelation.TaskName.Valid {
+			relatedTasks = append(relatedTasks, models.RelatedTask{
+				Name: tagWithTaskRelation.TaskName.String,
+				ID:   tagWithTaskRelation.TaskID.Int32,
+			})
+		}
+    }
 
-// 	relatedTasks := []RelatedTask{}
-// 	for rows.Next() {
-// 		var relatedTask RelatedTask
-// 		errScan := rows.Scan(&relatedTask.Name, &relatedTask.ID)
-// 		if errScan != nil {
-// 			fmt.Println("err on rows scan")
-// 			return nil, errScan
-// 		}
-// 		relatedTasks = append(relatedTasks, relatedTask)
-// 	}
+    allTaskOptions, errGettingAllTasks := queries.GetAllTaskOptions(context.Background())
+    if errGettingAllTasks != nil {
+        return nil, fmt.Errorf("%w: %v", ErrBadRequest, errGettingAllTasks)
+    }
+    availableTags := getTagAvailableTasks(allTaskOptions, relatedTasks)
+    tagWithTasks := models.NewTagWithTasks(tag, relatedTasks, availableTags)
 
-// 	return relatedTasks, nil
-// }
+    return &tagWithTasks, nil
+}
 
-// func GetTagWithTasks(dbpool *pgxpool.Pool, id int) (*TagWithTasks, error) {
-// 	rows, errTasks := dbpool.Query(context.Background(), "SELECT name,id FROM tasks")
-// 	if errTasks != nil {
-// 		fmt.Println("error here tasks query")
-// 		return nil, errTasks
-// 	}
+func GetTagsWithTasks(queries *db.Queries) ([]models.TagWithTasks, error) {
+    tagsWithTasksRelations, errTags := queries.GetTagsWithTaskRelations(context.Background())
+    if errTags != nil {
+        return nil, fmt.Errorf("%w: %v", ErrBadRequest, errTags)
+    }
 
-// 	allTasks := []AvailableTask{}
-// 	for rows.Next() {
-// 		var option AvailableTask
-// 		rows.Scan(&option.Name, &option.ID)
+    allTaskOptions, errAllTaskOptions := queries.GetAllTaskOptions(context.Background())
+    if errAllTaskOptions != nil {
+        return nil, fmt.Errorf("%w: %v", ErrBadRequest, errAllTaskOptions)
+    }
 
-// 		allTasks = append(allTasks, option)
-// 	}
+    tagsWithTasks := []models.TagWithTasks{}
+    tagIdToTaskOptions := make(map[int32][]models.RelatedTask)
+    idToTag := make(map[int32]db.Tag)
+    orderedIds := []int32{}
+    idSeen := make(map[int32]bool)
+    for _, tag := range tagsWithTasksRelations {
+        if tag.TaskID.Valid && tag.TaskName.Valid {
+            tagIdToTaskOptions[tag.ID] = append(tagIdToTaskOptions[tag.ID], models.RelatedTask{ID: tag.TaskID.Int32, Name: tag.TaskName.String})
+        }
+        if !idSeen[tag.ID] {
+            orderedIds = append(orderedIds, tag.ID)
+        }
+        idToTag[tag.ID] = db.Tag{
+            ID:   tag.ID,
+            Name: tag.Name,
+        }
+        idSeen[tag.ID] = true
+    }
 
-// 	relatedTasks, errRelatedTasks := GetRelatedTasksOfTag(dbpool, id)
-// 	if errRelatedTasks != nil {
-// 		fmt.Println("error here relations")
-// 		return nil, errRelatedTasks
-// 	}
+    for _, id := range orderedIds {
+        tag := idToTag[id]
+        tagsOfTask := tagIdToTaskOptions[id]
+        avaialbleTags := getTagAvailableTasks(allTaskOptions, tagsOfTask)
 
-// 	tag, errTag := GetTagById(dbpool, id)
-// 	if errTag != nil {
-// 		return nil, errTag
-// 	}
-// 	availableTasks := GetTagAvailableTasks(allTasks, relatedTasks)
-// 	tagWithTasks := NewTagWithTasks(*tag, relatedTasks, availableTasks)
-// 	return &tagWithTasks, nil
-// }
-// func GetAllTagsWithTasks(dbpool *pgxpool.Pool) ([]TagWithTasks, error) {
-// 	// 1. get tags with their relations to tasks
-// 	// 2. get all tasks as options
-// 	// 3. get the tasks that aint related to task
+        tagWithTasks := models.NewTagWithTasks(tag, tagsOfTask, avaialbleTags)
+        tagsWithTasks = append(tagsWithTasks, tagWithTasks)
+    }
 
-// 	rows, err := dbpool.Query(context.Background(), `
-// 		SELECT tg.ID, tg.name, t.ID, t.name
-// 		FROM tags tg
-// 		LEFT JOIN tag_task_relations rel
-// 			ON tg.ID = rel.tag_id
-// 		LEFT JOIN tasks t
-// 			ON t.ID = rel.task_id
-// 		ORDER BY tg.ID DESC`)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	rowsAllTasks, errRowsAllTasks := dbpool.Query(context.Background(), `SELECT id, name FROM tasks`)
-// 	if errRowsAllTasks != nil {
-// 		return nil, errRowsAllTasks
-// 	}
+    if len(tagsWithTasks) == 0 {
+        return nil, ErrNotFound
+    }
 
-// 	allTasks := []AvailableTask{}
-// 	for rowsAllTasks.Next() {
-// 		var task AvailableTask
-// 		rowsAllTasks.Scan(&task.ID, &task.Name)
-// 		allTasks = append(allTasks, task)
-// 	}
+    return tagsWithTasks, nil
+}
 
-// 	idToTag := make(map[int]Tag)
-// 	tagIdToTasks := make(map[int][]RelatedTask)
-// 	// simulating a set
-// 	orderedIds := []int{}
-// 	seenId := make(map[int]bool)
-// 	for rows.Next() {
-// 		var tag Tag
-// 		var taskId *int
-// 		var taskName *string
-// 		rows.Scan(&tag.ID, &tag.Name, &taskId, &taskName)
+func UpdateTag(queries *db.Queries, tagId int32, tagName string) (*models.TagWithTasks, error) {
+	err := queries.UpdateTag(context.Background(), db.UpdateTagParams{
+		Name: tagName,
+		ID: tagId,
+	})
+	
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
+	}
 
-// 		if taskId != nil && taskName != nil {
-// 			tagIdToTasks[tag.ID] = append(tagIdToTasks[tag.ID], RelatedTask{Name: *taskName, Id: *taskId})
-// 		}
+	tagWithTasks, errTags := GetTagWithTasksById(queries, tagId)
+	if errTags != nil{
+		return nil, errTags
+	}
+	
+	return tagWithTasks, nil 
+}
 
-// 		if !seenId[tag.ID] {
-// 			orderedIds = append(orderedIds, tag.ID)
-// 		}
+func DeleteTag(queries *db.Queries, tagId int32) error {
+    err := queries.DeleteAllTagRelations(context.Background(), int32ToInt4Psql(tagId))
+    if err != nil {
 
-// 		seenId[tag.ID] = true
-// 		idToTag[tag.ID] = tag
-// 	}
+        return fmt.Errorf("%w: %v", ErrBadRequest, err)
+    }
 
-// 	tagsWithTasks := []TagWithTasks{}
-// 	for _, id := range orderedIds {
-// 		availableTasks := GetTagAvailableTasks(allTasks, tagIdToTasks[id])
-// 		tagsWithTasks = append(tagsWithTasks, NewTagWithTasks(idToTag[id], tagIdToTasks[id], availableTasks))
-// 	}
+    errDelete := queries.DeleteTag(context.Background(), tagId)
+    if errDelete != nil {
+       
+        return fmt.Errorf("%w: %v", ErrBadRequest, errDelete)
+    }
 
-// 	// for _,
-// 	// tagsWithTasksOptions = append(tagsWithTasksOptions, tagWithTasks)
-// 	// availableTasks := GetTagAvailableTasks(allTasks, )
+    return nil
+}
 
-// 	return tagsWithTasks, nil
-// }
+func DeleteTaskRelationFromTag(queries *db.Queries, tagId int32, taskId int32) (*models.TagWithTasks, error) {
+	err := queries.DeleteTagTaskRelation(context.Background(), db.DeleteTagTaskRelationParams{
+		TaskID: int32ToInt4Psql(taskId),
+		TagID: int32ToInt4Psql(tagId) ,
+	})
+	
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
+	}
+
+	tagWithTasks, errTag := GetTagWithTasksById(queries,tagId)
+	if errTag != nil {
+		return nil, err
+	}
+
+	return tagWithTasks, nil
+}
+
+func AddTaskToTag(queries *db.Queries, tagId int32, taskId int32) (*models.TagWithTasks, error) {
+	err := queries.CreateTagTaskRelation(context.Background(), db.CreateTagTaskRelationParams{
+		TaskID: int32ToInt4Psql(taskId),
+		TagID: int32ToInt4Psql(tagId),
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
+	}
+
+	tagWithTasks,errTag := GetTagWithTasksById(queries, tagId) 
+	if errTag != nil {
+		return nil, errTag
+	}
+
+	return tagWithTasks, nil
+}
