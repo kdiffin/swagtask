@@ -26,7 +26,7 @@
   - [x] complete the rest of the app, get it back to how it was
 
 - [x] implement actual database migrations
-- [ ] add the actual http/1.1 response and request in the logging middleware so i know http strings are being sent and recieved over http
+- [x] add the actual http/1.1 response and request in the logging middleware so i know http strings are being sent and recieved over http
 - [ ] add barebones auth using cookies then jwt
 - [ ] add live editing via websockets or polling between 2 users
 
