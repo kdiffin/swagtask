@@ -55,11 +55,9 @@ func GetTaskWithTagsById(queries *db.Queries, id int32) (*models.TaskWithTags, e
 
 
 func GetFilteredTasksWithTags(queries *db.Queries, filters *models.TasksPageFilters) ([]models.TaskWithTags, error) {
-    fmt.Println(filters.TagName+":", "filter tagname")
-    fmt.Println(filters.TaskName+":", "filter taskname")
     taskswithTagRelations, err := queries.GetFilteredTasks(context.Background(), db.GetFilteredTasksParams{
-        TaskName: stringtoPgText(filters.TaskName),
-        TagName: stringtoPgText(filters.TagName),
+        TaskName: stringtoPgText(filters.SearchQuery),
+        TagName: stringtoPgText(filters.ActiveTag),
     }) 
     if err != nil {
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
@@ -108,93 +106,6 @@ func GetFilteredTasksWithTags(queries *db.Queries, filters *models.TasksPageFilt
 
     return tasksWithTags, nil
 }
-// func GetAllFilteredTasksWithTags(dbpool *pgxpool.Pool, params TasksPageFilters) ([]TaskWithTags, error) {
-// 	// 0. gets the tags id by name
-// 	// 1. gets the tasks with the param tag
-// 	// 2. gets all tags
-// 	// 3. finds the non related tags for the dropdown and then sends them
-// 	index := 1
-// 	var constraintStr string
-// 	args := []interface{}{}
-
-// 	if params.tagName != "" && params.taskName != "" {
-// 		constraintStr += fmt.Sprintf(" tg.name = $%v", index)
-// 		index++
-// 		args = append(args, params.tagName)
-// 		// sql wildcard
-// 		constraintStr += fmt.Sprintf(" AND t.name ILIKE $%v", index)
-// 		args = append(args, "%"+params.taskName+"%")
-// 	} else if params.taskName != "" {
-// 		constraintStr += fmt.Sprintf(" t.name ILIKE $%v", index)
-// 		args = append(args, "%"+params.taskName+"%")
-// 	} else if params.tagName != "" {
-// 		constraintStr += fmt.Sprintf(" tg.name = $%v", index)
-// 		args = append(args, params.tagName)
-// 	} // handle the else case before u call this code
-
-// 	utils.PrintList(args)
-// 	queryString := `SELECT t.name, t.Idea, t.ID, t.completed, tg.ID, tg.name
-// 		FROM tasks t
-// 		LEFT JOIN tag_task_relations rel 
-// 			ON t.ID = rel.task_id 
-// 		LEFT JOIN tags tg 
-// 			ON tg.ID = rel.tag_id
-// 		WHERE` + constraintStr + " ORDER BY t.ID DESC"
-// 	fmt.Println(queryString)
-// 	rowsTasks, errTasks := dbpool.Query(context.Background(), queryString, args...)
-// 	if errTasks != nil {
-// 		return nil, errTasks
-// 	}
-
-// 	allTags, errAllTags := GetAllTags(dbpool)
-// 	if errAllTags != nil {
-// 		return nil, errAllTags
-// 	}
-
-// 	tasksWithTags := []TaskWithTags{}
-// 	taskIdToTags := make(map[int][]Tag)
-// 	// for easy lookup
-// 	idToTask := make(map[int]Task)
-// 	// so that we can make the items ordered (this is kindof a set)
-// 	orderedIds := []int{}
-// 	// so that we can mimic the set logic
-// 	idSeen := make(map[int]bool)
-// 	for rowsTasks.Next() {
-// 		var task Task
-// 		var tagId *int      // nullable
-// 		var tagName *string // nullable
-
-// 		errScanTask := rowsTasks.Scan(&task.Name, &task.Idea, &task.ID, &task.Completed, &tagId, &tagName)
-// 		if errScanTask != nil {
-// 			return nil, errScanTask
-// 		}
-
-// 		if tagId != nil && tagName != nil {
-// 			// add tag if it exists
-// 			taskIdToTags[task.ID] = append(taskIdToTags[task.ID], Tag{Id: *tagId, Name: *tagName})
-// 		}
-
-// 		// mimic a set
-// 		if !idSeen[task.ID] {
-// 			orderedIds = append(orderedIds, task.ID)
-// 		}
-
-// 		idToTask[task.ID] = task
-// 		idSeen[task.ID] = true
-// 	}
-
-// 	for _, id := range orderedIds {
-// 		task := idToTask[id]
-// 		tagsOfTask := taskIdToTags[id]
-// 		avaialbleTags := GetTaskAvailableTags(allTags, tagsOfTask)
-
-// 		taskWithTags := NewTaskWithTags(task, tagsOfTask, avaialbleTags)
-// 		tasksWithTags = append(tasksWithTags, taskWithTags)
-// 	}
-
-// 	return tasksWithTags, nil
-// }
-
 
 // ---- CREATE ----
 func CreateTask(queries *db.Queries, name string, idea string) (*models.TaskWithTags, error) {
@@ -327,8 +238,6 @@ func DeleteTagRelationFromTask(queries *db.Queries, tagId int32, taskId int32) (
     errRelations := queries.DeleteTagTaskRelation(context.Background(), db.DeleteTagTaskRelationParams{
         TaskID: int32ToPgInt4(taskId),
         TagID:  int32ToPgInt4(tagId)})
-		fmt.Println(tagId)
-		fmt.Println(taskId)
     
 		if errRelations != nil {
         if errors.Is(errRelations, pgx.ErrNoRows) {

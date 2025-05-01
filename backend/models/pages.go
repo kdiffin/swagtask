@@ -2,12 +2,13 @@ package models
 
 // tags.gohtml
 type tagsPage struct {
-	TagsWithTasks []TagWithTasks
+	TagsWithTasks []TagWithTasks	
 }
 
 func NewTagsPage(tagsWithTasks []TagWithTasks) tagsPage {
 	return tagsPage{
 		TagsWithTasks: tagsWithTasks,
+	
 	}
 }
 
@@ -24,6 +25,7 @@ type TaskPageButtons struct {
 type taskPage struct {
 	Task    TaskWithTags
 	Buttons TaskPageButtons
+	
 }
 
 func NewTaskPage(task TaskWithTags, prevButton, nextButton TaskButton) taskPage {
@@ -39,10 +41,17 @@ func NewTaskPage(task TaskWithTags, prevButton, nextButton TaskButton) taskPage 
 // tasks.gohtml
 type TasksPage struct {
 	Tasks []TaskWithTags
+	Filters *TasksPageFilters
 }
 
-func NewTasksPage(tasks []TaskWithTags) TasksPage {
+func NewTasksPage(tasks []TaskWithTags,tagFilter *string, taskFilter *string) TasksPage {
+	var filters *TasksPageFilters 
+	if tagFilter != nil && taskFilter != nil {
+		filtersVal := NewTasksPageFilters(*tagFilter, *taskFilter)
+		filters = &filtersVal		
+	} 
 	return TasksPage{
 		Tasks: tasks,
+		Filters: filters,
 	}
 }

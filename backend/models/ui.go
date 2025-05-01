@@ -67,14 +67,13 @@ func NewTagWithTasks(tag db.Tag, relatedTasks []RelatedTask, availableTasks []Av
 }
 
 type TasksPageFilters struct {
-	TagName  string
-	TaskName string
+	SearchQuery  string
+	ActiveTag string
 }
 
 func NewTasksPageFilters(tagName string, taskName string) TasksPageFilters {
-
 	return TasksPageFilters{
-		TagName:  tagName,
-		TaskName: taskName,
+		ActiveTag:  tagName,
+		SearchQuery: taskName,
 	}
 }

@@ -63,6 +63,7 @@ WHERE
 			WHERE r2.task_id = t.ID AND r2.tag_id = tg2.id 
 		)
 	)
+ORDER BY t.ID DESC
 `
 
 type GetFilteredTasksParams struct {

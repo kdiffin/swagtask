@@ -14,11 +14,10 @@
 
   - [x] implement searching by name
   - [x] implement filtering by tag
-
-- [ ] implement filtering by completed (cba)
+  - [ ] implement filtering by completed (cba)
 
 - [x] read the other md files rq
-- [ ] refactor v2
+- [x] refactor v2
 
   - [x] add net/http and remove echo
   - [x] add decent logging on errors
@@ -27,7 +26,7 @@
   - [x] complete the rest of the app, get it back to how it was
 
 - [ ] implement actual database migrations
-- [ ] add the actual http response and request in the logging middleware so i know http strings are being sent and recieved over http
+- [ ] add the actual http/1.1 response and request in the logging middleware so i know http strings are being sent and recieved over http
 - [ ] add barebones auth using cookies then jwt
 - [ ] add live editing via websockets or polling between 2 users
 

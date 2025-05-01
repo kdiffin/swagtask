@@ -53,8 +53,10 @@ WHERE
 				ON tg2.name = sqlc.narg('tag_name')::text
 			WHERE r2.task_id = t.ID AND r2.tag_id = tg2.id 
 		)
-	);
+	)
+ORDER BY t.ID DESC;
 
+	
 
 -- DELETE 
 -- name: DeleteTask :exec

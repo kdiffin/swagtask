@@ -47,8 +47,9 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		if checkErrors(w,errTasks) {
 			return
 		}
+
 		
-		page := models.NewTasksPage(tasksWithTags)
+		page := models.NewTasksPage(tasksWithTags, &tagName, nil)
 		templates.Render(w, "tasks-container", page)
 		return 
 	case "/tags":

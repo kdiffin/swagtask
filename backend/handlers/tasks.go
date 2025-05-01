@@ -20,7 +20,7 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries
 		return
 	}
 	
-	page := models.NewTasksPage(tasks)
+	page := models.NewTasksPage(tasks, &filters.ActiveTag, &filters.SearchQuery)
 	templates.Render(w, "tasks-page", page)
 }
 

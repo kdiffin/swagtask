@@ -34,7 +34,7 @@ func LogError(context string, err error) {
 		file = "unknown_file"
 		line = 0
 	}
-
+	
 	// Improve the log formatting for readability
 	log.Printf(
 		"----------------------------------\n"+

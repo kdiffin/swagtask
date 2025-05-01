@@ -45,12 +45,6 @@ func main() {
 	log.SetFlags(log.LstdFlags)
 	templates := models.NewTemplate()
 	mux := http.NewServeMux()
-	// e.Renderer = newTemplate() implement
-	// .Use(middleware.Logger()) implement
-	// .Static("/images", "../images")
-	// e.Static("/css", "../css")
-	// e.Static("/js", "../js")
-	// router.Tasks(mux, queries, templates)
 
 	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("../images"))))
 	mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("../css"))))

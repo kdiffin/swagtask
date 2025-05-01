@@ -29,6 +29,7 @@
 
     <main class="container mx-auto px-4 py-4 max-w-5xl space-y-6">
       {{ template "task-form-card" . }}
+      {{ template "filters-section" .Filters }}
       {{ template "tasks-container" . }}
       {{ template "footer" . }}
     </main>
