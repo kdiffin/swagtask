@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -11,7 +12,7 @@ import (
 
 // ---- READ ----
 
-func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template)   {
+func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, )   {
 	tag := strings.TrimSuffix(r.URL.Query().Get("tags") ,"/")
 	task := strings.TrimSuffix(r.URL.Query().Get("taskName") ,"/")
 	filters := models.NewTasksPageFilters(tag, task)
@@ -24,6 +25,16 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries
 	templates.Render(w, "tasks-page", page)
 }
 
+func HandlerGetTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, id int32)   { 
+	taskWithTags, err := service.GetTaskWithTagsById(queries,id)
+	if checkErrors(w,err) {
+		return
+	}
+
+	prevButton, nextButton := service.GetTaskNavigationButtons(context.Background(), queries, id)
+	page := models.NewTaskPage(*taskWithTags, prevButton, nextButton)
+	templates.Render(w, "task-page", page)
+}
 
 // ---- CREATE ----
 

@@ -54,6 +54,16 @@ func main() {
 	mux.HandleFunc("GET /tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
 		handlers.HandlerGetTasks(w, r, queries, templates)
 	})
+	mux.HandleFunc("GET /tasks/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, errConv := strconv.Atoi(idStr) 
+		if errConv != nil {
+			utils.LogError("couldnt convert to str", errConv)
+			return
+		}
+
+		handlers.HandlerGetTask(w, r, queries, templates, int32(id))
+	})
 	mux.HandleFunc("POST /tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
 		handlers.HandlerCreateTask(w, r, queries, templates)
 	})

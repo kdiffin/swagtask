@@ -2,12 +2,16 @@
 <html>
   <head>
     <title>Task - {{.Task.Name}} - {{.Task.ID}}</title>
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script
       src="https://unpkg.com/htmx.org@2.0.4"
-      integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
       crossorigin="anonymous"
     ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/index.css" />
     <script>
       tailwind.config = {
         theme: {
@@ -20,13 +24,6 @@
         safelist: ["group", "group-hover:flex"],
       };
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
-    /> -->
-    <link rel="stylesheet" href="/css/index.css" />
   </head>
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" .}}

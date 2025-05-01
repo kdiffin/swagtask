@@ -107,6 +107,38 @@ func (q *Queries) GetFilteredTasks(ctx context.Context, arg GetFilteredTasksPara
 	return items, nil
 }
 
+const getNextTaskDetails = `-- name: GetNextTaskDetails :one
+SELECT name, id FROM tasks WHERE id > $1 ORDER BY id ASC LIMIT 1
+`
+
+type GetNextTaskDetailsRow struct {
+	Name string
+	ID   int32
+}
+
+func (q *Queries) GetNextTaskDetails(ctx context.Context, id int32) (GetNextTaskDetailsRow, error) {
+	row := q.db.QueryRow(ctx, getNextTaskDetails, id)
+	var i GetNextTaskDetailsRow
+	err := row.Scan(&i.Name, &i.ID)
+	return i, err
+}
+
+const getPreviousTaskDetails = `-- name: GetPreviousTaskDetails :one
+SELECT name, id FROM tasks WHERE id < $1 ORDER BY id DESC LIMIT 1
+`
+
+type GetPreviousTaskDetailsRow struct {
+	Name string
+	ID   int32
+}
+
+func (q *Queries) GetPreviousTaskDetails(ctx context.Context, id int32) (GetPreviousTaskDetailsRow, error) {
+	row := q.db.QueryRow(ctx, getPreviousTaskDetails, id)
+	var i GetPreviousTaskDetailsRow
+	err := row.Scan(&i.Name, &i.ID)
+	return i, err
+}
+
 const getTaskWithTagRelations = `-- name: GetTaskWithTagRelations :many
 SELECT t.ID, t.name, t.idea, t.completed, tg.ID AS tag_id, tg.name AS tag_name
 	FROM tasks t

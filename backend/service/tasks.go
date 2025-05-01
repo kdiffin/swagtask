@@ -107,6 +107,21 @@ func GetFilteredTasksWithTags(queries *db.Queries, filters *models.TasksPageFilt
     return tasksWithTags, nil
 }
 
+func GetTaskNavigationButtons(ctx context.Context, queries *db.Queries, id int32) (models.TaskButton, models.TaskButton) {
+	prev, errPrev := queries.GetPreviousTaskDetails(ctx, id)
+	next, errNext := queries.GetNextTaskDetails(ctx, id)
+
+	var prevButton, nextButton models.TaskButton
+	if errPrev == nil {
+		prevButton = models.TaskButton{ID: prev.ID, Name: prev.Name, Exists: true}
+	}
+	if errNext == nil {
+		nextButton = models.TaskButton{ID: next.ID, Name: next.Name, Exists: true}
+	}
+	return prevButton, nextButton
+}
+
+
 // ---- CREATE ----
 func CreateTask(queries *db.Queries, name string, idea string) (*models.TaskWithTags, error) {
     task, errCreate := queries.CreateTask(context.Background(), db.CreateTaskParams{Name: name, Idea: idea})

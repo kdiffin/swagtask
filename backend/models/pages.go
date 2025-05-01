@@ -14,7 +14,7 @@ func NewTagsPage(tagsWithTasks []TagWithTasks) tagsPage {
 
 // task.gohtml
 type TaskButton struct {
-	Id     int
+	ID    int32
 	Name   string
 	Exists bool
 }

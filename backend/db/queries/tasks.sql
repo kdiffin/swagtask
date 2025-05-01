@@ -16,7 +16,10 @@ SELECT t.ID, t.name, t.idea, t.completed, tg.ID AS tag_id, tg.name AS tag_name
 	LEFT JOIN tags tg 
 		ON rel.tag_id = tg.ID
 	WHERE t.ID = $1;
-
+-- name: GetPreviousTaskDetails :one
+SELECT name, id FROM tasks WHERE id < $1 ORDER BY id DESC LIMIT 1;
+-- name: GetNextTaskDetails :one
+SELECT name, id FROM tasks WHERE id > $1 ORDER BY id ASC LIMIT 1;
 
 -- CREATE
 -- name: CreateTask :one
