@@ -27,7 +27,12 @@
 
 - [x] implement actual database migrations
 - [x] add the actual http/1.1 response and request in the logging middleware so i know http strings are being sent and recieved over http
+- [ ] host with https on local network
 - [ ] add barebones auth using cookies then jwt
+ - [ ] jwt [lesson](https://www.boot.dev/lessons/f7285cef-5185-4b15-b5fc-9533ccaafe8a)
+ - [ ] 
+
+- [ ] [add docs to api](https://www.boot.dev/lessons/109e29ef-cdfd-4d5b-ad47-6a609a638896)
 - [ ] add live editing via websockets or polling between 2 users
 
 ### long term

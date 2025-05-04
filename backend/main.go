@@ -25,9 +25,6 @@ func init() {
 	}
 }
 
-
-
-
 func main() {
 	// DB INIT START
 	// pgx pool starts a pool thats concurrency safe
@@ -40,8 +37,7 @@ func main() {
 	defer dbpool.Close()
 	queries := db.New(dbpool)
 	// DB INIT END
-	
-	
+
 	log.SetFlags(log.LstdFlags)
 	templates := models.NewTemplate()
 	mux := http.NewServeMux()
@@ -56,7 +52,7 @@ func main() {
 	})
 	mux.HandleFunc("GET /tasks/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
-		id, errConv := strconv.Atoi(idStr) 
+		id, errConv := strconv.Atoi(idStr)
 		if errConv != nil {
 			utils.LogError("couldnt convert to str", errConv)
 			return
@@ -69,7 +65,7 @@ func main() {
 	})
 	mux.HandleFunc("POST /tasks/{id}/toggle-complete/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
-		id, errConv := strconv.Atoi(idStr) 
+		id, errConv := strconv.Atoi(idStr)
 		if errConv != nil {
 			utils.LogError("couldnt convert to str", errConv)
 			return
@@ -79,89 +75,88 @@ func main() {
 	})
 	mux.HandleFunc("POST /tasks/{id}/tags/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
-		id, errConv1 := strconv.Atoi(idStr) 
+		id, errConv1 := strconv.Atoi(idStr)
 		tagIdStr := r.FormValue("tag_id")
-		tagId, errConv := strconv.Atoi(tagIdStr) 
-		if errConv != nil || errConv1 != nil  {
+		tagId, errConv := strconv.Atoi(tagIdStr)
+		if errConv != nil || errConv1 != nil {
 			utils.LogError("couldnt convert to str", errConv)
 			utils.LogError("couldnt convert to str", errConv1)
 			return
 		}
 
-		handlers.HandlerAddTagToTask(w,r,queries, templates, int32(id), int32(tagId))
+		handlers.HandlerAddTagToTask(w, r, queries, templates, int32(id), int32(tagId))
 	})
 	mux.HandleFunc("DELETE /tasks/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
-		id, errConv := strconv.Atoi(idStr) 
+		id, errConv := strconv.Atoi(idStr)
 		if errConv != nil {
 			utils.LogError("couldnt convert to str", errConv)
 			return
 		}
 
-		handlers.HandlerDeleteTask(w,r,queries, templates, int32(id))
+		handlers.HandlerDeleteTask(w, r, queries, templates, int32(id))
 	})
 	mux.HandleFunc("DELETE /tasks/{id}/tags/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
-		id, errConv := strconv.Atoi(idStr) 
+		id, errConv := strconv.Atoi(idStr)
 		tagIdStr := r.FormValue("tag_id")
-		tagId, errConv1 := strconv.Atoi(tagIdStr) 
+		tagId, errConv1 := strconv.Atoi(tagIdStr)
 		if errConv != nil || errConv1 != nil {
 			utils.LogError("couldnt convert to str", errConv)
 			utils.LogError("couldnt convert to str 2nd", errConv1)
 			return
 		}
 
-
-		handlers.HandlerRemoveTagFromTask(w,r,queries, templates, int32(id), int32(tagId))
+		handlers.HandlerRemoveTagFromTask(w, r, queries, templates, int32(id), int32(tagId))
 	})
 	mux.HandleFunc("PUT /tasks/{id}/", func(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("task_name")
 		idea := r.FormValue("task_idea")
 		idStr := r.PathValue("id")
-		id, errConv := strconv.Atoi(idStr) 
-		if errConv != nil  {
+		id, errConv := strconv.Atoi(idStr)
+		if errConv != nil {
 			utils.LogError("couldnt convert to str", errConv)
 			return
 		}
-		handlers.HandlerUpdateTask(w,r,queries, templates, int32(id), idea, name)
+		handlers.HandlerUpdateTask(w, r, queries, templates, int32(id), idea, name)
 	})
 
 	// tags
 	mux.HandleFunc("POST /tags/{$}", func(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("tag_name")
 		source := r.FormValue("source")
-		handlers.HandlerCreateTag(w, r, queries, templates, name, source )
+		handlers.HandlerCreateTag(w, r, queries, templates, name, source)
 	})
 	mux.HandleFunc("GET /tags/{$}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.HandlerGetTags(w,r,queries,templates)
+		handlers.HandlerGetTags(w, r, queries, templates)
 	})
 	mux.HandleFunc("PUT /tags/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
 		name := r.FormValue("tag_name")
-		id, errConv := strconv.Atoi(idStr) 
-		if errConv != nil  {
-			utils.LogError("couldnt convert to str", errConv)
-			return
-		}
-		
-		handlers.HandlerUpdateTag(w,r,queries,templates,  name, int32(id))	
-	})
-	mux.HandleFunc("DELETE /tags/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
-		idStr := r.PathValue("id")
-		id, errConv := strconv.Atoi(idStr) 
-		if errConv != nil  {
+		id, errConv := strconv.Atoi(idStr)
+		if errConv != nil {
 			utils.LogError("couldnt convert to str", errConv)
 			return
 		}
 
-		handlers.HandlerDeleteTag(w,r,queries,templates, int32(id))
+		handlers.HandlerUpdateTag(w, r, queries, templates, name, int32(id))
+	})
+	mux.HandleFunc("DELETE /tags/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, errConv := strconv.Atoi(idStr)
+		if errConv != nil {
+			utils.LogError("couldnt convert to str", errConv)
+			return
+		}
+
+		handlers.HandlerDeleteTag(w, r, queries, templates, int32(id))
 	})
 	mux.HandleFunc("POST /tags/{id}/tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
-		id, errConv := strconv.Atoi(idStr) 
+		id, errConv := strconv.Atoi(idStr)
 		taskIdStr := r.FormValue("task_id")
 		taskId, errConv2 := strconv.Atoi(taskIdStr)
-		if errConv != nil || errConv2 != nil  {
+		if errConv != nil || errConv2 != nil {
 			utils.LogError("couldnt convert to str", errConv)
 			utils.LogError("couldnt convert to str2", errConv2)
 			return
@@ -171,25 +166,25 @@ func main() {
 	})
 	mux.HandleFunc("DELETE /tags/{id}/tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
-		id, errConv := strconv.Atoi(idStr) 
-		taskIdStr := r.FormValue("task_id")	
+		id, errConv := strconv.Atoi(idStr)
+		taskIdStr := r.FormValue("task_id")
 		taskId, errConv2 := strconv.Atoi(taskIdStr)
-		if errConv != nil || errConv2 != nil  {
+		if errConv != nil || errConv2 != nil {
 			utils.LogError("couldnt convert to str", errConv)
 			utils.LogError("couldnt convert to str2", errConv2)
 			return
 		}
 
-		handlers.HandlerRemoveTaskFromTag(w, r, queries, templates, int32(taskId),int32(id))
+		handlers.HandlerRemoveTaskFromTag(w, r, queries, templates, int32(taskId), int32(id))
 	})
-	
 
 	server := http.Server{
-		Addr: ":42069",
+		Addr:    "0.0.0.0:42069",
 		Handler: middleware.Logging(mux),
 	}
+
 	fmt.Println("running server")
-	log.Fatal(server.ListenAndServe())
-	fmt.Println("not running server")
+	log.Fatal(server.ListenAndServeTLS("cert.pem", "key.pem"))
+	fmt.Println("not running servers")
 
 }

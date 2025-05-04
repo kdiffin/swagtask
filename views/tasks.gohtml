@@ -11,7 +11,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/css/index.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/css/index.css/" />
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         document.body.addEventListener("htmx:beforeSwap", (evt) => {
@@ -24,6 +25,7 @@
       htmx.logAll();
     </script>
   </head>
+
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" . }}
 
