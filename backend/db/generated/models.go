@@ -8,6 +8,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Session struct {
+	ID        string
+	UserID    pgtype.Int4
+	CreatedAt pgtype.Timestamp
+}
+
 type Tag struct {
 	ID        int32
 	Name      string

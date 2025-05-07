@@ -35,16 +35,32 @@ func main() {
 		os.Exit(1)
 	}
 	defer dbpool.Close()
-	queries := db.New(dbpool)
+	queries := db.New(dbpool)	
 	// DB INIT END
 
-	log.SetFlags(log.LstdFlags)
+	// site init
 	templates := models.NewTemplate()
 	mux := http.NewServeMux()
-
 	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("../images"))))
 	mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("../css"))))
 	mux.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("../js"))))
+
+	// auth
+	mux.HandleFunc("POST /sign-up/{$}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.HandleSignup(queries, w, r)
+	})
+	mux.HandleFunc("GET /sign-up/{$}", func(w http.ResponseWriter, r *http.Request) {
+		templates.Render(w, "sign-up", nil)
+	})
+	mux.HandleFunc("POST /login/{$}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.HandleLogin(queries, w, r)
+	})
+	mux.HandleFunc("GET /login/{$}", func(w http.ResponseWriter, r *http.Request) {
+		templates.Render(w, "login", nil)
+	})
+	mux.HandleFunc("POST /logout/{$}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.HandleLogout(queries, w, r)
+	})
 
 	// tasks
 	mux.HandleFunc("GET /tasks/{$}", func(w http.ResponseWriter, r *http.Request) {

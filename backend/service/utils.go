@@ -49,7 +49,7 @@ func getTagAvailableTasks(allTasksOptions []db.GetAllTaskOptionsRow, relatedTask
 
 
 // type to pg type stuff
-func int32ToPgInt4(i int32) pgtype.Int4 {
+func Int32ToPgInt4(i int32) pgtype.Int4 {
 	var pgi pgtype.Int4
 	pgi.Int32 = i	
 	pgi.Valid = true

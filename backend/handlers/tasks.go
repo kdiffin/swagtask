@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	db "swagtask/db/generated"
@@ -13,6 +14,13 @@ import (
 // ---- READ ----
 
 func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, )   {
+	userId, err := getUserIDFromRequest(queries, r)
+	if err != nil {
+		http.Error(w, "Error getting user ID from session token", http.StatusUnauthorized)
+		return 
+	}
+	fmt.Println("USER ID:", userId)
+
 	tag := strings.TrimSuffix(r.URL.Query().Get("tags") ,"/")
 	task := strings.TrimSuffix(r.URL.Query().Get("taskName") ,"/")
 	filters := models.NewTasksPageFilters(tag, task)

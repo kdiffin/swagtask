@@ -7,7 +7,23 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createSession = `-- name: CreateSession :exec
+INSERT INTO sessions (id, user_id) VALUES($1,$2)
+`
+
+type CreateSessionParams struct {
+	ID     string
+	UserID pgtype.Int4
+}
+
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
+	_, err := q.db.Exec(ctx, createSession, arg.ID, arg.UserID)
+	return err
+}
 
 const createUser = `-- name: CreateUser :exec
 INSERT INTO users (username, password_hash) VALUES ($1, $2)
@@ -21,6 +37,31 @@ type CreateUserParams struct {
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 	_, err := q.db.Exec(ctx, createUser, arg.Username, arg.PasswordHash)
 	return err
+}
+
+const deleteSession = `-- name: DeleteSession :exec
+DELETE FROM sessions WHERE id = $1
+`
+
+func (q *Queries) DeleteSession(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, deleteSession, id)
+	return err
+}
+
+const getSessionValues = `-- name: GetSessionValues :one
+SELECT id, user_id FROM sessions WHERE id = $1
+`
+
+type GetSessionValuesRow struct {
+	ID     string
+	UserID pgtype.Int4
+}
+
+func (q *Queries) GetSessionValues(ctx context.Context, id string) (GetSessionValuesRow, error) {
+	row := q.db.QueryRow(ctx, getSessionValues, id)
+	var i GetSessionValuesRow
+	err := row.Scan(&i.ID, &i.UserID)
+	return i, err
 }
 
 const getUserCredentials = `-- name: GetUserCredentials :one

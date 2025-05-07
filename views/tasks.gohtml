@@ -1,9 +1,6 @@
 {{ block "tasks-page" . }}
 <html class="bg-zinc-900">
-  {{ block "head" "Task Manager" }}
-  {{
-    end
-  }}
+  {{ template "head" "Task Manager" }}
 
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" . }}

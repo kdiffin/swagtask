@@ -3,13 +3,15 @@ package handlers
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"swagtask/auth"
 	db "swagtask/db/generated"
+	"swagtask/service"
 )
 
 // TODO: write this well
-func handleSignup(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
+func HandleSignup(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
     username := r.FormValue("username")
     password := r.FormValue("password")
 
@@ -31,29 +33,29 @@ func handleSignup(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
     http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-
-
-var sessions = map[string]int{} // sessionID -> userID (in-memory)
-
 func generateSessionID() string {
     b := make([]byte, 32)
     rand.Read(b)
     return hex.EncodeToString(b)
 }
-
-func handleLogin(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
+func HandleLogin(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
     username := r.FormValue("username")
     password := r.FormValue("password")
 
 	credentials, err := queries.GetUserCredentials(r.Context(), username)
 	if err != nil || !auth.CheckPasswordHash(password, credentials.PasswordHash) {
-        http.Error(w, "Invalid credentials", 401)
+        http.Error(w, "Invalid credentials", http.StatusUnauthorized)
         return
     }
 
     sessionID := generateSessionID()
-    sessions[sessionID] = int(credentials.ID)
-
+    errSesh := queries.CreateSession(r.Context(), db.CreateSessionParams{ID: sessionID, UserID: service.Int32ToPgInt4(credentials.ID)})
+    if errSesh != nil {
+        http.Error(w, "Error creating session", http.StatusInternalServerError)
+        return 
+    }
+    fmt.Println("THESE ARE THE SESSIONS:")
+  
     cookie := http.Cookie{
         Name:     "session_id",
         Value:    sessionID,
@@ -66,10 +68,14 @@ func handleLogin(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
 }
 
 
-func handleLogout(w http.ResponseWriter, r *http.Request) {
+func HandleLogout(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("session_id")
     if err == nil {
-        delete(sessions, cookie.Value)
+        errDeleteCookie := queries.DeleteSession(r.Context(), cookie.Value)
+        if errDeleteCookie != nil {
+            http.Error(w, "Error deleting cookie, try logging out again", http.StatusInternalServerError)
+            return
+        }
     }
 
     http.SetCookie(w, &http.Cookie{
