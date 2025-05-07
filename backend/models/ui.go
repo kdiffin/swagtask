@@ -77,3 +77,10 @@ func NewTasksPageFilters(tagName string, taskName string) TasksPageFilters {
 		SearchQuery: taskName,
 	}
 }
+
+
+// user
+type User struct{
+	PathToPfp string
+	Username string
+}

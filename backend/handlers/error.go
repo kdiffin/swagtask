@@ -18,12 +18,19 @@ var knownErrors = map[error]int{
 	service.ErrUnprocessable:  http.StatusUnprocessableEntity, // Semantic errors in request (422 Unprocessable Entity)
 }
 
-func checkErrors(w http.ResponseWriter, err error) bool {
+func checkErrors(w http.ResponseWriter, r *http.Request, err error) bool {
     for knownErr, status := range knownErrors {
         if errors.Is(err, knownErr) {
-		    utils.LogError("", err)
-            http.Error(w, http.StatusText(status), status)
-            return true
+            if status == http.StatusUnauthorized {
+                utils.LogError("", err)
+                w.Header().Set("HX-Redirect", "/login/")
+                http.Redirect(w,r, "/login/", http.StatusSeeOther)
+                return true
+            } else {
+                utils.LogError("", err)
+                http.Error(w, http.StatusText(status), status)
+                return true
+            }
         }
     }
     if err != nil {

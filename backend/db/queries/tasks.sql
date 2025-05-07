@@ -1,44 +1,48 @@
 -- READ
 -- name: GetTasksWithTagRelations :many
-SELECT t.name, t.Idea, t.ID, t.completed, tg.ID AS tag_id, tg.name AS tag_name
+SELECT t.name, t.Idea, t.ID, t.completed, t.user_id, 
+		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id
 		FROM tasks t
 		LEFT JOIN tag_task_relations rel 
 			ON t.ID = rel.task_id 
 		LEFT JOIN tags tg 
 			ON tg.ID = rel.tag_id
+		WHERE t.user_id = $1 AND tg.user_id = $2
 		ORDER BY t.ID DESC;
 
 -- name: GetTaskWithTagRelations :many
-SELECT t.ID, t.name, t.idea, t.completed, tg.ID AS tag_id, tg.name AS tag_name
+SELECT t.ID, t.name, t.idea, t.completed, t.user_id,
+	tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id
 	FROM tasks t
 	LEFT JOIN tag_task_relations rel
 		ON t.ID = rel.task_id
 	LEFT JOIN tags tg 
 		ON rel.tag_id = tg.ID
-	WHERE t.ID = $1;
+	WHERE t.ID = $1 AND t.user_id = $2 AND tg.user_id = $3;
 -- name: GetPreviousTaskDetails :one
-SELECT name, id FROM tasks WHERE id < $1 ORDER BY id DESC LIMIT 1;
+SELECT name, id FROM tasks WHERE id < $1 AND user_id = $2 ORDER BY id DESC LIMIT 1;
 -- name: GetNextTaskDetails :one
-SELECT name, id FROM tasks WHERE id > $1 ORDER BY id ASC LIMIT 1;
+SELECT name, id FROM tasks WHERE id > $1 AND user_id = $2  ORDER BY id ASC LIMIT 1;
 
 -- CREATE
 -- name: CreateTask :one
-INSERT INTO tasks (name, idea) VALUES ($1, $2) RETURNING *;
+INSERT INTO tasks (name, idea, user_id) VALUES ($1, $2, $3) RETURNING *;
 
 
 -- UPDATE
 -- name: ToggleTaskCompletion :exec
-UPDATE tasks SET completed = NOT completed WHERE id = $1;
+UPDATE tasks SET completed = NOT completed WHERE id = $1 AND user_id = $2;
 
 -- name: UpdateTask :exec
 UPDATE tasks
 SET
   name = COALESCE(sqlc.narg('name'), name),
   idea = COALESCE(sqlc.narg('idea'), idea)
-WHERE id = sqlc.arg('id');
+WHERE id = sqlc.arg('id')::int AND user_id = sqlc.arg('user_id')::int;
 
 -- name: GetFilteredTasks :many
-SELECT t.ID, t.name, t.idea, t.completed, tg.ID as tag_id, tg.name AS tag_name
+SELECT t.name, t.idea, t.ID, t.completed, t.user_id, 
+		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id
 FROM tasks t
 LEFT JOIN tag_task_relations rel ON rel.task_id = t.ID
 LEFT JOIN tags tg ON tg.ID = rel.tag_id
@@ -57,10 +61,12 @@ WHERE
 			WHERE r2.task_id = t.ID AND r2.tag_id = tg2.id 
 		)
 	)
+	AND tg.user_id = $1 AND t.user_id = $2
 ORDER BY t.ID DESC;
+
 
 	
 
 -- DELETE 
 -- name: DeleteTask :exec
-DELETE FROM tasks WHERE id = $1;
+DELETE FROM tasks WHERE id = $1 AND user_id = $2;

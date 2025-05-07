@@ -4,19 +4,17 @@
 >
   <div class="container mx-auto px-4 py-2">
     <div class="flex items-center justify-between">
+      <!-- Left: Logo -->
       <div class="flex items-center">
-        <i class="fas fa-tasks text-blue-500 mr-3 mt-1 text-xl"></i>
-        <strong class="text-2xl font-bold">
+        <i class="fas fa-tasks text-blue-500 mr-2 text-xl"></i>
+        <strong class="text-2xl font-bold text-white">
           <a href="/tasks/">SwagTask</a>
         </strong>
       </div>
 
-      <div class="hidden md:flex items-center space-x-6">
-        <!-- Search form -->
-        <form
-          id="taskForm"
-          class="relative flex items-center flex-grow max-w-xs w-full ml-8"
-        >
+      <!-- Center: Search bar -->
+      <div class="flex-1 mx-10 max-w-md">
+        <form id="taskForm" class="relative flex items-center w-full">
           <input
             class="w-full rounded-sm border border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500 py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
             type="text"
@@ -28,31 +26,61 @@
           <button type="submit" hidden>Search</button>
           <i class="fas fa-search absolute right-3 text-zinc-700"></i>
         </form>
+      </div>
 
+      <!-- Right: Nav & Auth -->
+      <div class="hidden md:flex items-center gap-3">
         <a
           href="/tasks/"
-          class="text-gray-300 hover:text-white hover:underline transition-colors duration-200"
-          >tasks</a
+          class="text-gray-300 hover:text-white hover:underline transition duration-200"
         >
+          tasks
+        </a>
         <a
           href="/tags/"
-          class="text-gray-300 hover:text-white hover:underline transition-colors duration-200"
-          >tags</a
+          class="text-gray-300 hover:text-white hover:underline transition duration-200"
         >
-        <a
-          href="/sign-up/"
-          class="text-gray-300 min-w-max hover:text-white hover:underline transition-colors duration-200"
-          >sign-up</a
-        >
-        <a
-          href="/login/"
-          class="text-gray-300 hover:text-white hover:underline transition-colors duration-200"
-          >login</a
-        >
+          tags
+        </a>
+        <div class="text-zinc-600">|</div>
 
-        <!-- <a href="#" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-sm transition-colors duration-200">
-          <i class="fas fa-user mr-1"></i> Account
-        </a> -->
+        <div class="flex items-center gap-4">
+          {{ if .Authorized }}
+          <div class="flex items-center gap-3">
+            <img
+              src="{{.User.PathToPfp}}"
+              alt="profile picture"
+              class="w-6 h-6 rounded-full object-cover border border-white/20 shadow-sm"
+            />
+            <span
+              class="text-gray-300 hover:text-white transition duration-200"
+            >
+              {{.User.Username}}
+            </span>
+            <form hx-post="/logout/">
+              <button
+                type="submit"
+                class="text-red-400 hover:text-red-300 font-medium transition duration-200"
+              >
+                log-out
+              </button>
+            </form>
+          </div>
+          {{ else }}
+          <a
+            href="/login/"
+            class="text-gray-300 hover:text-white hover:underline transition duration-200"
+          >
+            log-in
+          </a>
+          <a
+            href="/sign-up/"
+            class="text-gray-300 hover:text-white hover:underline transition duration-200"
+          >
+            sign-up
+          </a>
+          {{ end }}
+        </div>
       </div>
     </div>
   </div>
@@ -72,14 +100,12 @@
 
     // Get the current URL search parameters
     const currentParams = new URLSearchParams(window.location.search);
-    console.log(currentParams);
 
     // Add the new taskName parameter
     currentParams.set("taskName", taskName);
-    console.log(currentParams);
 
     // Construct the new URL with the updated query string
-    const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
+    const newUrl = `/tasks?${currentParams.toString()}/`;
 
     // Redirect to the updated URL
     window.location.href = newUrl;

@@ -3,7 +3,7 @@
   {{ template "head" "Tag Manager" }}
 
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
-    {{ template "navbar" . }}
+    {{ template "navbar" .Auth }}
 
     <main class="container mx-auto px-4 py-6 max-w-5xl space-y-6">
       {{ template "add-tag-card" . }}

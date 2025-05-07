@@ -44,4 +44,5 @@ type User struct {
 	PasswordHash string
 	CreatedAt    pgtype.Timestamp
 	UpdatedAt    pgtype.Timestamp
+	PathToPfp    pgtype.Text
 }

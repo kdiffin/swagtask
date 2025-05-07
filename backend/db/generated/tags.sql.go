@@ -12,29 +12,39 @@ import (
 )
 
 const createTag = `-- name: CreateTag :exec
-INSERT INTO tags (name) VALUES($1)
+INSERT INTO tags (name, user_id ) VALUES($1, $2)
 `
 
-func (q *Queries) CreateTag(ctx context.Context, name string) error {
-	_, err := q.db.Exec(ctx, createTag, name)
+type CreateTagParams struct {
+	Name   string
+	UserID int32
+}
+
+func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) error {
+	_, err := q.db.Exec(ctx, createTag, arg.Name, arg.UserID)
 	return err
 }
 
 const deleteTag = `-- name: DeleteTag :exec
-DELETE FROM tags WHERE id = $1
+DELETE FROM tags WHERE id = $1 AND user_id = $2
 `
 
-func (q *Queries) DeleteTag(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deleteTag, id)
+type DeleteTagParams struct {
+	ID     int32
+	UserID int32
+}
+
+func (q *Queries) DeleteTag(ctx context.Context, arg DeleteTagParams) error {
+	_, err := q.db.Exec(ctx, deleteTag, arg.ID, arg.UserID)
 	return err
 }
 
 const getAllTagsDesc = `-- name: GetAllTagsDesc :many
-SELECT id, name, created_at, updated_at, user_id FROM tags ORDER BY id DESC
+SELECT id, name, created_at, updated_at, user_id FROM tags WHERE user_id = $1 ORDER BY id DESC
 `
 
-func (q *Queries) GetAllTagsDesc(ctx context.Context) ([]Tag, error) {
-	rows, err := q.db.Query(ctx, getAllTagsDesc)
+func (q *Queries) GetAllTagsDesc(ctx context.Context, userID int32) ([]Tag, error) {
+	rows, err := q.db.Query(ctx, getAllTagsDesc, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,24 +70,33 @@ func (q *Queries) GetAllTagsDesc(ctx context.Context) ([]Tag, error) {
 }
 
 const getTagWithTaskRelations = `-- name: GetTagWithTaskRelations :many
-SELECT tg.ID, tg.name, t.ID AS task_id, t.name AS task_name 
+SELECT tg.ID, tg.name, tg.user_id,
+    t.ID AS task_id, t.name AS task_name, t.user_id AS task_user_id
     FROM tags tg
     LEFT JOIN tag_task_relations rel 
         ON tg.ID = rel.tag_id
     LEFT JOIN tasks t 
         ON t.ID = rel.task_id
-    WHERE tg.id = $1
+    WHERE tg.id = $1 AND tg.user_id = $2 AND t.user_id = $3
 `
 
-type GetTagWithTaskRelationsRow struct {
+type GetTagWithTaskRelationsParams struct {
 	ID       int32
-	Name     string
-	TaskID   pgtype.Int4
-	TaskName pgtype.Text
+	UserID   int32
+	UserID_2 int32
 }
 
-func (q *Queries) GetTagWithTaskRelations(ctx context.Context, id int32) ([]GetTagWithTaskRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTagWithTaskRelations, id)
+type GetTagWithTaskRelationsRow struct {
+	ID         int32
+	Name       string
+	UserID     int32
+	TaskID     pgtype.Int4
+	TaskName   pgtype.Text
+	TaskUserID pgtype.Int4
+}
+
+func (q *Queries) GetTagWithTaskRelations(ctx context.Context, arg GetTagWithTaskRelationsParams) ([]GetTagWithTaskRelationsRow, error) {
+	rows, err := q.db.Query(ctx, getTagWithTaskRelations, arg.ID, arg.UserID, arg.UserID_2)
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +107,10 @@ func (q *Queries) GetTagWithTaskRelations(ctx context.Context, id int32) ([]GetT
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.UserID,
 			&i.TaskID,
 			&i.TaskName,
+			&i.TaskUserID,
 		); err != nil {
 			return nil, err
 		}
@@ -102,23 +123,32 @@ func (q *Queries) GetTagWithTaskRelations(ctx context.Context, id int32) ([]GetT
 }
 
 const getTagsWithTaskRelations = `-- name: GetTagsWithTaskRelations :many
-SELECT tg.ID, tg.name, t.ID AS task_id, t.name AS task_name 
+SELECT tg.ID, tg.name, tg.user_id,
+    t.ID AS task_id, t.name AS task_name, t.user_id AS task_user_id
     FROM tags tg
     LEFT JOIN tag_task_relations rel 
         ON tg.ID = rel.tag_id
     LEFT JOIN tasks t 
         ON t.ID = rel.task_id
+    WHERE tg.user_id = $1 AND t.user_id = $2
 `
 
-type GetTagsWithTaskRelationsRow struct {
-	ID       int32
-	Name     string
-	TaskID   pgtype.Int4
-	TaskName pgtype.Text
+type GetTagsWithTaskRelationsParams struct {
+	UserID   int32
+	UserID_2 int32
 }
 
-func (q *Queries) GetTagsWithTaskRelations(ctx context.Context) ([]GetTagsWithTaskRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTagsWithTaskRelations)
+type GetTagsWithTaskRelationsRow struct {
+	ID         int32
+	Name       string
+	UserID     int32
+	TaskID     pgtype.Int4
+	TaskName   pgtype.Text
+	TaskUserID pgtype.Int4
+}
+
+func (q *Queries) GetTagsWithTaskRelations(ctx context.Context, arg GetTagsWithTaskRelationsParams) ([]GetTagsWithTaskRelationsRow, error) {
+	rows, err := q.db.Query(ctx, getTagsWithTaskRelations, arg.UserID, arg.UserID_2)
 	if err != nil {
 		return nil, err
 	}
@@ -129,8 +159,10 @@ func (q *Queries) GetTagsWithTaskRelations(ctx context.Context) ([]GetTagsWithTa
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.UserID,
 			&i.TaskID,
 			&i.TaskName,
+			&i.TaskUserID,
 		); err != nil {
 			return nil, err
 		}
@@ -143,15 +175,16 @@ func (q *Queries) GetTagsWithTaskRelations(ctx context.Context) ([]GetTagsWithTa
 }
 
 const updateTag = `-- name: UpdateTag :exec
-UPDATE tags SET name = $1 WHERE id = $2
+UPDATE tags SET name = $1 WHERE id = $2 AND user_id = $3
 `
 
 type UpdateTagParams struct {
-	Name string
-	ID   int32
+	Name   string
+	ID     int32
+	UserID int32
 }
 
 func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) error {
-	_, err := q.db.Exec(ctx, updateTag, arg.Name, arg.ID)
+	_, err := q.db.Exec(ctx, updateTag, arg.Name, arg.ID, arg.UserID)
 	return err
 }

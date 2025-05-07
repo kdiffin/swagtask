@@ -34,8 +34,9 @@
   - [x] finish the migration business
   - [x] implement the readme on how to add session auth
   - [x] add sql to the sessions instead of storing them in memory
-  - [ ] make an indicator showing if the user is logged in or not
+  - [x] make an indicator showing if the user is logged in or not
   - [ ] finish fetching the tags and shit
+  - [ ] remove auto incrementing ids by int as i think thats an attack vector because people can call the delete function for example with paramaters user_id = 2 and task_id = 3 and then just delete a task like that
 
 - [ ] [add docs to api](https://www.boot.dev/lessons/109e29ef-cdfd-4d5b-ad47-6a609a638896)
 - [ ] add live editing via websockets or polling between 2 users

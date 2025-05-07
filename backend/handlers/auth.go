@@ -30,7 +30,8 @@ func HandleSignup(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    http.Redirect(w, r, "/login", http.StatusSeeOther)
+    w.Header().Set("HX-Redirect", "/login/")
+    w.WriteHeader(200)
 }
 
 func generateSessionID() string {
@@ -64,7 +65,9 @@ func HandleLogin(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
         Path:     "/",
     }
     http.SetCookie(w, &cookie)
-    http.Redirect(w, r, "/tasks", http.StatusSeeOther)
+    w.Header().Set("HX-Redirect", "/tasks/")
+    w.WriteHeader(200)
+
 }
 
 
@@ -74,7 +77,7 @@ func HandleLogout(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
         errDeleteCookie := queries.DeleteSession(r.Context(), cookie.Value)
         if errDeleteCookie != nil {
             http.Error(w, "Error deleting cookie, try logging out again", http.StatusInternalServerError)
-            return
+              return
         }
     }
 
@@ -84,5 +87,7 @@ func HandleLogout(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
         MaxAge: -1,
         Path:   "/",
     })
-    http.Redirect(w, r, "/login", http.StatusSeeOther)
+    w.Header().Set("HX-Redirect", "/login/")
+    w.WriteHeader(200)
+
 }

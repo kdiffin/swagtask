@@ -10,7 +10,8 @@ import (
 )
 
 const createTagTaskRelation = `-- name: CreateTagTaskRelation :exec
-INSERT INTO tag_task_relations (task_id, tag_id) VALUES($1, $2)
+INSERT INTO tag_task_relations (task_id, tag_id)
+VALUES($1, $2)
 `
 
 type CreateTagTaskRelationParams struct {
@@ -24,7 +25,8 @@ func (q *Queries) CreateTagTaskRelation(ctx context.Context, arg CreateTagTaskRe
 }
 
 const deleteTagTaskRelation = `-- name: DeleteTagTaskRelation :exec
-DELETE FROM tag_task_relations WHERE task_id = $1 AND tag_id = $2
+DELETE FROM tag_task_relations
+WHERE task_id = $1 AND tag_id = $2
 `
 
 type DeleteTagTaskRelationParams struct {
@@ -38,7 +40,7 @@ func (q *Queries) DeleteTagTaskRelation(ctx context.Context, arg DeleteTagTaskRe
 }
 
 const getAllTaskOptions = `-- name: GetAllTaskOptions :many
-SELECT name, id from tasks ORDER BY id DESC
+SELECT name, id from tasks WHERE user_id = $1 ORDER BY id DESC
 `
 
 type GetAllTaskOptionsRow struct {
@@ -47,8 +49,8 @@ type GetAllTaskOptionsRow struct {
 }
 
 // this is for the UI whenever we wanna add a relation from a task to a tag
-func (q *Queries) GetAllTaskOptions(ctx context.Context) ([]GetAllTaskOptionsRow, error) {
-	rows, err := q.db.Query(ctx, getAllTaskOptions)
+func (q *Queries) GetAllTaskOptions(ctx context.Context, userID int32) ([]GetAllTaskOptionsRow, error) {
+	rows, err := q.db.Query(ctx, getAllTaskOptions, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -57,37 +59,6 @@ func (q *Queries) GetAllTaskOptions(ctx context.Context) ([]GetAllTaskOptionsRow
 	for rows.Next() {
 		var i GetAllTaskOptionsRow
 		if err := rows.Scan(&i.Name, &i.ID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getTagsOfTask = `-- name: GetTagsOfTask :many
-SELECT tg.ID, tg.name FROM tags tg
-INNER JOIN tag_task_relations rel ON tg.ID = rel.tag_id
-WHERE rel.task_id = $1
-`
-
-type GetTagsOfTaskRow struct {
-	ID   int32
-	Name string
-}
-
-func (q *Queries) GetTagsOfTask(ctx context.Context, taskID int32) ([]GetTagsOfTaskRow, error) {
-	rows, err := q.db.Query(ctx, getTagsOfTask, taskID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetTagsOfTaskRow
-	for rows.Next() {
-		var i GetTagsOfTaskRow
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

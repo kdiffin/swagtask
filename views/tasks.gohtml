@@ -3,12 +3,12 @@
   {{ template "head" "Task Manager" }}
 
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
-    {{ template "navbar" . }}
+    {{ template "navbar" .Auth }}
 
     <main class="container mx-auto px-4 py-4 max-w-5xl space-y-6">
       {{ template "task-form-card" . }}
       {{ template "filters-section" .Filters }}
-      {{ template "tasks-container" . }}
+      {{ template "tasks-container" .Tasks }}
       {{ template "footer" . }}
     </main>
   </body>
@@ -44,22 +44,11 @@
         <i class="fas fa-list-check text-blue-500 mr-2"></i>
         <h2 class="text-lg font-semibold text-white">Your Tasks</h2>
       </div>
-      <!-- <div class="flex items-center gap-2">
-        <button
-          class="px-2 py-1 bg-zinc-700 hover:bg-zinc-600 text-white text-sm rounded-sm transition-colors duration-200 flex items-center"
-        >
-          <i class="fas fa-filter mr-1"></i> Filter
-        </button>
-        <button
-          class="px-2 py-1 bg-zinc-700 hover:bg-zinc-600 text-white text-sm rounded-sm transition-colors duration-200 flex items-center"
-        >
-          <i class="fas fa-sort mr-1"></i> Sort
-        </button>
-      </div> -->
+
       <div id="tasks-container-error"></div>
     </div>
     <div id="tasks" class="space-y-4">
-      {{ range.Tasks }}
+      {{ range. }}
       {{ template "task" .}}
       {{ end }}
     </div>

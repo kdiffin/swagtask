@@ -8,11 +8,15 @@ import (
 )
  
 func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template) {
-	tagsWithTasks, errTag := service.GetTagsWithTasks(queries, r.Context())
-	if checkErrors(w,errTag) {
+	user, errAuth := getUserInfoFromSessionId(queries, r)
+	if checkErrors(w,r,errAuth)  {
 		return
 	}
-	page := models.NewTagsPage(tagsWithTasks)
+	tagsWithTasks, errTag := service.GetTagsWithTasks(queries, r.Context())
+	if checkErrors(w,r,errTag) {
+		return
+	}
+	page := models.NewTagsPage(tagsWithTasks, true, user.PathToPfp, user.Username)
 	templates.Render(w, "tags-page", page)
 }
 
@@ -25,7 +29,7 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 	}
 
 	tagWithTask, err := service.UpdateTag(queries, tagId, tagName, r.Context())
-	if checkErrors(w, err) {
+	if checkErrors(w,r, err) {
 		return 
 	}
 
@@ -36,26 +40,25 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 // breaking the abstraction rules here cuz its gonna be mad annoying working with interface{}
 func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, tagName string, source string)  {
 	err := queries.CreateTag(r.Context(), tagName)
-	if checkErrors(w,err) {
+	if checkErrors(w,r,err) {
 		return
 	}
 
 	switch source {
 	case "/tasks":
+		
 		filters := models.NewTasksPageFilters(r.URL.Query().Get("tags"), r.URL.Query().Get("taskName"))
 		tasksWithTags, errTasks := service.GetFilteredTasksWithTags(queries, &filters, r.Context())
-		if checkErrors(w,errTasks) {
+		if checkErrors(w,r,errTasks) {
 			return
 		}
-
 		
-		page := models.NewTasksPage(tasksWithTags, &tagName, nil)
-		templates.Render(w, "tasks-container", page)
+		templates.Render(w, "tasks-container", tasksWithTags)
 		return 
 	case "/tags":
 		// tagsWithTasks
 		tagsWithTasks, errTags := service.GetTagsWithTasks(queries, r.Context())
-		if checkErrors(w,errTags) {
+		if checkErrors(w,r,errTags) {
 			return
 		}
 		
@@ -70,7 +73,7 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 
 func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, tagId int32) {
 	err := service.DeleteTag(queries, tagId,r.Context())
-	if checkErrors(w,err) {
+	if checkErrors(w,r,err) {
 		return
 	}
 

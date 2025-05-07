@@ -12,3 +12,6 @@ DELETE FROM sessions WHERE id = $1;
 
 -- name: GetSessionValues :one
 SELECT id, user_id FROM sessions WHERE id = $1;
+
+-- name: GetUserInfo :one
+SELECT username, path_to_pfp FROM users WHERE id = $1;

@@ -79,3 +79,19 @@ func (q *Queries) GetUserCredentials(ctx context.Context, username string) (GetU
 	err := row.Scan(&i.ID, &i.PasswordHash)
 	return i, err
 }
+
+const getUserInfo = `-- name: GetUserInfo :one
+SELECT username, path_to_pfp FROM users WHERE id = $1
+`
+
+type GetUserInfoRow struct {
+	Username  string
+	PathToPfp pgtype.Text
+}
+
+func (q *Queries) GetUserInfo(ctx context.Context, id int32) (GetUserInfoRow, error) {
+	row := q.db.QueryRow(ctx, getUserInfo, id)
+	var i GetUserInfoRow
+	err := row.Scan(&i.Username, &i.PathToPfp)
+	return i, err
+}
