@@ -13,8 +13,8 @@ import (
 
 // ---- READ ----
 
-func GetTaskWithTagsById(queries *db.Queries, id int32) (*models.TaskWithTags, error) {
-    taskWithRelations, err := queries.GetTaskWithTagRelations(context.Background(), id)
+func GetTaskWithTagsById(queries *db.Queries, id int32, ctx context.Context) (*models.TaskWithTags, error) {
+    taskWithRelations, err := queries.GetTaskWithTagRelations(ctx, id)
     if err != nil {
         if errors.Is(err, pgx.ErrNoRows) {
             return nil, ErrNotFound
@@ -27,7 +27,7 @@ func GetTaskWithTagsById(queries *db.Queries, id int32) (*models.TaskWithTags, e
     var task models.Task
     tagsOfTask := []db.Tag{}
 
-    allTags, errTags := queries.GetAllTagsDesc(context.Background())
+    allTags, errTags := queries.GetAllTagsDesc(ctx)
     if errTags != nil {
         if errors.Is(errTags, pgx.ErrNoRows) {
             return nil, ErrNotFound
@@ -54,17 +54,17 @@ func GetTaskWithTagsById(queries *db.Queries, id int32) (*models.TaskWithTags, e
 }
 
 
-func GetFilteredTasksWithTags(queries *db.Queries, filters *models.TasksPageFilters) ([]models.TaskWithTags, error) {
-    taskswithTagRelations, err := queries.GetFilteredTasks(context.Background(), db.GetFilteredTasksParams{
+func GetFilteredTasksWithTags(queries *db.Queries, filters *models.TasksPageFilters, ctx context.Context) ([]models.TaskWithTags, error) {
+    taskswithTagRelations, err := queries.GetFilteredTasks(ctx, db.GetFilteredTasksParams{
         TaskName: stringtoPgText(filters.SearchQuery),
         TagName: stringtoPgText(filters.ActiveTag),
-    }) 
+    })  
     if err != nil {
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
     }
 
 
-    allTags, errAllTags := queries.GetAllTagsDesc(context.Background())
+    allTags, errAllTags := queries.GetAllTagsDesc(ctx)
     if errAllTags != nil {
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, errAllTags)
     }
@@ -123,8 +123,8 @@ func GetTaskNavigationButtons(ctx context.Context, queries *db.Queries, id int32
 
 
 // ---- CREATE ----
-func CreateTask(queries *db.Queries, name string, idea string) (*models.TaskWithTags, error) {
-    task, errCreate := queries.CreateTask(context.Background(), db.CreateTaskParams{Name: name, Idea: idea})
+func CreateTask(queries *db.Queries, name string, idea string, ctx context.Context) (*models.TaskWithTags, error) {
+    task, errCreate := queries.CreateTask(ctx, db.CreateTaskParams{Name: name, Idea: idea})
     if errCreate != nil {
         if errors.Is(errCreate, pgx.ErrNoRows) {
             return nil, ErrNotFound
@@ -132,7 +132,7 @@ func CreateTask(queries *db.Queries, name string, idea string) (*models.TaskWith
         return nil, fmt.Errorf("%w: %v", ErrUnprocessable, errCreate)
     }
 
-    allTags, errAllTags := queries.GetAllTagsDesc(context.Background())
+    allTags, errAllTags := queries.GetAllTagsDesc(ctx)
     if errAllTags != nil {
         if errors.Is(errAllTags, pgx.ErrNoRows) {
             return nil, ErrNotFound
@@ -150,8 +150,8 @@ func CreateTask(queries *db.Queries, name string, idea string) (*models.TaskWith
 }
 
 // ---- UPDATE ----
-func UpdateTaskCompletion(queries *db.Queries, taskId int32) (*models.TaskWithTags, error) {
-    errCompletion := queries.ToggleTaskCompletion(context.Background(), taskId)
+func UpdateTaskCompletion(queries *db.Queries, taskId int32, ctx context.Context) (*models.TaskWithTags, error) {
+    errCompletion := queries.ToggleTaskCompletion(ctx, taskId)
     if errCompletion != nil {
         if errors.Is(errCompletion, pgx.ErrNoRows) {
             return nil, ErrNotFound
@@ -159,7 +159,7 @@ func UpdateTaskCompletion(queries *db.Queries, taskId int32) (*models.TaskWithTa
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, errCompletion)
     }
 
-    taskWithTags, errGetTask := GetTaskWithTagsById(queries, taskId)
+    taskWithTags, errGetTask := GetTaskWithTagsById(queries, taskId, ctx)
     if errGetTask != nil {
         return nil, errGetTask
     }
@@ -167,7 +167,7 @@ func UpdateTaskCompletion(queries *db.Queries, taskId int32) (*models.TaskWithTa
     return taskWithTags, nil
 }
 
-func UpdateTask(queries *db.Queries, taskId int32, name string, idea string) (*models.TaskWithTags, error) {
+func UpdateTask(queries *db.Queries, taskId int32, name string, idea string, ctx context.Context) (*models.TaskWithTags, error) {
     var nameNullable pgtype.Text
     var ideaNullable pgtype.Text
 
@@ -187,7 +187,7 @@ func UpdateTask(queries *db.Queries, taskId int32, name string, idea string) (*m
         return nil, ErrNoUpdateFields
     }
 
-    errCompletion := queries.UpdateTask(context.Background(), db.UpdateTaskParams{
+    errCompletion := queries.UpdateTask(ctx, db.UpdateTaskParams{
         ID:   taskId,
         Name: nameNullable,
         Idea: ideaNullable,
@@ -199,7 +199,7 @@ func UpdateTask(queries *db.Queries, taskId int32, name string, idea string) (*m
         return nil, fmt.Errorf("%w: %v", ErrUnprocessable, errCompletion)
     }
 
-    taskWithTags, errGetTask := GetTaskWithTagsById(queries, taskId)
+    taskWithTags, errGetTask := GetTaskWithTagsById(queries, taskId, ctx)
     if errGetTask != nil {
         return nil, errGetTask
     }
@@ -207,10 +207,10 @@ func UpdateTask(queries *db.Queries, taskId int32, name string, idea string) (*m
     return taskWithTags, nil
 }
 
-func AddTagToTask(queries *db.Queries, tagId int32, taskId int32) (*models.TaskWithTags, error) {
-    err := queries.CreateTagTaskRelation(context.Background(), db.CreateTagTaskRelationParams{
-        TaskID: int32ToPgInt4(taskId),
-        TagID:  int32ToPgInt4(tagId),
+func AddTagToTask(queries *db.Queries, tagId int32, taskId int32, ctx context.Context) (*models.TaskWithTags, error) {
+    err := queries.CreateTagTaskRelation(ctx, db.CreateTagTaskRelationParams{
+        TaskID: taskId,
+        TagID:  tagId,
     })
 	
     if err != nil {
@@ -220,7 +220,7 @@ func AddTagToTask(queries *db.Queries, tagId int32, taskId int32) (*models.TaskW
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
     }
 
-    taskWithTags, errTasks := GetTaskWithTagsById(queries, taskId)
+    taskWithTags, errTasks := GetTaskWithTagsById(queries, taskId,ctx)
     if errTasks != nil {
         return nil, errTasks
     }
@@ -229,16 +229,8 @@ func AddTagToTask(queries *db.Queries, tagId int32, taskId int32) (*models.TaskW
 }
 
 // ---- DELETE ----
-func DeleteTask(queries *db.Queries, taskId int32) error {
-    errRelations := queries.DeleteAllTaskRelations(context.Background(), int32ToPgInt4(taskId))
-    if errRelations != nil {
-        if errors.Is(errRelations, pgx.ErrNoRows) {
-            return ErrNotFound
-        }
-        return fmt.Errorf("%w: %v", ErrBadRequest, errRelations)
-    }
-
-    err := queries.DeleteTask(context.Background(), taskId)
+func DeleteTask(queries *db.Queries, taskId int32, ctx context.Context) error {
+    err := queries.DeleteTask(ctx, taskId)
     if err != nil {
         if errors.Is(err, pgx.ErrNoRows) {
             return ErrNotFound
@@ -249,10 +241,10 @@ func DeleteTask(queries *db.Queries, taskId int32) error {
     return nil
 }
 
-func DeleteTagRelationFromTask(queries *db.Queries, tagId int32, taskId int32) (*models.TaskWithTags, error) {
-    errRelations := queries.DeleteTagTaskRelation(context.Background(), db.DeleteTagTaskRelationParams{
-        TaskID: int32ToPgInt4(taskId),
-        TagID:  int32ToPgInt4(tagId)})
+func DeleteTagRelationFromTask(queries *db.Queries, tagId int32, taskId int32, ctx context.Context) (*models.TaskWithTags, error) {
+    errRelations := queries.DeleteTagTaskRelation(ctx, db.DeleteTagTaskRelationParams{
+        TaskID: taskId,
+        TagID:  tagId})
     
 		if errRelations != nil {
         if errors.Is(errRelations, pgx.ErrNoRows) {
@@ -261,7 +253,7 @@ func DeleteTagRelationFromTask(queries *db.Queries, tagId int32, taskId int32) (
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, errRelations)
     }
 
-    taskWithTags, err := GetTaskWithTagsById(queries, taskId)
+    taskWithTags, err := GetTaskWithTagsById(queries, taskId,ctx)
     if err != nil {
         return nil, err
     }

@@ -1,30 +1,9 @@
 {{ block "tasks-page" . }}
 <html class="bg-zinc-900">
-  <head>
-    <title>SwagTask - Task Manager</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script
-      src="https://unpkg.com/htmx.org@2.0.4"
-      crossorigin="anonymous"
-    ></script>
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
-    />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/css/index.css/" />
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        document.body.addEventListener("htmx:beforeSwap", (evt) => {
-          if (evt.detail.xhr.status === 422) {
-            evt.detail.shouldSwap = true;
-            evt.detail.isError = false;
-          }
-        });
-      });
-      htmx.logAll();
-    </script>
-  </head>
+  {{ block "head" "Task Manager" }}
+  {{
+    end
+  }}
 
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" . }}

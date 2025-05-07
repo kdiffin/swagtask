@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createTagTaskRelation = `-- name: CreateTagTaskRelation :exec
@@ -16,30 +14,12 @@ INSERT INTO tag_task_relations (task_id, tag_id) VALUES($1, $2)
 `
 
 type CreateTagTaskRelationParams struct {
-	TaskID pgtype.Int4
-	TagID  pgtype.Int4
+	TaskID int32
+	TagID  int32
 }
 
 func (q *Queries) CreateTagTaskRelation(ctx context.Context, arg CreateTagTaskRelationParams) error {
 	_, err := q.db.Exec(ctx, createTagTaskRelation, arg.TaskID, arg.TagID)
-	return err
-}
-
-const deleteAllTagRelations = `-- name: DeleteAllTagRelations :exec
-DELETE FROM tag_task_relations WHERE tag_id = $1
-`
-
-func (q *Queries) DeleteAllTagRelations(ctx context.Context, tagID pgtype.Int4) error {
-	_, err := q.db.Exec(ctx, deleteAllTagRelations, tagID)
-	return err
-}
-
-const deleteAllTaskRelations = `-- name: DeleteAllTaskRelations :exec
-DELETE FROM tag_task_relations WHERE task_id = $1
-`
-
-func (q *Queries) DeleteAllTaskRelations(ctx context.Context, taskID pgtype.Int4) error {
-	_, err := q.db.Exec(ctx, deleteAllTaskRelations, taskID)
 	return err
 }
 
@@ -48,8 +28,8 @@ DELETE FROM tag_task_relations WHERE task_id = $1 AND tag_id = $2
 `
 
 type DeleteTagTaskRelationParams struct {
-	TaskID pgtype.Int4
-	TagID  pgtype.Int4
+	TaskID int32
+	TagID  int32
 }
 
 func (q *Queries) DeleteTagTaskRelation(ctx context.Context, arg DeleteTagTaskRelationParams) error {
@@ -93,15 +73,20 @@ INNER JOIN tag_task_relations rel ON tg.ID = rel.tag_id
 WHERE rel.task_id = $1
 `
 
-func (q *Queries) GetTagsOfTask(ctx context.Context, taskID pgtype.Int4) ([]Tag, error) {
+type GetTagsOfTaskRow struct {
+	ID   int32
+	Name string
+}
+
+func (q *Queries) GetTagsOfTask(ctx context.Context, taskID int32) ([]GetTagsOfTaskRow, error) {
 	rows, err := q.db.Query(ctx, getTagsOfTask, taskID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Tag
+	var items []GetTagsOfTaskRow
 	for rows.Next() {
-		var i Tag
+		var i GetTagsOfTaskRow
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}

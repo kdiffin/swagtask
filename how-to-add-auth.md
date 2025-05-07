@@ -174,9 +174,9 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 
 ### 🛑 Final Notes
 
-* **Session Security:** You might want to persist sessions in Postgres instead of in-memory.
-* **HTTPS:** Session cookies need HTTPS and `Secure` flags in production.
-* **CSRF:** Consider adding CSRF tokens if you allow POST from forms.
+- **Session Security:** You might want to persist sessions in Postgres instead of in-memory.
+- **HTTPS:** Session cookies need HTTPS and `Secure` flags in production.
+- **CSRF:** Consider adding CSRF tokens if you allow POST from forms.
 
 ---
 

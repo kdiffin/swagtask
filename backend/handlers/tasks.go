@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strings"
 	db "swagtask/db/generated"
 	"swagtask/models"
 	"swagtask/service"
+	"swagtask/utils"
 )
 
 // ---- READ ----
@@ -16,7 +16,7 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries
 	tag := strings.TrimSuffix(r.URL.Query().Get("tags") ,"/")
 	task := strings.TrimSuffix(r.URL.Query().Get("taskName") ,"/")
 	filters := models.NewTasksPageFilters(tag, task)
-	tasks, err := service.GetFilteredTasksWithTags(queries, &filters)
+	tasks, err := service.GetFilteredTasksWithTags(queries, &filters,r.Context())
 	if checkErrors(w,err) {
 		return
 	}
@@ -26,12 +26,12 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries
 }
 
 func HandlerGetTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, id int32)   { 
-	taskWithTags, err := service.GetTaskWithTagsById(queries,id)
+	taskWithTags, err := service.GetTaskWithTagsById(queries,id,r.Context())
 	if checkErrors(w,err) {
 		return
 	}
 
-	prevButton, nextButton := service.GetTaskNavigationButtons(context.Background(), queries, id)
+	prevButton, nextButton := service.GetTaskNavigationButtons(r.Context(), queries, id)
 	page := models.NewTaskPage(*taskWithTags, prevButton, nextButton)
 	templates.Render(w, "task-page", page)
 }
@@ -42,9 +42,10 @@ func HandlerCreateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queri
 	name := r.FormValue("task_name")
 	idea := r.FormValue("task_idea")
 	
-	task, err := service.CreateTask(queries, name, idea)
+	task, err := service.CreateTask(queries, name, idea,r.Context())
 	if err != nil {
 		if errors.Is(err, service.ErrUnprocessable) {
+			utils.LogError("error adding task", err)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			templates.Render(w, "form-error", "DONT ADD THE TASK WITH THE SAME IDEA VRO")
 			return
@@ -60,7 +61,7 @@ func HandlerCreateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queri
 // ---- UPDATE ----
 
 func HandlerTaskToggleComplete(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32)   {
-	taskWithTags, err := service.UpdateTaskCompletion(queries, taskId)
+	taskWithTags, err := service.UpdateTaskCompletion(queries, taskId,r.Context())
 	if checkErrors(w,err) {
 		return
 	}
@@ -69,7 +70,7 @@ func HandlerTaskToggleComplete(w http.ResponseWriter, r *http.Request ,queries *
 }
 
 func HandlerUpdateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32, idea string, name string) {
-	taskWithTags, errUpdate := service.UpdateTask(queries, taskId, name, idea)
+	taskWithTags, errUpdate := service.UpdateTask(queries, taskId, name, idea,r.Context())
 	if errUpdate != nil {
 		// return no contents
 		// if theres no update to tasks skip
@@ -79,7 +80,7 @@ func HandlerUpdateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queri
 			return
 		}  else if errors.Is(errUpdate, service.ErrUnprocessable) {
 			templates.Render(w, "tasks-container-error", "Task has same idea: " + idea)
-			taskWithTags,_ := service.GetTaskWithTagsById(queries, taskId)
+			taskWithTags,_ := service.GetTaskWithTagsById(queries, taskId,r.Context())
 			templates.Render(w, "task", taskWithTags)
 			return
 		} else if checkErrors(w,errUpdate) {
@@ -93,7 +94,7 @@ func HandlerUpdateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queri
 
 //  ---- DELETE ----
 func HandlerDeleteTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32) {
-	err := 	service.DeleteTask(queries, taskId)
+	err := 	service.DeleteTask(queries, taskId,r.Context())
 	if checkErrors(w,err) {
 		return
 	}

@@ -9,14 +9,17 @@ import (
 )
 
 type Tag struct {
-	ID   int32
-	Name string
+	ID        int32
+	Name      string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+	UserID    int32
 }
 
 type TagTaskRelation struct {
 	ID     int32
-	TagID  pgtype.Int4
-	TaskID pgtype.Int4
+	TagID  int32
+	TaskID int32
 }
 
 type Task struct {
@@ -24,4 +27,15 @@ type Task struct {
 	Name      string
 	Idea      string
 	Completed pgtype.Bool
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+	UserID    int32
+}
+
+type User struct {
+	ID           int32
+	Username     string
+	PasswordHash string
+	CreatedAt    pgtype.Timestamp
+	UpdatedAt    pgtype.Timestamp
 }

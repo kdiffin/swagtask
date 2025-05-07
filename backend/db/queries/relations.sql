@@ -7,15 +7,8 @@ WHERE rel.task_id = $1;
 -- name: GetAllTaskOptions :many
 SELECT name, id from tasks ORDER BY id DESC;
 
-
 -- name: CreateTagTaskRelation :exec
 INSERT INTO tag_task_relations (task_id, tag_id) VALUES($1, $2);
-
--- name: DeleteAllTaskRelations :exec
-DELETE FROM tag_task_relations WHERE task_id = $1;
-
--- name: DeleteAllTagRelations :exec
-DELETE FROM tag_task_relations WHERE tag_id = $1;
 
 -- name: DeleteTagTaskRelation :exec
 DELETE FROM tag_task_relations WHERE task_id = $1 AND tag_id = $2;

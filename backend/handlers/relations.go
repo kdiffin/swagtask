@@ -9,7 +9,7 @@ import (
 
 
 func HandlerAddTagToTask(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, taskId int32, tagId int32) {
-	taskWithTags, err := service.AddTagToTask(queries, tagId, taskId)
+	taskWithTags, err := service.AddTagToTask(queries, tagId, taskId, r.Context())
 	if checkErrors(w,err) {
 		return
 	}
@@ -18,7 +18,7 @@ func HandlerAddTagToTask(w http.ResponseWriter, r *http.Request, queries *db.Que
 }
 
 func HandlerRemoveTagFromTask(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, taskId int32, tagId int32) {
-	taskWithTags, err := 	service.DeleteTagRelationFromTask(queries, tagId, taskId)
+	taskWithTags, err := 	service.DeleteTagRelationFromTask(queries, tagId, taskId,r.Context())
 	if checkErrors(w,err) {
 		return
 	}
@@ -27,7 +27,7 @@ func HandlerRemoveTagFromTask(w http.ResponseWriter, r *http.Request, queries *d
 }
 
 func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, taskId int32, tagId int32) {
-	tagWithTasks, err := service.AddTaskToTag(queries, tagId, taskId)
+	tagWithTasks, err := service.AddTaskToTag(queries, tagId, taskId, r.Context())
 	if checkErrors(w,err) {
 		return
 	}
@@ -36,7 +36,7 @@ func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Que
 }
 
 func HandlerRemoveTaskFromTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, taskId int32, tagId int32) {
-	tagWithTasks, err := service.DeleteTaskRelationFromTag(queries, tagId, taskId)
+	tagWithTasks, err := service.DeleteTaskRelationFromTag(queries, tagId, taskId, r.Context())
 	if checkErrors(w, err) {
 		return
 	}

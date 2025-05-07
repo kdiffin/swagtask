@@ -1,7 +1,7 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    schema: "db/schema" # Path to your schema directory
+    schema: "db/migrations" # Path to your schema directory
     queries: "db/queries" # Path to your queries directory
     gen:
       go:

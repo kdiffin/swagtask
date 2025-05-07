@@ -30,7 +30,7 @@ func (q *Queries) DeleteTag(ctx context.Context, id int32) error {
 }
 
 const getAllTagsDesc = `-- name: GetAllTagsDesc :many
-SELECT id, name FROM tags ORDER BY id DESC
+SELECT id, name, created_at, updated_at, user_id FROM tags ORDER BY id DESC
 `
 
 func (q *Queries) GetAllTagsDesc(ctx context.Context) ([]Tag, error) {
@@ -42,7 +42,13 @@ func (q *Queries) GetAllTagsDesc(ctx context.Context) ([]Tag, error) {
 	var items []Tag
 	for rows.Next() {
 		var i Tag
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.UserID,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

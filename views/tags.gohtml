@@ -1,18 +1,10 @@
 {{ block "tags-page"   .}}
 <html class="bg-zinc-900">
-  <head>
-    <title>Tags Manager</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script
-      src="https://unpkg.com/htmx.org@2.0.4"
-      crossorigin="anonymous"
-    ></script>
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/css/index.css/" />
-  </head>
+  {{ block "head" "Tag Manager" }}
+  {{
+    end
+  }}
+
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" . }}
 
@@ -47,6 +39,7 @@
         required
         class="flex-grow rounded-sm border border-zinc-800 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition"
       />
+
       <button
         type="submit"
         class="flex items-center justify-center gap-1 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-sm text-white font-semibold shadow-sm text-sm transition-colors duration-200"

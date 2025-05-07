@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
 	db "swagtask/db/generated"
 	"swagtask/models"
@@ -9,7 +8,7 @@ import (
 )
  
 func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template) {
-	tagsWithTasks, errTag := service.GetTagsWithTasks(queries)
+	tagsWithTasks, errTag := service.GetTagsWithTasks(queries, r.Context())
 	if checkErrors(w,errTag) {
 		return
 	}
@@ -25,7 +24,7 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	tagWithTask, err := service.UpdateTag(queries, tagId, tagName)
+	tagWithTask, err := service.UpdateTag(queries, tagId, tagName, r.Context())
 	if checkErrors(w, err) {
 		return 
 	}
@@ -36,14 +35,15 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 
 // breaking the abstraction rules here cuz its gonna be mad annoying working with interface{}
 func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, tagName string, source string)  {
-	err := queries.CreateTag(context.Background(), tagName)
+	err := queries.CreateTag(r.Context(), tagName)
 	if checkErrors(w,err) {
 		return
 	}
 
 	switch source {
 	case "/tasks":
-		tasksWithTags, errTasks := service.GetFilteredTasksWithTags(queries, nil)
+		filters := models.NewTasksPageFilters(r.URL.Query().Get("tags"), r.URL.Query().Get("taskName"))
+		tasksWithTags, errTasks := service.GetFilteredTasksWithTags(queries, &filters, r.Context())
 		if checkErrors(w,errTasks) {
 			return
 		}
@@ -54,7 +54,7 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return 
 	case "/tags":
 		// tagsWithTasks
-		tagsWithTasks, errTags := service.GetTagsWithTasks(queries)
+		tagsWithTasks, errTags := service.GetTagsWithTasks(queries, r.Context())
 		if checkErrors(w,errTags) {
 			return
 		}
@@ -69,7 +69,7 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 
 
 func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, tagId int32) {
-	err := service.DeleteTag(queries, tagId)
+	err := service.DeleteTag(queries, tagId,r.Context())
 	if checkErrors(w,err) {
 		return
 	}

@@ -12,7 +12,7 @@ import (
 )
 
 const createTask = `-- name: CreateTask :one
-INSERT INTO tasks (name, idea) VALUES ($1, $2) RETURNING id, name, idea, completed
+INSERT INTO tasks (name, idea) VALUES ($1, $2) RETURNING id, name, idea, completed, created_at, updated_at, user_id
 `
 
 type CreateTaskParams struct {
@@ -29,6 +29,9 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, e
 		&i.Name,
 		&i.Idea,
 		&i.Completed,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.UserID,
 	)
 	return i, err
 }
