@@ -60,26 +60,25 @@ LEFT JOIN tag_task_relations rel ON rel.task_id = t.ID
 LEFT JOIN tags tg ON tg.ID = rel.tag_id
 WHERE
 	-- where the name is like the task filter (if the filter exists)
-	(t.name ILIKE '%' || COALESCE($3::text, t.name) || '%')
+	(t.name ILIKE '%' || COALESCE($2::text, t.name) || '%')
 	AND
 	-- if the tag filter exists, return the rows of the tasks who have a relation to that tag  
-	($4::text IS NULL OR 
+	($3::text IS NULL OR 
 		EXISTS (
 			SELECT 1
 			FROM tag_task_relations r2
 			-- to get tag id from name
 			JOIN tags tg2 
-				ON tg2.name = $4::text
+				ON tg2.name = $3::text
 			WHERE r2.task_id = t.ID AND r2.tag_id = tg2.id 
 		)
 	)
-	AND tg.user_id = $1 AND t.user_id = $2
+	AND tg.user_id = $1 AND t.user_id = $1
 ORDER BY t.ID DESC
 `
 
 type GetFilteredTasksParams struct {
 	UserID   int32
-	UserID_2 int32
 	TaskName pgtype.Text
 	TagName  pgtype.Text
 }
@@ -96,12 +95,7 @@ type GetFilteredTasksRow struct {
 }
 
 func (q *Queries) GetFilteredTasks(ctx context.Context, arg GetFilteredTasksParams) ([]GetFilteredTasksRow, error) {
-	rows, err := q.db.Query(ctx, getFilteredTasks,
-		arg.UserID,
-		arg.UserID_2,
-		arg.TaskName,
-		arg.TagName,
-	)
+	rows, err := q.db.Query(ctx, getFilteredTasks, arg.UserID, arg.TaskName, arg.TagName)
 	if err != nil {
 		return nil, err
 	}
@@ -179,13 +173,12 @@ SELECT t.ID, t.name, t.idea, t.completed, t.user_id,
 		ON t.ID = rel.task_id
 	LEFT JOIN tags tg 
 		ON rel.tag_id = tg.ID
-	WHERE t.ID = $1 AND t.user_id = $2 AND tg.user_id = $3
+	WHERE t.ID = $1 AND t.user_id = $2 AND tg.user_id = $2
 `
 
 type GetTaskWithTagRelationsParams struct {
-	ID       int32
-	UserID   int32
-	UserID_2 int32
+	ID     int32
+	UserID int32
 }
 
 type GetTaskWithTagRelationsRow struct {
@@ -200,7 +193,7 @@ type GetTaskWithTagRelationsRow struct {
 }
 
 func (q *Queries) GetTaskWithTagRelations(ctx context.Context, arg GetTaskWithTagRelationsParams) ([]GetTaskWithTagRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTaskWithTagRelations, arg.ID, arg.UserID, arg.UserID_2)
+	rows, err := q.db.Query(ctx, getTaskWithTagRelations, arg.ID, arg.UserID)
 	if err != nil {
 		return nil, err
 	}

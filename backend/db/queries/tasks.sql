@@ -18,7 +18,7 @@ SELECT t.ID, t.name, t.idea, t.completed, t.user_id,
 		ON t.ID = rel.task_id
 	LEFT JOIN tags tg 
 		ON rel.tag_id = tg.ID
-	WHERE t.ID = $1 AND t.user_id = $2 AND tg.user_id = $3;
+	WHERE t.ID = $1 AND t.user_id = $2 AND tg.user_id = $2;
 -- name: GetPreviousTaskDetails :one
 SELECT name, id FROM tasks WHERE id < $1 AND user_id = $2 ORDER BY id DESC LIMIT 1;
 -- name: GetNextTaskDetails :one
@@ -61,7 +61,7 @@ WHERE
 			WHERE r2.task_id = t.ID AND r2.tag_id = tg2.id 
 		)
 	)
-	AND tg.user_id = $1 AND t.user_id = $2
+	AND tg.user_id = $1 AND t.user_id = $1
 ORDER BY t.ID DESC;
 
 

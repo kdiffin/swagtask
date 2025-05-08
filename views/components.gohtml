@@ -58,6 +58,12 @@
           alert("Error: Bad Request");
         }
       });
+      document.body.addEventListener("htmx:sendError", (evt) => {
+        if (evt.detail.xhr) {
+          // alert the user when a 404 occurs (maybe use a nicer mechanism than alert())
+          alert("Error: Connection error");
+        }
+      });
     });
     htmx.logAll();
   </script>

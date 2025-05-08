@@ -7,8 +7,12 @@ import (
 	"swagtask/models"
 )
 
-func GetTagWithTasksById(queries *db.Queries, tagId int32, ctx context.Context) (*models.TagWithTasks, error) {
-    tagsWithTaskRelations, err := queries.GetTagWithTaskRelations(ctx, tagId)
+func GetTagWithTasksById(queries *db.Queries, tagId int32, 
+    userId int32, ctx context.Context) (*models.TagWithTasks, error) {
+    tagsWithTaskRelations, err := queries.GetTagWithTaskRelations(ctx, db.GetTagWithTaskRelationsParams{
+        ID: tagId,
+        UserID: userId,
+    })
     if err != nil {
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
     }
@@ -31,7 +35,7 @@ func GetTagWithTasksById(queries *db.Queries, tagId int32, ctx context.Context) 
 		}
     }
 
-    allTaskOptions, errGettingAllTasks := queries.GetAllTaskOptions(ctx)
+    allTaskOptions, errGettingAllTasks := queries.GetAllTaskOptions(ctx, userId )
     if errGettingAllTasks != nil {
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, errGettingAllTasks)
     }
@@ -41,13 +45,13 @@ func GetTagWithTasksById(queries *db.Queries, tagId int32, ctx context.Context) 
     return &tagWithTasks, nil
 }
 
-func GetTagsWithTasks(queries *db.Queries, ctx context.Context) ([]models.TagWithTasks, error) {
-    tagsWithTasksRelations, errTags := queries.GetTagsWithTaskRelations(ctx)
+func GetTagsWithTasks(queries *db.Queries, userId int32, ctx context.Context) ([]models.TagWithTasks, error) {
+    tagsWithTasksRelations, errTags := queries.GetTagsWithTaskRelations(ctx, userId)
     if errTags != nil {
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, errTags)
     }
 
-    allTaskOptions, errAllTaskOptions := queries.GetAllTaskOptions(ctx)
+    allTaskOptions, errAllTaskOptions := queries.GetAllTaskOptions(ctx, userId)
     if errAllTaskOptions != nil {
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, errAllTaskOptions)
     }
@@ -84,7 +88,8 @@ func GetTagsWithTasks(queries *db.Queries, ctx context.Context) ([]models.TagWit
     return tagsWithTasks, nil
 }
 
-func UpdateTag(queries *db.Queries, tagId int32, tagName string, ctx context.Context) (*models.TagWithTasks, error) {
+func UpdateTag(queries *db.Queries, tagId int32, userId int32,
+     tagName string, ctx context.Context) (*models.TagWithTasks, error) {
 	err := queries.UpdateTag(ctx, db.UpdateTagParams{
 		Name: tagName,
 		ID: tagId,
@@ -94,7 +99,7 @@ func UpdateTag(queries *db.Queries, tagId int32, tagName string, ctx context.Con
 		return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
 	}
 
-	tagWithTasks, errTags := GetTagWithTasksById(queries, tagId, ctx)
+	tagWithTasks, errTags := GetTagWithTasksById(queries, tagId, userId, ctx)
 	if errTags != nil{
 		return nil, errTags
 	}
@@ -102,8 +107,12 @@ func UpdateTag(queries *db.Queries, tagId int32, tagName string, ctx context.Con
 	return tagWithTasks, nil 
 }
 
-func DeleteTag(queries *db.Queries, tagId int32, ctx context.Context) error {
-    errDelete := queries.DeleteTag(ctx, tagId)
+func DeleteTag(queries *db.Queries, tagId int32,
+     userId int32, ctx context.Context) error {
+    errDelete := queries.DeleteTag(ctx, db.DeleteTagParams{
+        ID: tagId,
+        UserID: userId,
+    }) 
     if errDelete != nil {
        
         return fmt.Errorf("%w: %v", ErrBadRequest, errDelete)
@@ -112,7 +121,8 @@ func DeleteTag(queries *db.Queries, tagId int32, ctx context.Context) error {
     return nil
 }
 
-func DeleteTaskRelationFromTag(queries *db.Queries, tagId int32, taskId int32, ctx context.Context) (*models.TagWithTasks, error) {
+func DeleteTaskRelationFromTag(queries *db.Queries, tagId int32,
+    userId int32, taskId int32, ctx context.Context) (*models.TagWithTasks, error) {
 	err := queries.DeleteTagTaskRelation(ctx, db.DeleteTagTaskRelationParams{
 		TaskID: taskId,
 		TagID: tagId ,
@@ -123,7 +133,7 @@ func DeleteTaskRelationFromTag(queries *db.Queries, tagId int32, taskId int32, c
 		return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
 	}
 
-	tagWithTasks, errTag := GetTagWithTasksById(queries,tagId,ctx)
+	tagWithTasks, errTag := GetTagWithTasksById(queries,tagId,userId, ctx)
 	if errTag != nil {
 		return nil, err
 	}
@@ -131,7 +141,8 @@ func DeleteTaskRelationFromTag(queries *db.Queries, tagId int32, taskId int32, c
 	return tagWithTasks, nil
 }
 
-func AddTaskToTag(queries *db.Queries, tagId int32, taskId int32, ctx context.Context) (*models.TagWithTasks, error) {
+func AddTaskToTag(queries *db.Queries, tagId int32,
+    userId int32, taskId int32, ctx context.Context) (*models.TagWithTasks, error) {
 	err := queries.CreateTagTaskRelation(ctx, db.CreateTagTaskRelationParams{
 		TaskID: taskId,
 		TagID: tagId,
@@ -141,7 +152,7 @@ func AddTaskToTag(queries *db.Queries, tagId int32, taskId int32, ctx context.Co
 		return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
 	}
 
-	tagWithTasks,errTag := GetTagWithTasksById(queries, tagId, ctx) 
+	tagWithTasks,errTag := GetTagWithTasksById(queries, tagId,userId, ctx) 
 	if errTag != nil {
 		return nil, errTag
 	}

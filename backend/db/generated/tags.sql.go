@@ -77,13 +77,12 @@ SELECT tg.ID, tg.name, tg.user_id,
         ON tg.ID = rel.tag_id
     LEFT JOIN tasks t 
         ON t.ID = rel.task_id
-    WHERE tg.id = $1 AND tg.user_id = $2 AND t.user_id = $3
+    WHERE tg.id = $1 AND tg.user_id = $2 AND t.user_id = $2
 `
 
 type GetTagWithTaskRelationsParams struct {
-	ID       int32
-	UserID   int32
-	UserID_2 int32
+	ID     int32
+	UserID int32
 }
 
 type GetTagWithTaskRelationsRow struct {
@@ -96,7 +95,7 @@ type GetTagWithTaskRelationsRow struct {
 }
 
 func (q *Queries) GetTagWithTaskRelations(ctx context.Context, arg GetTagWithTaskRelationsParams) ([]GetTagWithTaskRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTagWithTaskRelations, arg.ID, arg.UserID, arg.UserID_2)
+	rows, err := q.db.Query(ctx, getTagWithTaskRelations, arg.ID, arg.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -130,13 +129,8 @@ SELECT tg.ID, tg.name, tg.user_id,
         ON tg.ID = rel.tag_id
     LEFT JOIN tasks t 
         ON t.ID = rel.task_id
-    WHERE tg.user_id = $1 AND t.user_id = $2
+    WHERE tg.user_id = $1 AND t.user_id = $1
 `
-
-type GetTagsWithTaskRelationsParams struct {
-	UserID   int32
-	UserID_2 int32
-}
 
 type GetTagsWithTaskRelationsRow struct {
 	ID         int32
@@ -147,8 +141,8 @@ type GetTagsWithTaskRelationsRow struct {
 	TaskUserID pgtype.Int4
 }
 
-func (q *Queries) GetTagsWithTaskRelations(ctx context.Context, arg GetTagsWithTaskRelationsParams) ([]GetTagsWithTaskRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTagsWithTaskRelations, arg.UserID, arg.UserID_2)
+func (q *Queries) GetTagsWithTaskRelations(ctx context.Context, userID int32) ([]GetTagsWithTaskRelationsRow, error) {
+	rows, err := q.db.Query(ctx, getTagsWithTaskRelations, userID)
 	if err != nil {
 		return nil, err
 	}

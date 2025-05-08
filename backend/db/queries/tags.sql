@@ -12,7 +12,7 @@ SELECT tg.ID, tg.name, tg.user_id,
         ON tg.ID = rel.tag_id
     LEFT JOIN tasks t 
         ON t.ID = rel.task_id
-    WHERE tg.id = $1 AND tg.user_id = $2 AND t.user_id = $3;
+    WHERE tg.id = $1 AND tg.user_id = $2 AND t.user_id = $2;
 
 
 
@@ -24,7 +24,7 @@ SELECT tg.ID, tg.name, tg.user_id,
         ON tg.ID = rel.tag_id
     LEFT JOIN tasks t 
         ON t.ID = rel.task_id
-    WHERE tg.user_id = $1 AND t.user_id = $2;
+    WHERE tg.user_id = $1 AND t.user_id = $1;
 
 
 -- name: DeleteTag :exec
