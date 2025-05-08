@@ -33,6 +33,7 @@ func getUserInfoFromSessionId(queries *db.Queries,r *http.Request) (*models.User
         return nil, fmt.Errorf("%w: %v", service.ErrUnauthorized, errUser)
     }
     user := models.User{
+        ID: userId,
         PathToPfp: userDb.PathToPfp.String,
         Username: userDb.Username,
     }

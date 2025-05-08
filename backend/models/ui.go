@@ -81,6 +81,7 @@ func NewTasksPageFilters(tagName string, taskName string) TasksPageFilters {
 
 // user
 type User struct{
+	ID int32
 	PathToPfp string
 	Username string
 }

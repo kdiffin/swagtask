@@ -1,4 +1,5 @@
 -- Create sequences
+
 CREATE SEQUENCE tag_task_relations_id_seq START 1 INCREMENT 1;
 CREATE SEQUENCE tags_id_seq START 1 INCREMENT 1;
 CREATE SEQUENCE tasks_id_seq START 1 INCREMENT 1;

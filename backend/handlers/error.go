@@ -23,7 +23,6 @@ func checkErrors(w http.ResponseWriter, r *http.Request, err error) bool {
         if errors.Is(err, knownErr) {
             if status == http.StatusUnauthorized {
                 utils.LogError("", err)
-                w.Header().Set("HX-Redirect", "/login/")
                 http.Redirect(w,r, "/login/", http.StatusSeeOther)
                 return true
             } else {

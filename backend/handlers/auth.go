@@ -3,7 +3,6 @@ package handlers
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"net/http"
 	"swagtask/auth"
 	db "swagtask/db/generated"
@@ -55,8 +54,6 @@ func HandleLogin(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Error creating session", http.StatusInternalServerError)
         return 
     }
-    fmt.Println("THESE ARE THE SESSIONS:")
-  
     cookie := http.Cookie{
         Name:     "session_id",
         Value:    sessionID,

@@ -246,10 +246,10 @@ func AddTagToTask(queries *db.Queries,
 }
 
 // ---- DELETE ----
-func DeleteTask(queries *db.Queries,  taskId int32, ctx context.Context) error {
+func DeleteTask(queries *db.Queries,  taskId, userId int32, ctx context.Context) error {
     err := queries.DeleteTask(ctx, db.DeleteTaskParams{
-        ID: ,
-        taskId: 
+        ID: taskId,
+        UserID: userId,
     })
     if err != nil {
         if errors.Is(err, pgx.ErrNoRows) {
@@ -261,7 +261,7 @@ func DeleteTask(queries *db.Queries,  taskId int32, ctx context.Context) error {
     return nil
 }
 
-func DeleteTagRelationFromTask(queries *db.Queries, tagId int32, taskId int32, ctx context.Context) (*models.TaskWithTags, error) {
+func DeleteTagRelationFromTask(queries *db.Queries, tagId, userId, taskId int32, ctx context.Context) (*models.TaskWithTags, error) {
     errRelations := queries.DeleteTagTaskRelation(ctx, db.DeleteTagTaskRelationParams{
         TaskID: taskId,
         TagID:  tagId})
@@ -273,7 +273,7 @@ func DeleteTagRelationFromTask(queries *db.Queries, tagId int32, taskId int32, c
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, errRelations)
     }
 
-    taskWithTags, err := GetTaskWithTagsById(queries, taskId,ctx)
+    taskWithTags, err := GetTaskWithTagsById(queries,userId, taskId,ctx)
     if err != nil {
         return nil, err
     }

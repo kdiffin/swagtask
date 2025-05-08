@@ -12,7 +12,7 @@ import (
 
 // ---- READ ----
 
-func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, )   {
+func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template)   {
 	user, errAuth := getUserInfoFromSessionId(queries, r)
 	if checkErrors(w,r, errAuth)  {
 		return
@@ -20,7 +20,7 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries
 	tag := strings.TrimSuffix(r.URL.Query().Get("tags") ,"/")
 	task := strings.TrimSuffix(r.URL.Query().Get("taskName") ,"/")
 	filters := models.NewTasksPageFilters(tag, task)
-	tasks, err := service.GetFilteredTasksWithTags(queries, &filters,r.Context())
+	tasks, err := service.GetFilteredTasksWithTags(queries, &filters, user.ID,r.Context())
 	if checkErrors(w, r, err)  {
 		return
 	}
@@ -34,12 +34,12 @@ func HandlerGetTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries,
 	if checkErrors(w, r, errAuth) {
 		return
 	}
-	taskWithTags, err := service.GetTaskWithTagsById(queries,id,r.Context())
+	taskWithTags, err := service.GetTaskWithTagsById(queries,user.ID,id,r.Context())
 	if checkErrors(w, r, err) {
 		return
 	}
 
-	prevButton, nextButton := service.GetTaskNavigationButtons(r.Context(), queries, id)
+	prevButton, nextButton := service.GetTaskNavigationButtons(r.Context(), queries, user.ID, id)
 	page := models.NewTaskPage(*taskWithTags, prevButton, nextButton, true, user.PathToPfp, user.Username)
 	templates.Render(w, "task-page", page)
 }
@@ -47,10 +47,14 @@ func HandlerGetTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries,
 // ---- CREATE ----
 
 func HandlerCreateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template)   {
+	user, errAuth := getUserInfoFromSessionId(queries, r)
+	if checkErrors(w,r, errAuth)  {
+		return
+	}
 	name := r.FormValue("task_name")
 	idea := r.FormValue("task_idea")
 	
-	task, err := service.CreateTask(queries, name, idea,r.Context())
+	task, err := service.CreateTask(queries, name,user.ID,idea, r.Context())
 	if err != nil {
 		if errors.Is(err, service.ErrUnprocessable) {
 			utils.LogError("error adding task", err)
@@ -69,7 +73,11 @@ func HandlerCreateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queri
 // ---- UPDATE ----
 
 func HandlerTaskToggleComplete(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32)   {
-	taskWithTags, err := service.UpdateTaskCompletion(queries, taskId,r.Context())
+	user, errAuth := getUserInfoFromSessionId(queries, r)
+	if checkErrors(w,r, errAuth)  {
+		return
+	}
+	taskWithTags, err := service.UpdateTaskCompletion(queries,user.ID, taskId,r.Context())
 	if checkErrors(w,r, err) {
 		return
 	}
@@ -77,8 +85,12 @@ func HandlerTaskToggleComplete(w http.ResponseWriter, r *http.Request ,queries *
 	templates.Render(w, "task", taskWithTags)
 }
 
-func HandlerUpdateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32, idea string, name string) {
-	taskWithTags, errUpdate := service.UpdateTask(queries, taskId, name, idea,r.Context())
+func HandlerUpdateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template,  taskId int32, idea string, name string) {
+	user, errAuth := getUserInfoFromSessionId(queries, r)
+	if checkErrors(w,r, errAuth)  {
+		return
+	}
+	taskWithTags, errUpdate := service.UpdateTask(queries, taskId,user.ID,name,idea,r.Context())
 	if errUpdate != nil {
 		// return no contents
 		// if theres no update to tasks skip
@@ -88,7 +100,7 @@ func HandlerUpdateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queri
 			return
 		}  else if errors.Is(errUpdate, service.ErrUnprocessable) {
 			templates.Render(w, "tasks-container-error", "Task has same idea: " + idea)
-			taskWithTags,_ := service.GetTaskWithTagsById(queries, taskId,r.Context())
+			taskWithTags,_ := service.GetTaskWithTagsById(queries, user.ID,taskId,r.Context())
 			templates.Render(w, "task", taskWithTags)
 			return
 		} else if checkErrors(w,r, errUpdate) {
@@ -102,7 +114,11 @@ func HandlerUpdateTask(w http.ResponseWriter, r *http.Request ,queries *db.Queri
 
 //  ---- DELETE ----
 func HandlerDeleteTask(w http.ResponseWriter, r *http.Request ,queries *db.Queries, templates *models.Template, taskId int32) {
-	err := 	service.DeleteTask(queries, taskId,r.Context())
+	user, errAuth := getUserInfoFromSessionId(queries, r)
+	if checkErrors(w,r, errAuth)  {
+		return
+	}
+	err := 	service.DeleteTask(queries, taskId, user.ID,r.Context())
 	if checkErrors(w,r, err) {
 		return
 	}

@@ -12,7 +12,7 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 	if checkErrors(w,r,errAuth)  {
 		return
 	}
-	tagsWithTasks, errTag := service.GetTagsWithTasks(queries, r.Context())
+	tagsWithTasks, errTag := service.GetTagsWithTasks(queries, user.ID, r.Context())
 	if checkErrors(w,r,errTag) {
 		return
 	}
@@ -27,8 +27,11 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		w.Write([]byte(nil))
 		return
 	}
-
-	tagWithTask, err := service.UpdateTag(queries, tagId, tagName, r.Context())
+	user, errAuth := getUserInfoFromSessionId(queries, r)
+	if checkErrors(w,r, errAuth)  {
+		return
+	}
+	tagWithTask, err := service.UpdateTag(queries, tagId, user.ID, tagName, r.Context())
 	if checkErrors(w,r, err) {
 		return 
 	}
@@ -39,16 +42,22 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 
 // breaking the abstraction rules here cuz its gonna be mad annoying working with interface{}
 func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, tagName string, source string)  {
-	err := queries.CreateTag(r.Context(), tagName)
+	user, errAuth := getUserInfoFromSessionId(queries, r)
+	if checkErrors(w,r, errAuth)  {
+		return
+	}
+	err := queries.CreateTag(r.Context(), db.CreateTagParams{
+		Name: tagName,
+		UserID: user.ID,
+	})
 	if checkErrors(w,r,err) {
 		return
 	}
 
 	switch source {
 	case "/tasks":
-		
 		filters := models.NewTasksPageFilters(r.URL.Query().Get("tags"), r.URL.Query().Get("taskName"))
-		tasksWithTags, errTasks := service.GetFilteredTasksWithTags(queries, &filters, r.Context())
+		tasksWithTags, errTasks := service.GetFilteredTasksWithTags(queries, &filters, user.ID, r.Context())
 		if checkErrors(w,r,errTasks) {
 			return
 		}
@@ -57,7 +66,7 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return 
 	case "/tags":
 		// tagsWithTasks
-		tagsWithTasks, errTags := service.GetTagsWithTasks(queries, r.Context())
+		tagsWithTasks, errTags := service.GetTagsWithTasks(queries, user.ID, r.Context())
 		if checkErrors(w,r,errTags) {
 			return
 		}
@@ -72,7 +81,11 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 
 
 func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, tagId int32) {
-	err := service.DeleteTag(queries, tagId,r.Context())
+	user, errAuth := getUserInfoFromSessionId(queries, r)
+	if checkErrors(w,r, errAuth)  {
+		return
+	}
+	err := service.DeleteTag(queries, tagId,user.ID, r.Context())
 	if checkErrors(w,r,err) {
 		return
 	}
