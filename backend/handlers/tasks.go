@@ -20,7 +20,7 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request ,queries *db.Queries
 	tag := strings.TrimSuffix(r.URL.Query().Get("tags") ,"/")
 	task := strings.TrimSuffix(r.URL.Query().Get("taskName") ,"/")
 	filters := models.NewTasksPageFilters(tag, task)
-	tasks, err := service.GetFilteredTasksWithTags(queries, &filters, user.ID,r.Context())
+	tasks, err := service.GetFilteredTasksWithTags(queries, &filters, user.ID, r.Context())
 	if checkErrors(w, r, err)  {
 		return
 	}

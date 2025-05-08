@@ -70,14 +70,14 @@ func (q *Queries) GetAllTagsDesc(ctx context.Context, userID int32) ([]Tag, erro
 }
 
 const getTagWithTaskRelations = `-- name: GetTagWithTaskRelations :many
-SELECT tg.ID, tg.name, tg.user_id,
+SELECT tg.ID, tg.name, tg.user_id, tg.created_at, tg.updated_at,
     t.ID AS task_id, t.name AS task_name, t.user_id AS task_user_id
     FROM tags tg
     LEFT JOIN tag_task_relations rel 
         ON tg.ID = rel.tag_id
     LEFT JOIN tasks t 
         ON t.ID = rel.task_id
-    WHERE tg.id = $1 AND tg.user_id = $2 AND t.user_id = $2
+    WHERE tg.id = $1 AND tg.user_id = $2
 `
 
 type GetTagWithTaskRelationsParams struct {
@@ -89,6 +89,8 @@ type GetTagWithTaskRelationsRow struct {
 	ID         int32
 	Name       string
 	UserID     int32
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
 	TaskID     pgtype.Int4
 	TaskName   pgtype.Text
 	TaskUserID pgtype.Int4
@@ -107,6 +109,8 @@ func (q *Queries) GetTagWithTaskRelations(ctx context.Context, arg GetTagWithTas
 			&i.ID,
 			&i.Name,
 			&i.UserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 			&i.TaskID,
 			&i.TaskName,
 			&i.TaskUserID,
@@ -122,20 +126,22 @@ func (q *Queries) GetTagWithTaskRelations(ctx context.Context, arg GetTagWithTas
 }
 
 const getTagsWithTaskRelations = `-- name: GetTagsWithTaskRelations :many
-SELECT tg.ID, tg.name, tg.user_id,
+SELECT tg.ID, tg.name, tg.user_id, tg.created_at, tg.updated_at,
     t.ID AS task_id, t.name AS task_name, t.user_id AS task_user_id
     FROM tags tg
     LEFT JOIN tag_task_relations rel 
         ON tg.ID = rel.tag_id
     LEFT JOIN tasks t 
         ON t.ID = rel.task_id
-    WHERE tg.user_id = $1 AND t.user_id = $1
+    WHERE tg.user_id = $1
 `
 
 type GetTagsWithTaskRelationsRow struct {
 	ID         int32
 	Name       string
 	UserID     int32
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
 	TaskID     pgtype.Int4
 	TaskName   pgtype.Text
 	TaskUserID pgtype.Int4
@@ -154,6 +160,8 @@ func (q *Queries) GetTagsWithTaskRelations(ctx context.Context, userID int32) ([
 			&i.ID,
 			&i.Name,
 			&i.UserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 			&i.TaskID,
 			&i.TaskName,
 			&i.TaskUserID,

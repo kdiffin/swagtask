@@ -63,14 +63,16 @@ func GetFilteredTasksWithTags(queries *db.Queries, filters *models.TasksPageFilt
     taskswithTagRelations, err := queries.GetFilteredTasks(ctx, db.GetFilteredTasksParams{
         TaskName: stringtoPgText(filters.SearchQuery),
         TagName: stringtoPgText(filters.ActiveTag),
+        UserID: userId,
     })  
     if err != nil {
+        fmt.Println("error here at first")
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, err)
     }
 
-
     allTags, errAllTags := queries.GetAllTagsDesc(ctx, userId)
     if errAllTags != nil {
+        fmt.Println("error here at second")
         return nil, fmt.Errorf("%w: %v", ErrBadRequest, errAllTags)
     }
 
@@ -80,9 +82,11 @@ func GetFilteredTasksWithTags(queries *db.Queries, filters *models.TasksPageFilt
     orderedIds := []int32{}
     idSeen := make(map[int32]bool)
     for _, task := range taskswithTagRelations {
-
-        if task.TagID.Valid && task.TagName.Valid {
-            taskIdToTags[task.ID] = append(taskIdToTags[task.ID], db.Tag{ID: task.TagID.Int32, Name: task.TagName.String})
+        if task.TagID.Valid && task.TagName.Valid && task.TagUserID.Valid{
+            taskIdToTags[task.ID] = append(taskIdToTags[task.ID], 
+                db.Tag{ID: task.TagID.Int32, 
+                    Name: task.TagName.String,
+                    UserID: task.TagUserID.Int32})
         }
 
         if !idSeen[task.ID] {
@@ -94,6 +98,9 @@ func GetFilteredTasksWithTags(queries *db.Queries, filters *models.TasksPageFilt
             Name:      task.Name,
             Idea:      task.Idea,
             Completed: task.Completed,
+            UserID: task.UserID,
+            CreatedAt: task.CreatedAt,
+            UpdatedAt: task.UpdatedAt,
         }
 
         idSeen[task.ID] = true
@@ -206,6 +213,7 @@ func UpdateTask(queries *db.Queries, taskId int32, userId int32,
     errCompletion := queries.UpdateTask(ctx, db.UpdateTaskParams{
         ID:   taskId,
         Name: nameNullable,
+        UserID: userId,
         Idea: ideaNullable,
     })
     if errCompletion != nil {

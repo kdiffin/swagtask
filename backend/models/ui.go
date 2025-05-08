@@ -22,7 +22,6 @@ func NewUITask(task db.Task) Task{
 		Name: task.Name,
 		Idea:  task.Idea,
 		Completed: task.Completed.Bool,
-
 	}
 }
 

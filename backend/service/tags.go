@@ -26,6 +26,8 @@ func GetTagWithTasksById(queries *db.Queries, tagId int32,
         tag = db.Tag{
             ID:   tagWithTaskRelation.ID,
             Name: tagWithTaskRelation.Name,
+            CreatedAt: tagWithTaskRelation.CreatedAt,
+            UpdatedAt: tagWithTaskRelation.UpdatedAt,
         }
 		if tagWithTaskRelation.TaskID.Valid && tagWithTaskRelation.TaskName.Valid {
 			relatedTasks = append(relatedTasks, models.RelatedTask{
@@ -71,6 +73,9 @@ func GetTagsWithTasks(queries *db.Queries, userId int32, ctx context.Context) ([
         idToTag[tag.ID] = db.Tag{
             ID:   tag.ID,
             Name: tag.Name,
+            CreatedAt: tag.CreatedAt,
+            UpdatedAt: tag.UpdatedAt,
+            UserID: tag.UserID,
         }
         idSeen[tag.ID] = true
     }
@@ -93,6 +98,7 @@ func UpdateTag(queries *db.Queries, tagId int32, userId int32,
 	err := queries.UpdateTag(ctx, db.UpdateTagParams{
 		Name: tagName,
 		ID: tagId,
+        UserID: userId,
 	})
 	
 	if err != nil {
@@ -125,7 +131,7 @@ func DeleteTaskRelationFromTag(queries *db.Queries, tagId int32,
     userId int32, taskId int32, ctx context.Context) (*models.TagWithTasks, error) {
 	err := queries.DeleteTagTaskRelation(ctx, db.DeleteTagTaskRelationParams{
 		TaskID: taskId,
-		TagID: tagId ,
+		TagID: tagId,
 	})
 	
 

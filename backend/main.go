@@ -63,6 +63,9 @@ func main() {
 	})
 
 	// tasks
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/tasks/", http.StatusSeeOther)
+	})
 	mux.HandleFunc("GET /tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
 		handlers.HandlerGetTasks(w, r, queries, templates)
 	})

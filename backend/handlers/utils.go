@@ -27,7 +27,6 @@ func getUserInfoFromSessionId(queries *db.Queries,r *http.Request) (*models.User
 		return nil, fmt.Errorf("%w: %v", service.ErrUnauthorized, err)
 	}
 
-	fmt.Println("USER ID:", userId)
     userDb, errUser := queries.GetUserInfo(r.Context(), userId)
     if errUser != nil {
         return nil, fmt.Errorf("%w: %v", service.ErrUnauthorized, errUser)
