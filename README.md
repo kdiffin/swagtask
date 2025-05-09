@@ -35,7 +35,7 @@
   - [x] implement the readme on how to add session auth
   - [x] add sql to the sessions instead of storing them in memory
   - [x] make an indicator showing if the user is logged in or not
-  - [ ] finish fetching the tags and shit
+  - [x] finish fetching the tags and shit
   - [ ] remove auto incrementing ids by int as i think thats an attack vector because people can call the delete function for example with paramaters user_id = 2 and task_id = 3 and then just delete a task like that
   - [ ] change the hx-redirects to just forms with actions
 
