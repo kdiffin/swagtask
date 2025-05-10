@@ -1,16 +1,13 @@
 {{ block "login" . }}
 <html>
-  {{ block "head" "Login"
-  }}{{
-    end
-  }}
+  {{ template "head" "Login"}}
 
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" . }}
     <div class="container mx-auto px-4 py-8 max-w-md">
       <div class="bg-zinc-800 p-6 rounded shadow border border-zinc-700">
         <h1 class="text-2xl font-bold mb-4 text-white">Log In</h1>
-        <form hx-post="/login/" class="space-y-4">
+        <form action="/login/" method="post" class="space-y-4">
           <div>
             <label for="username" class="block text-sm mb-1 text-zinc-300"
               >Username</label
@@ -50,17 +47,14 @@
 
 {{ block "sign-up" . }}
 <html>
-  {{ block "head" "Sign Up"
-  }}{{
-    end
-  }}
+  {{ template "head" "Sign Up"}}
 
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
     {{ template "navbar" . }}
     <div class="container mx-auto px-4 py-8 max-w-md">
       <div class="bg-zinc-800 p-6 rounded shadow border border-zinc-700">
         <h1 class="text-2xl font-bold mb-4 text-white">Sign Up</h1>
-        <form hx-post="/sign-up/" class="space-y-4">
+        <form action="/sign-up/" class="space-y-4" method="post">
           <div>
             <label for="username" class="block text-sm mb-1 text-zinc-300"
               >Username</label

@@ -29,8 +29,7 @@ func HandleSignup(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    w.Header().Set("HX-Redirect", "/login/")
-    w.WriteHeader(200)
+    http.Redirect(w, r, "/login/", http.StatusSeeOther)
 }
 
 func generateSessionID() string {
@@ -62,9 +61,7 @@ func HandleLogin(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
         Path:     "/",
     }
     http.SetCookie(w, &cookie)
-    w.Header().Set("HX-Redirect", "/tasks/")
-    w.WriteHeader(200)
-
+    http.Redirect(w, r, "/tasks/", http.StatusSeeOther)
 }
 
 
@@ -84,7 +81,7 @@ func HandleLogout(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
         MaxAge: -1,
         Path:   "/",
     })
-    w.Header().Set("HX-Redirect", "/login/")
-    w.WriteHeader(200)
+    http.Redirect(w, r, "/login/", http.StatusSeeOther)
+   
 
 }
