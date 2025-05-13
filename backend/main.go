@@ -16,6 +16,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"golang.org/x/net/websocket"
 )
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 		log.Fatal("Error loading .env file")
 	}
 }
+
 
 func main() {
 	// DB INIT START
@@ -197,6 +199,12 @@ func main() {
 		handlers.HandlerRemoveTaskFromTag(w, r, queries, templates, int32(taskId), int32(id))
 	})
 
+
+	// vaults
+	mux.HandleFunc("GET /vaults/{$}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.HandlerGetVaults(w,r, queries, templates)
+	})
+	mux.Handle("/ws/", websocket.Handler(handlers.WsHandler()))
 	server := http.Server{
 		Addr:    "0.0.0.0:42069",
 		Handler: middleware.Logging(mux),

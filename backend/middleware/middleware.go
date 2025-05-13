@@ -1,7 +1,10 @@
 package middleware
 
 import (
+	"bufio"
+	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -23,6 +26,13 @@ func (w *wrappedWriter) Write(b []byte) (int,error){
 	i, err := w.ResponseWriter.Write(b)
 	return i, err 
 }
+func (w *wrappedWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hj, ok := w.ResponseWriter.(http.Hijacker); ok {
+		return hj.Hijack()
+	}
+	return nil, nil, fmt.Errorf("wrappedWriter: underlying ResponseWriter doesn't support hijacking")
+}
+
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		showHttpDumps := true

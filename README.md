@@ -38,9 +38,16 @@
   - [x] finish fetching the tags and shit
   - [ ] remove auto incrementing ids by int as i think thats an attack vector because people can call the delete function for example with paramaters user_id = 2 and task_id = 3 and then just delete a task like that (cba)
   - [x] change the hx-redirects to just forms with actions
+  - [ ] block csrf, add session expirations
 
+- [ ] add this
+      ![alt text](./structure.jpeg)
+
+- [ ] add live editing via websockets between 2 users
+
+- [ ] add notification system via sse
 - [ ] [add docs to api](https://www.boot.dev/lessons/109e29ef-cdfd-4d5b-ad47-6a609a638896)
-- [ ] add live editing via websockets or polling between 2 users
+- [ ] add some tests bruh
 
 ### long term
 

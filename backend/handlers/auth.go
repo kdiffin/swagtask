@@ -82,6 +82,4 @@ func HandleLogout(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
         Path:   "/",
     })
     http.Redirect(w, r, "/login/", http.StatusSeeOther)
-   
-
 }

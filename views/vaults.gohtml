@@ -1,0 +1,71 @@
+{{ block "vaults-page" . }}
+<html class="bg-zinc-900">
+  {{ template "head" "Vaults" }}
+
+  <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
+    {{ template "navbar" .Auth }}
+
+    <main class="container mx-auto px-4 py-6 max-w-5xl space-y-6">
+      <!-- Add Vault Card -->
+      <div class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700 p-4">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-vault text-blue-400 mr-2 text-lg"></i>
+          <h2 class="text-lg font-semibold text-white">Add New Vault</h2>
+        </div>
+        <form
+          hx-post="/vaults/create"
+          hx-target="#vaults-list"
+          hx-swap="afterbegin swap:200ms transition:true"
+          class="flex flex-col md:flex-row items-center gap-3"
+        >
+          <input
+            type="text"
+            id="vault-name"
+            name="vault_name"
+            class="flex-1 bg-zinc-900 border border-zinc-700 text-white px-3 py-2 rounded placeholder-zinc-500 text-sm"
+            placeholder="Vault name"
+            required
+          />
+          <button
+            type="submit"
+            class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-sm text-white font-semibold shadow-sm text-sm transition-colors duration-200"
+          >
+            <i class="fas fa-plus mr-1"></i>Add Vault
+          </button>
+        </form>
+      </div>
+
+      <!-- Vaults List Card -->
+      <div
+        class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700"
+        id="vaults-list"
+      >
+        <div class="p-4 border-b border-zinc-700 flex items-center">
+          <i class="fas fa-list-ul text-blue-500 mr-2 text-lg"></i>
+          <h2 class="text-lg font-semibold text-white">Your Vaults</h2>
+        </div>
+        <div class="p-4 space-y-3">
+          <!-- Vaults will be dynamically added here -->
+          <div
+            class="p-4 space-y-3 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4"
+          >
+            {{ range.Vaults }}
+            <!-- Vault Square Component -->
+            <a
+              href="/vaults/{{ .ID }}"
+              class="block w-40 h-40 bg-zinc-900 border border-zinc-700 rounded shadow hover:bg-zinc-800 transition flex flex-col items-center justify-center text-center text-white font-semibold text-lg"
+            >
+              <i class="fas fa-vault text-blue-400 text-3xl mb-2"></i>
+              <span class="truncate w-full px-2">{{ .Name }}</span>
+            </a>
+            {{ else }}
+            <div class="text-zinc-400">No vaults yet.</div>
+            {{ end }}
+          </div>
+        </div>
+      </div>
+    </main>
+    {{ template "footer" . }}
+  </body>
+</html>
+{{ end }}
