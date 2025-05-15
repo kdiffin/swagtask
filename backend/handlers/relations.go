@@ -7,14 +7,13 @@ import (
 	"swagtask/service"
 )
 
-
 func HandlerAddTagToTask(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, taskId int32, tagId int32) {
 	user, errAuth := getUserInfoFromSessionId(queries, r)
-	if checkErrors(w,r, errAuth)  {
+	if checkErrors(w, r, errAuth) {
 		return
 	}
 	taskWithTags, err := service.AddTagToTask(queries, tagId, user.ID, taskId, r.Context())
-	if checkErrors(w,r, err) {
+	if checkErrors(w, r, err) {
 		return
 	}
 
@@ -23,11 +22,11 @@ func HandlerAddTagToTask(w http.ResponseWriter, r *http.Request, queries *db.Que
 
 func HandlerRemoveTagFromTask(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, taskId int32, tagId int32) {
 	user, errAuth := getUserInfoFromSessionId(queries, r)
-	if checkErrors(w,r, errAuth)  {
+	if checkErrors(w, r, errAuth) {
 		return
 	}
-	taskWithTags, err := 	service.DeleteTagRelationFromTask(queries, tagId, user.ID,taskId,r.Context())
-	if checkErrors(w,r, err) {
+	taskWithTags, err := service.DeleteTagRelationFromTask(queries, tagId, user.ID, taskId, r.Context())
+	if checkErrors(w, r, err) {
 		return
 	}
 
@@ -36,11 +35,11 @@ func HandlerRemoveTagFromTask(w http.ResponseWriter, r *http.Request, queries *d
 
 func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, taskId int32, tagId int32) {
 	user, errAuth := getUserInfoFromSessionId(queries, r)
-	if checkErrors(w,r, errAuth)  {
+	if checkErrors(w, r, errAuth) {
 		return
 	}
 	tagWithTasks, err := service.AddTaskToTag(queries, tagId, user.ID, taskId, r.Context())
-	if checkErrors(w,r, err) {
+	if checkErrors(w, r, err) {
 		return
 	}
 
@@ -49,11 +48,11 @@ func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Que
 
 func HandlerRemoveTaskFromTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *models.Template, taskId int32, tagId int32) {
 	user, errAuth := getUserInfoFromSessionId(queries, r)
-	if checkErrors(w,r, errAuth)  {
+	if checkErrors(w, r, errAuth) {
 		return
 	}
 	tagWithTasks, err := service.DeleteTaskRelationFromTag(queries, tagId, user.ID, taskId, r.Context())
-	if checkErrors(w,r,  err) {
+	if checkErrors(w, r, err) {
 		return
 	}
 

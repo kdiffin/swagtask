@@ -15,16 +15,15 @@ import (
 type wrappedWriter struct {
 	http.ResponseWriter
 	statusCode int
-	response []byte
 }
+
 func (w *wrappedWriter) WriteHeader(statusCode int) {
 	w.ResponseWriter.WriteHeader(statusCode)
 	w.statusCode = statusCode
 }
-func (w *wrappedWriter) Write(b []byte) (int,error){
-	w.response = b 
+func (w *wrappedWriter) Write(b []byte) (int, error) {
 	i, err := w.ResponseWriter.Write(b)
-	return i, err 
+	return i, err
 }
 func (w *wrappedWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	if hj, ok := w.ResponseWriter.(http.Hijacker); ok {
@@ -40,33 +39,31 @@ func Logging(next http.Handler) http.Handler {
 		bold := "\033[1m"
 		reset := "\033[0m"
 		start := time.Now()
-		wrapped := &wrappedWriter {
+		wrapped := &wrappedWriter{
 			ResponseWriter: w,
-			statusCode: http.StatusOK,
-			response: []byte(nil),
+			statusCode:     http.StatusOK,
 		}
-	
-	
+
 		dumpReq, errReq := httputil.DumpRequest(r, false)
 		if errReq != nil {
 			utils.LogError("Failed to dump request body:", errReq)
 		}
-		next.ServeHTTP(wrapped,r)
-	
+		next.ServeHTTP(wrapped, r)
+
 		if showHttpDumps {
 			log.Println(
-				"-------------------------------------------------------\n", 	
-				bold + "HTTP 1.1 REQUEST representation:" + reset + "\n",
-					 indent(string(dumpReq), "\t"), "\n",
+				"-------------------------------------------------------\n",
+				bold+"HTTP 1.1 REQUEST representation:"+reset+"\n",
+				indent(string(dumpReq), "\t"), "\n",
 
-				bold + "RESPONSE:" + reset, "status", wrapped.statusCode,"|", time.Since(start),
-					"\n----------------------------------------------------------------------------",
+				bold+"RESPONSE:"+reset, "status", wrapped.statusCode, "|", time.Since(start),
+				"\n----------------------------------------------------------------------------",
 			)
 		} else {
 			log.Println(
 				"-------------------------------------------------------\n",
-				"request:",r.Method, r.URL.Path, "\n",
-				"response:",wrapped.statusCode, time.Since(start),
+				"request:", r.Method, r.URL.Path, "\n",
+				"response:", wrapped.statusCode, time.Since(start),
 				"\n----------------------------------------------------------------------------",
 			)
 		}

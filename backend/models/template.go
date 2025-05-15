@@ -21,7 +21,7 @@ func NewTemplate() *Template {
 func (t *Template) Render(w io.Writer, name string, data any) error {
 	err := t.tmpl.ExecuteTemplate(w, name, data)
 	if err != nil {
-		utils.LogError("Error rendering template:", err)	
+		utils.LogError("Error rendering template:", err)
 	}
 	return nil
-} 
+}

@@ -1,14 +1,14 @@
 package models
 
-
 type authenticatedPage struct {
 	Authorized bool
 	User
 }
+
 // tags.gohtml
 type tagsPage struct {
 	TagsWithTasks []TagWithTasks
-	Auth authenticatedPage
+	Auth          authenticatedPage
 }
 
 func NewTagsPage(tagsWithTasks []TagWithTasks, authorized bool, pathToPfp string, username string) tagsPage {
@@ -18,16 +18,15 @@ func NewTagsPage(tagsWithTasks []TagWithTasks, authorized bool, pathToPfp string
 			Authorized: authorized,
 			User: User{
 				PathToPfp: pathToPfp,
-				Username: username,
+				Username:  username,
 			},
 		},
-	
 	}
 }
 
 // task.gohtml
 type TaskButton struct {
-	ID    int32
+	ID     int32
 	Name   string
 	Exists bool
 }
@@ -38,8 +37,7 @@ type TaskPageButtons struct {
 type taskPage struct {
 	Task    TaskWithTags
 	Buttons TaskPageButtons
-	Auth authenticatedPage
-	
+	Auth    authenticatedPage
 }
 
 func NewTaskPage(task TaskWithTags, prevButton, nextButton TaskButton, authorized bool, pathToPfp string, username string) taskPage {
@@ -53,37 +51,35 @@ func NewTaskPage(task TaskWithTags, prevButton, nextButton TaskButton, authorize
 			Authorized: authorized,
 			User: User{
 				PathToPfp: pathToPfp,
-				Username: username,
+				Username:  username,
 			},
 		},
-	
 	}
 }
 
 // tasks.gohtml
 type TasksPage struct {
-	Tasks []TaskWithTags
+	Tasks   []TaskWithTags
 	Filters *TasksPageFilters
-	Auth authenticatedPage
+	Auth    authenticatedPage
 }
 
-func NewTasksPage(tasks []TaskWithTags,tagFilter *string, taskFilter *string, authorized bool, pathToPfp string, username string) TasksPage {
-	var filters *TasksPageFilters 
+func NewTasksPage(tasks []TaskWithTags, tagFilter *string, taskFilter *string, authorized bool, pathToPfp string, username string) TasksPage {
+	var filters *TasksPageFilters
 	if tagFilter != nil && taskFilter != nil {
 		filtersVal := NewTasksPageFilters(*tagFilter, *taskFilter)
-		filters = &filtersVal		
-	} 
+		filters = &filtersVal
+	}
 	return TasksPage{
-		Tasks: tasks,
+		Tasks:   tasks,
 		Filters: filters,
 		Auth: authenticatedPage{
 			Authorized: authorized,
 			User: User{
 				PathToPfp: pathToPfp,
-				Username: username,
+				Username:  username,
 			},
 		},
-	
 	}
-	
+
 }

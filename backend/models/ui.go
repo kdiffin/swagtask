@@ -12,19 +12,18 @@ type Task struct {
 	Completed bool
 }
 
-func NewUITask(task db.Task) Task{
+func NewUITask(task db.Task) Task {
 	if !task.Completed.Valid {
 		panic("this wasnt supposed to happen since the db has false as its default")
 	}
 
 	return Task{
-		ID: task.ID,
-		Name: task.Name,
-		Idea:  task.Idea,
+		ID:        task.ID,
+		Name:      task.Name,
+		Idea:      task.Idea,
 		Completed: task.Completed.Bool,
 	}
 }
-
 
 // ---- FOR UI ----
 // tasks
@@ -66,21 +65,20 @@ func NewTagWithTasks(tag db.Tag, relatedTasks []RelatedTask, availableTasks []Av
 }
 
 type TasksPageFilters struct {
-	SearchQuery  string
-	ActiveTag string
+	SearchQuery string
+	ActiveTag   string
 }
 
 func NewTasksPageFilters(tagName string, taskName string) TasksPageFilters {
 	return TasksPageFilters{
-		ActiveTag:  tagName,
+		ActiveTag:   tagName,
 		SearchQuery: taskName,
 	}
 }
 
-
 // user
-type User struct{
-	ID int32
+type User struct {
+	ID        int32
 	PathToPfp string
-	Username string
+	Username  string
 }

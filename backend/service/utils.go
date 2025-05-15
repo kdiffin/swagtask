@@ -37,7 +37,7 @@ func getTagAvailableTasks(allTasksOptions []db.GetAllTaskOptionsRow, relatedTask
 	for _, availableTask := range allTasksOptions {
 		realAvailableTask := models.AvailableTask{
 			Name: availableTask.Name,
-			ID: availableTask.ID,
+			ID:   availableTask.ID,
 		}
 		if !taskExists[int(availableTask.ID)] {
 			availableTasks = append(availableTasks, realAvailableTask)
@@ -47,26 +47,22 @@ func getTagAvailableTasks(allTasksOptions []db.GetAllTaskOptionsRow, relatedTask
 	return availableTasks
 }
 
-
 // type to pg type stuff
 func Int32ToPgInt4(i int32) pgtype.Int4 {
 	var pgi pgtype.Int4
-	pgi.Int32 = i	
+	pgi.Int32 = i
 	pgi.Valid = true
 
 	return pgi
 }
 
-
 func stringtoPgText(str string) pgtype.Text {
 	var pgs pgtype.Text
 	if str == "" {
-		pgs.Valid = false 
+		pgs.Valid = false
 	} else {
 		pgs.String = str
 		pgs.Valid = true
 	}
 	return pgs
 }
-
-

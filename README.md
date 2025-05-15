@@ -1,3 +1,9 @@
+chat gippity made the readme
+im doing this to learn htmx and golang i hate react now im a htmx-grug-pilled dev, f the virtual dom
+chat gippity made most of my frontends styles btw
+
+---
+
 ## TODOS:
 
 - [x] finish the main page and abstract the update logic of the tags
@@ -36,15 +42,23 @@
   - [x] add sql to the sessions instead of storing them in memory
   - [x] make an indicator showing if the user is logged in or not
   - [x] finish fetching the tags and shit
-  - [ ] remove auto incrementing ids by int as i think thats an attack vector because people can call the delete function for example with paramaters user_id = 2 and task_id = 3 and then just delete a task like that (cba)
   - [x] change the hx-redirects to just forms with actions
   - [ ] block csrf, add session expirations
 
-- [ ] add this
-      ![alt text](./structure.jpeg)
+- [ ] refactor v3 (vaults)
+
+  - **notes**
+  - note to self: every tag action based on its vault should be validated with the user id
+
+  - **large scale objectives**
+  - ![alt text](./structure.jpeg)
+
+  - **objectives**
+  - [x] replace auto incrementing ids with uuids (no random id guess attack vector)
+  - [ ] make it work with the uuids now
+  - [ ] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./code-structure.md)
 
 - [ ] add live editing via websockets between 2 users
-
 - [ ] add notification system via sse
 - [ ] [add docs to api](https://www.boot.dev/lessons/109e29ef-cdfd-4d5b-ad47-6a609a638896)
 - [ ] add some tests bruh
@@ -52,12 +66,6 @@
 ### long term
 
 - [ ] add openapi specs
-
----
-
-chat gippity made the readme
-im doing this to learn htmx and golang i hate react now im a based htmxpilled dev now f the virtual dom
-chat gippity made my frontends styles btw
 
 ---
 
