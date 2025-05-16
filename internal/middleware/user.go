@@ -29,6 +29,7 @@ func getUserIDFromRequest(queries *db.Queries, r *http.Request) (pgtype.UUID, er
 
 	sesh, errSesh := queries.GetSessionValues(r.Context(), cookie.Value)
 	if errSesh != nil {
+
 		return pgtype.UUID{}, errSesh
 	}
 	return sesh.UserID, nil
@@ -57,7 +58,8 @@ func WithUser(queries *db.Queries, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, err := getUserInfoFromSessionId(queries, r)
 		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Redirect(w, r, "/login/", http.StatusUnauthorized)
+			// http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 		ctx := context.WithValue(r.Context(), userContextKey, user)

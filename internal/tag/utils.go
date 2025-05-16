@@ -1,25 +1,24 @@
 package tag
 
 import (
-	"swagtask/backend/models"
 	db "swagtask/internal/db/generated"
 )
 
-func getTagAvailableTasks(allTasksOptions []db.GetAllTaskOptionsRow, relatedTaskOptions []models.RelatedTask) []models.AvailableTask {
+func getTagAvailableTasks(allTasksOptions []db.GetAllTaskOptionsRow, relatedTaskOptions []relatedTask) []availableTask {
 	// think of this as a set checking if the task is a task of the tag
 	// int is id
-	taskExists := make(map[int]bool)
+	taskExists := make(map[string]bool)
 	for _, task := range relatedTaskOptions {
-		taskExists[int(task.ID)] = true
+		taskExists[task.ID] = true
 	}
 
-	availableTasks := []models.AvailableTask{}
-	for _, availableTask := range allTasksOptions {
-		realAvailableTask := models.AvailableTask{
-			Name: availableTask.Name,
-			ID:   availableTask.ID,
+	availableTasks := []availableTask{}
+	for _, taskOption := range allTasksOptions {
+		realAvailableTask := availableTask{
+			Name: taskOption.Name,
+			ID:   taskOption.ID.String(),
 		}
-		if !taskExists[availableTask.ID.String()] {
+		if !taskExists[taskOption.ID.String()] {
 			availableTasks = append(availableTasks, realAvailableTask)
 		}
 	}

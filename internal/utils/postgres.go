@@ -10,12 +10,23 @@ func Int32ToPgInt4(i int32) pgtype.Int4 {
 	return pgi
 }
 
-func StringtoPgText(str string) pgtype.Text {
+func StringToPgText(str string) pgtype.Text {
 	var pgs pgtype.Text
 	if str == "" {
 		pgs.Valid = false
 	} else {
 		pgs.String = str
+		pgs.Valid = true
+	}
+	return pgs
+}
+
+func PgUUID(str string) pgtype.UUID {
+	var pgs pgtype.UUID
+	if str == "" {
+		pgs.Valid = false
+	} else {
+		copy(pgs.Bytes[:], str)
 		pgs.Valid = true
 	}
 	return pgs

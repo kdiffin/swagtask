@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -197,23 +196,6 @@ func main() {
 		}
 
 		handlers.HandlerRemoveTaskFromTag(w, r, queries, templates, int32(taskId), int32(id))
-	})
-	mux.HandleFunc("GET /json", func(w http.ResponseWriter, r *http.Request) {
-		// Prepare the response data
-		response := map[string]string{
-			"message": "hello world",
-		}
-
-		// Set content-type to JSON
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-
-		// Encode and send JSON
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			utils.LogError("failed to encode json", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
-			return
-		}
 	})
 
 	// vaults

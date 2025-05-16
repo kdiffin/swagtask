@@ -1,11 +1,11 @@
-root = "../"
+root = "./"
 testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
   args_bin = []
   bin = "./tmp/main"
-  cmd = "go build -o ./tmp/main ."
+  cmd = "go build -o ./tmp/main ./cmd/swagtask"
   delay = 1000 
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
@@ -13,7 +13,7 @@ tmp_dir = "tmp"
   exclude_unchanged = false
   follow_symlink = false
   full_bin = ""
-  include_dir = ["views","backend","css"]
+  include_dir = ["cmd","internal","web"]
   include_ext = ["go", "tpl","gohtml", "tmpl", "html", "css"]
   include_file = []
   kill_delay = "0s"

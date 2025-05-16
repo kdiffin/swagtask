@@ -163,5 +163,3 @@ func AddTaskToTag(queries *db.Queries, tagId int32,
 
 	return tagWithTasks, nil
 }
-
-

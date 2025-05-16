@@ -18,32 +18,38 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 	if utils.CheckError(w, r, errTag) {
 		return
 	}
-	page := newTagsPage(tagsWithTasks, true, user.PathToPfp, user.Username)
+	page := newTagsPage(tagsWithTasks, true, user.PathToPfp.String, user.Username)
 	templates.Render(w, "tags-page", page)
 }
 
-// func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template, tagName string, tagId int32) {
-// 	if tagName == "" {
-// 		w.WriteHeader(http.StatusNoContent)
-// 		w.Write([]byte(nil))
-// 		return
-// 	}
-// 	user, errAuth := getUserInfoFromSessionId(queries, r)
-// 	if utils.CheckError(w, r, errAuth) {
-// 		return
-// 	}
-// 	tagWithTask, err := updateTag(queries, tagId, user.ID, tagName, r.Context())
-// 	if utils.CheckError(w, r, err) {
-// 		return
-// 	}
+func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+	tagId := r.PathValue("id")
+	tagName := r.FormValue("tag_name")
 
-// 	templates.Render(w, "tag-card", tagWithTask)
-// }
+	if tagName == "" {
+		w.WriteHeader(http.StatusNoContent)
+		w.Write([]byte(nil))
+		return
+	}
+	user, ok := middleware.UserFromContext(r.Context())
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	tagWithTask, err := updateTag(queries, utils.PgUUID(tagId), user.ID, tagName, r.Context())
+	if utils.CheckError(w, r, err) {
+		return
+	}
 
+	templates.Render(w, "tag-card", tagWithTask)
+}
+
+// TODO:
 // breaking the abstraction rules here cuz its gonna be mad annoying working with interface{}
 // func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template, tagName string, source string) {
-// 	user, errAuth := getUserInfoFromSessionId(queries, r)
-// 	if utils.CheckError(w, r, errAuth) {
+// 	user, ok := middleware.UserFromContext(r.Context())
+// 	if !ok {
+// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 // 		return
 // 	}
 // 	err := queries.CreateTag(r.Context(), db.CreateTagParams{
@@ -56,7 +62,7 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 
 // 	switch source {
 // 	case "/tasks":
-// 		filters := template.NewTasksPageFilters(r.URL.Query().Get("tags"), r.URL.Query().Get("taskName"))
+// 		filters := models.NewTasksPageFilters(r.URL.Query().Get("tags"), r.URL.Query().Get("taskName"))
 // 		tasksWithTags, errTasks := GetFilteredTasksWithTags(queries, &filters, user.ID, r.Context())
 // 		if utils.CheckError(w, r, errTasks) {
 // 			return
@@ -66,7 +72,7 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 // 		return
 // 	case "/tags":
 // 		// tagsWithTasks
-// 		tagsWithTasks, errTags := GetTagsWithTasks(queries, user.ID, r.Context())
+// 		tagsWithTasks, errTags := getTagsWithTasks(queries, user.ID, r.Context())
 // 		if utils.CheckError(w, r, errTags) {
 // 			return
 // 		}
@@ -79,17 +85,19 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 // 	}
 // }
 
-// func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template, tagId int32) {
-// 	user, errAuth := getUserInfoFromSessionId(queries, r)
-// 	if utils.CheckError(w, r, errAuth) {
-// 		return
-// 	}
-// 	err := DeleteTag(queries, tagId, user.ID, r.Context())
-// 	if utils.CheckError(w, r, err) {
-// 		return
-// 	}
+func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+	tagId := r.PathValue("id")
+	user, ok := middleware.UserFromContext(r.Context())
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	err := deleteTag(queries, utils.PgUUID(tagId), user.ID, r.Context())
+	if utils.CheckError(w, r, err) {
+		return
+	}
 
-// 	// bc we want htmx to rerender it
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write([]byte(nil))
-// }
+	// bc we want htmx to rerender it
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(nil))
+}

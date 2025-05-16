@@ -14,7 +14,7 @@ type Template struct {
 // NewTemplate parses all templates and returns a Template
 func NewTemplate() *Template {
 	return &Template{
-		tmpl: template.Must(template.ParseGlob("../views/**.gohtml")), // fixed your glob pattern too
+		tmpl: template.Must(template.ParseGlob("./web/views/**.gohtml")), // fixed your glob pattern too
 	}
 }
 
