@@ -26,7 +26,6 @@ func init() {
 	}
 }
 
-
 func main() {
 	// DB INIT START
 	// pgx pool starts a pool thats concurrency safe
@@ -37,7 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer dbpool.Close()
-	queries := db.New(dbpool)	
+	queries := db.New(dbpool)
 	// DB INIT END
 
 	// site init
@@ -199,10 +198,9 @@ func main() {
 		handlers.HandlerRemoveTaskFromTag(w, r, queries, templates, int32(taskId), int32(id))
 	})
 
-
 	// vaults
 	mux.HandleFunc("GET /vaults/{$}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.HandlerGetVaults(w,r, queries, templates)
+		handlers.HandlerGetVaults(w, r, queries, templates)
 	})
 	mux.Handle("/ws/", websocket.Handler(handlers.WsHandler()))
 	server := http.Server{
