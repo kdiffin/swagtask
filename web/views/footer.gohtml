@@ -1,13 +1,15 @@
 {{ define "footer" }}
-<footer class="text-center text-zinc-500 text-sm py-4">
-  <p>
-    © 2025 SwagTask. All rights reserved.
+<footer class="text-center text-zinc-500 text-sm py-6">
+  <div class="flex items-center justify-center gap-2">
+    <span>© 2025 SwagTask. All rights reserved.</span>
     <a
       href="https://github.com/kdiffin/fem-htmx-proj"
       target="_blank"
-      class="hover:text-blue-400 transition-colors duration-200"
-      ><i class="fab fa-github"></i
-    ></a>
-  </p>
+      class="hover:text-blue-400 transition-colors duration-200 inline-flex items-center gap-1"
+    >
+      <i class="fab fa-github"></i>
+      <span class="sr-only">GitHub</span>
+    </a>
+  </div>
 </footer>
 {{ end }}

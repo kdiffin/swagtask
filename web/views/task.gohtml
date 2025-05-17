@@ -2,22 +2,26 @@
 <html>
   {{ template "head" .Task.Name}}
 
-  <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
+  <body class="bg-zinc-900 text-zinc-200 min-h-screen font-sans antialiased">
     {{ template "navbar" .Auth}}
-    <div class="container mx-auto px-4 py-4 max-w-5xl">
+    <div class="container mx-auto px-4 py-6 max-w-5xl space-y-6">
       {{ template "show-task" .Task }}
       {{ template "bottom-task-nav" .Buttons}}
+      {{ template "footer" . }}
     </div>
   </body>
 </html>
 {{ end }}
 
 {{ block "show-task" . }}
-<div class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700">
-  <div class="p-4 border-b border-zinc-700">
-    <div class="flex items-center justify-between mb-3">
+<div
+  class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 backdrop-blur-sm"
+>
+  <div class="p-5">
+    <div class="flex items-center justify-between mb-4">
       <div class="flex items-center">
-        <h2 class="text-lg font-semibold text-white">Your Task</h2>
+        <i class="fas fa-clipboard-check text-blue-400 mr-2.5 text-lg"></i>
+        <h2 class="text-lg font-semibold text-white">Task Details</h2>
       </div>
     </div>
 
@@ -29,26 +33,37 @@
 {{ end }}
 
 {{ block "bottom-task-nav" . }}
-<div class="mt-4 flex justify-between flex-wrap">
+<div class="flex justify-between flex-wrap gap-3">
   {{ if .PrevButton.Exists }}
   <a
     href="/tasks/{{.PrevButton.ID}}"
-    class="p-2 px-4 rounded-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
-    type="submit"
+    class="flex items-center gap-2 p-2.5 px-4 rounded-sm bg-zinc-800 hover:bg-zinc-700 text-white transition-colors duration-200 border border-zinc-700/50"
   >
-    Prev Task ({{.PrevButton.Name}})
+    <i class="fas fa-arrow-left text-xs"></i>
+    <span>{{.PrevButton.Name}}</span>
   </a>
+  {{ else }}
+  <div></div>
   {{ end }}
 
-  <!--  -->
+  <a
+    href="/tasks/"
+    class="flex items-center gap-2 p-2.5 px-4 rounded-sm bg-blue-600 hover:bg-blue-500 text-white transition-colors duration-200"
+  >
+    <i class="fas fa-list text-xs"></i>
+    <span>All Tasks</span>
+  </a>
+
   {{ if .NextButton.Exists }}
   <a
     href="/tasks/{{.NextButton.ID}}"
-    class="p-2 px-4 rounded-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
-    type="submit"
+    class="flex items-center gap-2 p-2.5 px-4 rounded-sm bg-zinc-800 hover:bg-zinc-700 text-white transition-colors duration-200 border border-zinc-700/50"
   >
-    Next Task ({{.NextButton.Name}})
+    <span>{{.NextButton.Name}}</span>
+    <i class="fas fa-arrow-right text-xs"></i>
   </a>
+  {{ else }}
+  <div></div>
   {{ end }}
 </div>
 {{ end }}
@@ -56,21 +71,23 @@
 {{ block "task" . }}
 <div
   id="task-{{ .ID }}"
-  class="request-container bg-zinc-900 relative border border-zinc-800 rounded-sm shadow p-4 transition hover:shadow-lg"
+  class="request-container bg-zinc-900/80 relative border border-zinc-700/50 rounded-sm shadow-md p-5 transition-all hover:shadow-lg"
 >
   {{ block "task-header" . }}{{ end }}
 
   {{ block "task-tags" . }}{{ end }}
+
+  {{ block "task-author" . }}{{ end }}
 
   {{ block "task-edit-form" . }}{{ end }}
 </div>
 {{ end }}
 
 {{ block "task-header" . }}
-<div class="flex justify-between items-start mb-3">
+<div class="flex justify-between items-start mb-4">
   <div>
-    <h3 class="text-lg font-semibold text-white">{{ .Name }}</h3>
-    <p class="text-sm text-zinc-400 mt-1">{{ .Idea }}</p>
+    <h3 class="text-xl font-semibold text-white">{{ .Name }}</h3>
+    <p class="text-sm text-zinc-400 mt-1.5">{{ .Idea }}</p>
   </div>
   <div class="flex items-center gap-2">
     <div class="relative w-6 h-6">
@@ -96,7 +113,7 @@
 
     <a
       href="/tasks/{{ .ID }}"
-      class="text-xs text-zinc-400 bg-zinc-700 px-2 py-1 rounded hover:text-white hover:bg-zinc-600"
+      class="text-xs text-zinc-400 bg-zinc-800 px-2.5 py-1 rounded-sm hover:text-white hover:bg-zinc-700 transition-colors"
       >#{{ .ID }}</a
     >
     <div class="flex justify-between items-center">
@@ -107,9 +124,9 @@
         hx-target="#task-{{ .ID }}"
         hx-indicator="#completion-indicator-task-{{ .ID }}"
         hx-indicator-delay="300"
-        class="text-xs bg-green-600 px-2 py-1 hover:bg-green-500 text-white rounded"
+        class="text-xs bg-green-600 px-2.5 py-1.5 hover:bg-green-500 text-white rounded-sm transition-colors font-medium"
       >
-        Complete
+        <i class="fas fa-check text-xs mr-1"></i> Complete
       </button>
       {{ else }}
       <button
@@ -118,9 +135,9 @@
         hx-target="#task-{{ .ID }}"
         hx-indicator="#completion-indicator-task-{{ .ID }}"
         hx-indicator="300"
-        class="request-blocked text-xs bg-zinc-700 px-2 py-1 hover:bg-zinc-600 text-white rounded"
+        class="request-blocked text-xs bg-zinc-700 px-2.5 py-1.5 hover:bg-zinc-600 text-white rounded-sm transition-colors font-medium"
       >
-        Incomplete
+        <i class="fas fa-times text-xs mr-1"></i> Incomplete
       </button>
       {{ end }}
     </div>
@@ -131,20 +148,20 @@
       hx-swap="outerHTML swap:200ms transition:true"
       hx-indicator="#delete-indicator-task-{{ .ID }}"
       hx-target="#task-{{ .ID }}"
-      class="text-red-400 hover:text-red-300 p-2 rounded hover:bg-zinc-800"
+      class="text-red-400 hover:text-red-300 p-2 rounded-sm hover:bg-zinc-800 transition-colors"
     >
-      <i class="fas fa-trash"></i>
+      <i class="fas fa-trash text-sm"></i>
     </button>
   </div>
 </div>
 {{ end }}
 
 {{ block "task-tags" . }}
-<div class="flex flex-wrap gap-2 mb-3">
+<div class="flex flex-wrap gap-2 mb-4">
   {{ if .Tags }}
   {{ range.Tags }}
   <div
-    class="text-xs group bg-purple-600 flex items-center gap-1 hover:bg-purple-500 text-white px-2 py-1 rounded-full"
+    class="text-xs group bg-purple-600/90 flex items-center gap-1 hover:bg-purple-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
   >
     <a class="hover:underline" href="/tasks?tags={{.Name}}/">#{{ .Name }}</a>
 
@@ -156,9 +173,9 @@
       <button
         name="tag_id"
         value="{{.ID}}"
-        class="group-hover:flex hidden font-semibold"
+        class="group-hover:flex hidden font-semibold ml-1"
       >
-        x
+        <i class="fas fa-times text-[10px]"></i>
       </button>
     </form>
   </div>
@@ -166,6 +183,29 @@
   {{ end }}
 
   {{ template "add-task-to-tag" . }}
+</div>
+{{ end }}
+
+{{ block "task-author" . }}
+<div
+  class="flex items-center justify-between gap-2 mb-4 pt-2 border-t border-zinc-700/30"
+>
+  <div class="flex items-center rounded-sm gap-2">
+    <img
+      src="{{.Author.PathToPfp}}"
+      alt="profile picture"
+      class="w-6 h-6 rounded-full object-cover border border-white/20 shadow-sm"
+    />
+    <span
+      class="text-zinc-300 hover:text-white transition duration-200 text-sm"
+    >
+      {{.Author.Username}}
+    </span>
+  </div>
+  <div class="text-xs text-zinc-500">
+    <i class="fas fa-clock text-[10px] mr-1"></i>
+    <span>Created: {{.CreatedAt}}</span>
+  </div>
 </div>
 {{ end }}
 
@@ -179,7 +219,7 @@
 >
   <select
     name="tag_id"
-    class="text-xs bg-zinc-800 border border-zinc-700 text-white px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-600"
+    class="text-xs bg-zinc-800/90 border border-zinc-700/50 text-white px-2.5 py-1.5 rounded-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
   >
     <option disabled selected class="text-zinc-500">+ add tag</option>
     {{
@@ -196,9 +236,9 @@
 {{ block "error-indicator" .}}
 <div hx-swap-oob="outerHTML" id="error-indicator">
   <div
-    class="bg-red-900 text-red-200 p-2 px-3 rounded-sm border border-red-700 text-sm flex items-center shadow-md"
+    class="bg-red-900/90 text-red-200 p-2.5 px-4 rounded-sm border border-red-700/50 text-sm flex items-center shadow-md"
   >
-    <i class="fas fa-exclamation-circle mr-2"></i>{{ . }}
+    <i class="fas fa-exclamation-circle text-xs mr-2"></i>{{ . }}
   </div>
 </div>
 {{ end }}
@@ -209,28 +249,42 @@
   hx-put="/tasks/{{ .ID }}/"
   hx-target="#task-{{ .ID }}"
   hx-swap="outerHTML swap:200ms transition:true"
-  class="mt-4"
+  class="space-y-3"
 >
-  <div class="flex flex-col md:flex-row gap-3 mb-3">
-    <input
-      type="text"
-      name="task_name"
-      placeholder="Change name"
-      class="flex-1 bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded placeholder-zinc-500 text-sm"
-    />
-    <input
-      type="text"
-      name="task_idea"
-      placeholder="Change description"
-      class="flex-1 bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded placeholder-zinc-500 text-sm"
-    />
-
-    <button
-      type="submit"
-      class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded text-sm"
-    >
-      <i class="fas fa-save mr-1"></i> Update
-    </button>
+  <div class="grid md:grid-cols-2 gap-3">
+    <div class="relative">
+      <span
+        class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+      >
+        <i class="fas fa-pencil-alt text-xs"></i>
+      </span>
+      <input
+        type="text"
+        name="task_name"
+        placeholder="Change name"
+        class="w-full pl-10 pr-3 py-2.5 bg-zinc-800/90 border border-zinc-700/50 text-white rounded-sm placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+      />
+    </div>
+    <div class="relative">
+      <span
+        class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+      >
+        <i class="fas fa-lightbulb text-xs"></i>
+      </span>
+      <input
+        type="text"
+        name="task_idea"
+        placeholder="Change description"
+        class="w-full pl-10 pr-3 py-2.5 bg-zinc-800/90 border border-zinc-700/50 text-white rounded-sm placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+      />
+    </div>
   </div>
+
+  <button
+    type="submit"
+    class="w-full md:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-sm transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
+  >
+    <i class="fas fa-save text-xs"></i> Update Task
+  </button>
 </form>
 {{ end }}
