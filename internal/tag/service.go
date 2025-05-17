@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func getTagWithTasksById(queries *db.Queries, tagId, userId pgtype.UUID,
+func getTagWithTasksById(queries *db.Queries, tagId, userId, vaultId pgtype.UUID,
 	ctx context.Context) (*TagWithTasks, error) {
 	tagsWithTaskRelations, err := queries.GetTagWithTaskRelations(ctx, db.GetTagWithTaskRelationsParams{
 		ID:     tagId,
@@ -48,8 +48,11 @@ func getTagWithTasksById(queries *db.Queries, tagId, userId pgtype.UUID,
 	return &tagWithTasks, nil
 }
 
-func getTagsWithTasks(queries *db.Queries, userId pgtype.UUID, ctx context.Context) ([]TagWithTasks, error) {
-	tagsWithTasksRelations, errTags := queries.GetTagsWithTaskRelations(ctx, userId)
+func GetTagsWithTasks(queries *db.Queries, userId, vaultId pgtype.UUID, ctx context.Context) ([]TagWithTasks, error) {
+	tagsWithTasksRelations, errTags := queries.GetTagsWithTaskRelations(ctx, db.GetTagsWithTaskRelationsParams{
+		UserID:  userId,
+		VaultID: vaultId,
+	})
 	if errTags != nil {
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, errTags)
 	}
@@ -97,7 +100,7 @@ func getTagsWithTasks(queries *db.Queries, userId pgtype.UUID, ctx context.Conte
 	return tagsWithTasks, nil
 }
 
-func updateTag(queries *db.Queries, tagId, userId pgtype.UUID,
+func updateTag(queries *db.Queries, tagId, userId, vaultId pgtype.UUID,
 	tagName string, ctx context.Context) (*TagWithTasks, error) {
 	err := queries.UpdateTag(ctx, db.UpdateTagParams{
 		Name:   tagName,
@@ -109,7 +112,7 @@ func updateTag(queries *db.Queries, tagId, userId pgtype.UUID,
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, err)
 	}
 
-	tagWithTasks, errTags := getTagWithTasksById(queries, tagId, userId, ctx)
+	tagWithTasks, errTags := getTagWithTasksById(queries, tagId, userId, vaultId, ctx)
 	if errTags != nil {
 		return nil, errTags
 	}
@@ -117,7 +120,7 @@ func updateTag(queries *db.Queries, tagId, userId pgtype.UUID,
 	return tagWithTasks, nil
 }
 
-func deleteTag(queries *db.Queries, tagId, userId pgtype.UUID, ctx context.Context) error {
+func deleteTag(queries *db.Queries, tagId, userId, vaultId pgtype.UUID, ctx context.Context) error {
 	errDelete := queries.DeleteTag(ctx, db.DeleteTagParams{
 		ID:     tagId,
 		UserID: userId,
@@ -129,7 +132,7 @@ func deleteTag(queries *db.Queries, tagId, userId pgtype.UUID, ctx context.Conte
 	return nil
 }
 
-func deleteTaskRelationFromTag(queries *db.Queries, tagId, taskId, userId pgtype.UUID, ctx context.Context) (*TagWithTasks, error) {
+func deleteTaskRelationFromTag(queries *db.Queries, tagId, taskId, userId, vaultId pgtype.UUID, ctx context.Context) (*TagWithTasks, error) {
 	err := queries.DeleteTagTaskRelation(ctx, db.DeleteTagTaskRelationParams{
 		TaskID: taskId,
 		TagID:  tagId,
@@ -139,7 +142,7 @@ func deleteTaskRelationFromTag(queries *db.Queries, tagId, taskId, userId pgtype
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, err)
 	}
 
-	tagWithTasks, errTag := getTagWithTasksById(queries, tagId, userId, ctx)
+	tagWithTasks, errTag := getTagWithTasksById(queries, tagId, userId, vaultId, ctx)
 	if errTag != nil {
 		return nil, err
 	}
@@ -147,7 +150,7 @@ func deleteTaskRelationFromTag(queries *db.Queries, tagId, taskId, userId pgtype
 	return tagWithTasks, nil
 }
 
-func addTaskToTag(queries *db.Queries, tagId, userId, taskId pgtype.UUID, ctx context.Context) (*TagWithTasks, error) {
+func addTaskToTag(queries *db.Queries, tagId, userId, taskId, vaultId pgtype.UUID, ctx context.Context) (*TagWithTasks, error) {
 	err := queries.CreateTagTaskRelation(ctx, db.CreateTagTaskRelationParams{
 		TaskID: taskId,
 		TagID:  tagId,
@@ -157,7 +160,7 @@ func addTaskToTag(queries *db.Queries, tagId, userId, taskId pgtype.UUID, ctx co
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, err)
 	}
 
-	tagWithTasks, errTag := getTagWithTasksById(queries, tagId, userId, ctx)
+	tagWithTasks, errTag := getTagWithTasksById(queries, tagId, userId, vaultId, ctx)
 	if errTag != nil {
 		return nil, errTag
 	}

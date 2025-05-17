@@ -14,7 +14,7 @@ func SetupTagRoutes(mux *http.ServeMux, queries *db.Queries, templates *template
 	// mux.HandleFunc("POST /tags/{$}", func(w http.ResponseWriter, r *http.Request) {
 	// 	tag.HandlerCreateTag(w, r, queries, templates)
 	// })
-	mux.Handle("GET /tags/{$}", middleware.WithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("GET /tags/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerGetTags(w, r, queries, templates)
 	})))
 	mux.HandleFunc("PUT /tags/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {

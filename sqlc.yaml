@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "./internal/db/migrations" # Path to your schema directory
+    queries: "./internal/db/queries" # Path to your queries directory
+    gen:
+      go:
+        package: "db" # Package name for the generated code
+        out: "./internal/db/generated" # Output directory for the generated Go code
+        sql_package: "pgx/v5" # SQL package to use (pgx/v5 for PostgreSQL)

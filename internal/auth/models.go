@@ -9,5 +9,5 @@ type UserUI struct {
 
 type AuthenticatedPage struct {
 	Authorized bool
-	UserUI
+	User       UserUI
 }

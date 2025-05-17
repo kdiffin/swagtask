@@ -34,7 +34,7 @@ func (w *wrappedWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		showHttpDumps := true
+		showHttpDumps := false
 		// ANSI escape code for bold text
 		bold := "\033[1m"
 		reset := "\033[0m"

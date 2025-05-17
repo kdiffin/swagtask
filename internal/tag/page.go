@@ -12,7 +12,7 @@ func newTagsPage(tagsWithTasks []TagWithTasks, authorized bool, pathToPfp string
 		TagsWithTasks: tagsWithTasks,
 		Auth: auth.AuthenticatedPage{
 			Authorized: authorized,
-			UserUI: auth.UserUI{
+			User: auth.UserUI{
 				PathToPfp: pathToPfp,
 				Username:  username,
 			},

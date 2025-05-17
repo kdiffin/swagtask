@@ -55,7 +55,8 @@ chat gippity made most of my frontends styles btw
 
   - **objectives**
   - [x] replace auto incrementing ids with uuids (no random id guess attack vector)
-  - [ ] make it work with the uuids now
+  - [ ] make it work with the uuids and vault ids now
+    - [ ] change all of the queries to use vault ids
   - [ ] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./code-structure.md)
 
 - [ ] add live editing via websockets between 2 users
