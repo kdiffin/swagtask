@@ -2,7 +2,7 @@
 <html class="bg-zinc-900">
   {{ template "head" "Vaults" }}
 
-  <body class="bg-gradient-to-br from-zinc-900 to-zinc-950 text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
+  <body class="bg-[#0f1015] text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
     {{ template "navbar" .Auth }}
     
     <main class="flex-1 container mx-auto px-4 py-8 mt-16 mb-8">
@@ -10,7 +10,7 @@
         <!-- Sidebar -->
         <div class="w-full lg:w-80 space-y-6">
           <!-- Quick Actions -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50">
               <h2 class="text-lg font-semibold text-white flex items-center gap-2">
                 <i class="fas fa-bolt text-amber-400"></i>
@@ -21,7 +21,7 @@
               <!-- Create Vault Button -->
               <button
                 id="create-vault-button"
-                class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <i class="fas fa-plus text-xs"></i>
                 <span>New Vault</span>
@@ -30,7 +30,7 @@
               <!-- View Tasks Button -->
               <a
                 href="/tasks/"
-                class="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2.5 px-4 rounded-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <i class="fas fa-list-check text-xs"></i>
                 <span>View Tasks</span>
@@ -39,10 +39,10 @@
           </div>
           
           <!-- Vault Stats -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50">
               <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                <i class="fas fa-chart-pie text-blue-400"></i>
+                <i class="fas fa-chart-pie text-indigo-500"></i>
                 Vault Stats
               </h2>
             </div>
@@ -68,10 +68,10 @@
         <!-- Main Content -->
         <div class="flex-1 space-y-6">
           <!-- Vaults Grid -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
               <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                <i class="fas fa-folder text-blue-400"></i>
+                <i class="fas fa-folder text-indigo-500"></i>
                 Your Vaults
               </h2>
               
@@ -91,9 +91,9 @@
                 <!-- Vault Card -->
                 <a
                   href="/vaults/{{ .ID }}"
-                  class="group flex flex-col items-center justify-center aspect-square bg-zinc-800/40 border border-zinc-700/30 rounded-lg shadow-md hover:shadow-lg hover:bg-zinc-800/60 transition-all p-5 text-center card-hover"
+                  class="group flex flex-col items-center justify-center aspect-square bg-zinc-900 border border-zinc-700/80 rounded-md shadow-md hover:shadow-lg hover:bg-zinc-800 transition-all p-5 text-center"
                 >
-                  <div class="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-400 rounded-full mb-3 group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-colors">
+                  <div class="w-16 h-16 flex items-center justify-center bg-indigo-600/20 text-indigo-500 rounded-full mb-3 group-hover:bg-indigo-600/30 transition-colors">
                     <i class="fas fa-folder text-2xl"></i>
                   </div>
                   <span class="text-white font-medium text-sm truncate w-full">{{ .Name }}</span>
@@ -101,14 +101,14 @@
                 </a>
                 {{ else }}
                 <div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                  <div class="w-16 h-16 flex items-center justify-center bg-zinc-800/50 text-zinc-500 rounded-full mb-4">
+                  <div class="w-16 h-16 flex items-center justify-center bg-zinc-800 text-zinc-500 rounded-full mb-4">
                     <i class="fas fa-folder-open text-2xl"></i>
                   </div>
                   <h3 class="text-lg font-medium text-white mb-2">No vaults yet</h3>
                   <p class="text-sm text-zinc-400 max-w-md mb-6">Create your first vault to organize your tasks into projects or categories.</p>
                   <button
                     id="empty-create-vault-button"
-                    class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
                   >
                     <i class="fas fa-plus text-xs"></i>
                     <span>Create Your First Vault</span>
@@ -123,9 +123,9 @@
       
       <!-- Vault Creation Modal (Hidden by default) -->
       <div id="vault-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 bg-black/60"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-          <div class="glass rounded-xl shadow-xl w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
               <h3 class="text-lg font-semibold text-white">Create New Vault</h3>
               <button id="close-vault-modal" class="text-zinc-400 hover:text-white">

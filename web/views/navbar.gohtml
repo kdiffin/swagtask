@@ -1,56 +1,62 @@
 {{ block "navbar" . }}
-<header class="fixed top-0 left-0 right-0 z-50 glass">
+<header
+  class="fixed top-0 left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-800/80 shadow-md"
+>
   <div class="container mx-auto px-4">
     <nav class="flex items-center justify-between h-16">
       <!-- Logo -->
       <div class="flex items-center gap-2">
-        <a href="/tasks/" class="flex items-center gap-2 text-white hover:opacity-90 transition-opacity">
-          <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md flex items-center justify-center shadow-md">
-            <i class="fas fa-check-double text-white"></i>
-          </div>
+        <a
+          href="/tasks/"
+          class="flex items-center gap-2 text-white hover:opacity-90 transition-opacity"
+        >
+          <i class="fas fa-tasks text-blue-500 mr-3 mt-1 text-xl"></i>
+
           <span class="text-lg font-bold">SwagTask</span>
         </a>
       </div>
-      
+
       <!-- Desktop Navigation -->
       <div class="hidden md:flex items-center gap-6">
-        <a 
-          href="/tasks/" 
-          class="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors"
+        <a
+          href="/tasks/"
+          class="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors relative after:absolute after:bottom-[-1px] after:left-0 after:h-[2px] after:w-0 after:bg-indigo-500 hover:after:w-full after:transition-all"
         >
           <i class="fas fa-list-check text-xs"></i>
           <span>Tasks</span>
         </a>
-        <a 
-          href="/tags/" 
-          class="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors"
+        <a
+          href="/tags/"
+          class="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors relative after:absolute after:bottom-[-1px] after:left-0 after:h-[2px] after:w-0 after:bg-indigo-500 hover:after:w-full after:transition-all"
         >
           <i class="fas fa-tags text-xs"></i>
           <span>Tags</span>
         </a>
-        <a 
-          href="/vaults/" 
-          class="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors"
+        <a
+          href="/vaults/"
+          class="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors relative after:absolute after:bottom-[-1px] after:left-0 after:h-[2px] after:w-0 after:bg-indigo-500 hover:after:w-full after:transition-all"
         >
           <i class="fas fa-folder text-xs"></i>
           <span>Vaults</span>
         </a>
       </div>
-      
+
       <!-- Search & User Actions -->
       <div class="flex items-center gap-4">
         <!-- Search Trigger (Mobile) -->
-        <button 
+        <button
           id="search-trigger"
           class="md:hidden text-zinc-300 hover:text-white p-2 rounded-full hover:bg-zinc-800/50 transition-colors"
         >
           <i class="fas fa-search text-sm"></i>
         </button>
-        
+
         <!-- Search Bar (Desktop) -->
         <form id="taskForm" class="hidden md:block relative">
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+            <span
+              class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+            >
               <i class="fas fa-search text-xs"></i>
             </span>
             <input
@@ -62,11 +68,11 @@
             />
           </div>
         </form>
-        
+
         <!-- User Menu -->
         {{ if .Authorized }}
         <div class="relative">
-          <button 
+          <button
             id="user-menu-button"
             class="flex items-center gap-2 text-zinc-300 hover:text-white transition-colors"
           >
@@ -75,20 +81,32 @@
               alt="{{.User.Username}}"
               class="w-8 h-8 rounded-full object-cover border border-white/10 shadow-sm"
             />
-            <span class="hidden md:block text-sm font-medium">{{.User.Username}}</span>
+            <span
+              class="hidden md:block text-sm font-medium"
+              >{{.User.Username}}</span
+            >
             <i class="fas fa-chevron-down text-[10px] opacity-70"></i>
           </button>
-          
+
           <!-- Dropdown Menu -->
-          <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 glass rounded-lg shadow-lg py-1 z-50">
-            <div class="px-4 py-2 border-b border-zinc-700/50">
+          <div
+            id="user-dropdown"
+            class="hidden absolute right-0 mt-2 w-48 bg-zinc-800 rounded-md shadow-lg py-1 z-50 border border-zinc-700/80 backdrop-blur-sm"
+          >
+            <div class="px-4 py-2 border-b border-zinc-700">
               <p class="text-sm font-medium text-white">{{.User.Username}}</p>
               <p class="text-xs text-zinc-400">Signed in</p>
             </div>
-            <a href="/profile/" class="block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 hover:text-white transition-colors">
+            <a
+              href="/profile/"
+              class="block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 hover:text-white transition-colors"
+            >
               <i class="fas fa-user text-xs mr-2"></i> Profile
             </a>
-            <a href="/settings/" class="block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 hover:text-white transition-colors">
+            <a
+              href="/settings/"
+              class="block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 hover:text-white transition-colors"
+            >
               <i class="fas fa-cog text-xs mr-2"></i> Settings
             </a>
             <div class="border-t border-zinc-700/50 mt-1 pt-1">
@@ -113,15 +131,15 @@
           </a>
           <a
             href="/sign-up/"
-            class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-full text-sm font-medium transition-colors shadow-md hover:shadow-lg"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm hover:shadow-md"
           >
             Sign up
           </a>
         </div>
         {{ end }}
-        
+
         <!-- Mobile Menu Button -->
-        <button 
+        <button
           id="mobile-menu-button"
           class="md:hidden text-zinc-300 hover:text-white p-2 rounded-full hover:bg-zinc-800/50 transition-colors"
         >
@@ -130,12 +148,14 @@
       </div>
     </nav>
   </div>
-  
+
   <!-- Mobile Search (Hidden by default) -->
   <div id="mobile-search" class="hidden px-4 py-3 border-t border-zinc-700/50">
     <form id="mobileTaskForm">
       <div class="relative">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+        <span
+          class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+        >
           <i class="fas fa-search text-xs"></i>
         </span>
         <input
@@ -147,24 +167,27 @@
       </div>
     </form>
   </div>
-  
+
   <!-- Mobile Menu (Hidden by default) -->
-  <div id="mobile-menu" class="hidden md:hidden px-4 py-3 border-t border-zinc-700/50">
+  <div
+    id="mobile-menu"
+    class="hidden md:hidden px-4 py-3 border-t border-zinc-700/80 bg-zinc-800/95 backdrop-blur-sm"
+  >
     <div class="space-y-1">
-      <a 
-        href="/tasks/" 
+      <a
+        href="/tasks/"
         class="block py-2 px-3 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg text-sm font-medium transition-colors"
       >
         <i class="fas fa-list-check text-xs mr-2"></i> Tasks
       </a>
-      <a 
-        href="/tags/" 
+      <a
+        href="/tags/"
         class="block py-2 px-3 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg text-sm font-medium transition-colors"
       >
         <i class="fas fa-tags text-xs mr-2"></i> Tags
       </a>
-      <a 
-        href="/vaults/" 
+      <a
+        href="/vaults/"
         class="block py-2 px-3 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg text-sm font-medium transition-colors"
       >
         <i class="fas fa-folder text-xs mr-2"></i> Vaults
@@ -174,57 +197,62 @@
 </header>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener("DOMContentLoaded", function () {
     // User dropdown toggle
-    const userMenuButton = document.getElementById('user-menu-button');
-    const userDropdown = document.getElementById('user-dropdown');
-    
+    const userMenuButton = document.getElementById("user-menu-button");
+    const userDropdown = document.getElementById("user-dropdown");
+
     if (userMenuButton && userDropdown) {
-      userMenuButton.addEventListener('click', function() {
-        userDropdown.classList.toggle('hidden');
+      userMenuButton.addEventListener("click", function () {
+        userDropdown.classList.toggle("hidden");
       });
-      
+
       // Close dropdown when clicking outside
-      document.addEventListener('click', function(event) {
-        if (!userMenuButton.contains(event.target) && !userDropdown.contains(event.target)) {
-          userDropdown.classList.add('hidden');
+      document.addEventListener("click", function (event) {
+        if (
+          !userMenuButton.contains(event.target) &&
+          !userDropdown.contains(event.target)
+        ) {
+          userDropdown.classList.add("hidden");
         }
       });
     }
-    
+
     // Mobile search toggle
-    const searchTrigger = document.getElementById('search-trigger');
-    const mobileSearch = document.getElementById('mobile-search');
-    
+    const searchTrigger = document.getElementById("search-trigger");
+    const mobileSearch = document.getElementById("mobile-search");
+
     if (searchTrigger && mobileSearch) {
-      searchTrigger.addEventListener('click', function() {
-        mobileSearch.classList.toggle('hidden');
-        if (!mobileSearch.classList.contains('hidden')) {
-          mobileSearch.querySelector('input').focus();
+      searchTrigger.addEventListener("click", function () {
+        mobileSearch.classList.toggle("hidden");
+        if (!mobileSearch.classList.contains("hidden")) {
+          mobileSearch.querySelector("input").focus();
         }
       });
     }
-    
+
     // Task search form handling
-    const taskForm = document.getElementById('taskForm');
-    const mobileTaskForm = document.getElementById('mobileTaskForm');
-    
-    const handleSearchSubmit = function(event) {
+    const taskForm = document.getElementById("taskForm");
+    const mobileTaskForm = document.getElementById("mobileTaskForm");
+
+    const handleSearchSubmit = function (event) {
       event.preventDefault();
-      
-      const taskName = event.target.querySelector('input[name="taskName"]').value;
+
+      const taskName = event.target.querySelector(
+        'input[name="taskName"]'
+      ).value;
       const currentParams = new URLSearchParams(window.location.search);
       currentParams.set("taskName", taskName);
-      
+
       window.location.href = `/tasks?${currentParams.toString()}/`;
     };
-    
+
     if (taskForm) {
-      taskForm.addEventListener('submit', handleSearchSubmit);
+      taskForm.addEventListener("submit", handleSearchSubmit);
     }
-    
+
     if (mobileTaskForm) {
-      mobileTaskForm.addEventListener('submit', handleSearchSubmit);
+      mobileTaskForm.addEventListener("submit", handleSearchSubmit);
     }
   });
 </script>

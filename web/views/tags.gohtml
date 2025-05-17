@@ -2,17 +2,23 @@
 <html class="bg-zinc-900">
   {{ template "head" "Tag Manager" }}
 
-  <body class="bg-gradient-to-br from-zinc-900 to-zinc-950 text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
+  <body
+    class="bg-zinc-900 text-zinc-200 min-h-screen font-sans antialiased flex flex-col"
+  >
     {{ template "navbar" .Auth }}
-    
+
     <main class="flex-1 container mx-auto px-4 py-8 mt-16 mb-8">
       <div class="flex flex-col lg:flex-row gap-6">
         <!-- Sidebar -->
         <div class="w-full lg:w-80 space-y-6">
           <!-- Quick Actions -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
+          <div
+            class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80"
+          >
             <div class="p-5 border-b border-zinc-700/50">
-              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+              <h2
+                class="text-lg font-semibold text-white flex items-center gap-2"
+              >
                 <i class="fas fa-bolt text-amber-400"></i>
                 Quick Actions
               </h2>
@@ -21,28 +27,32 @@
               <!-- Create Tag Button -->
               <button
                 id="create-tag-button"
-                class="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <i class="fas fa-plus text-xs"></i>
                 <span>New Tag</span>
               </button>
-              
+
               <!-- View Tasks Button -->
               <a
                 href="/tasks/"
-                class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2.5 px-4 rounded-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <i class="fas fa-list-check text-xs"></i>
                 <span>View Tasks</span>
               </a>
             </div>
           </div>
-          
+
           <!-- Tag Stats -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
+          <div
+            class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80"
+          >
             <div class="p-5 border-b border-zinc-700/50">
-              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                <i class="fas fa-chart-pie text-blue-400"></i>
+              <h2
+                class="text-lg font-semibold text-white flex items-center gap-2"
+              >
+                <i class="fas fa-chart-pie text-indigo-500"></i>
                 Tag Stats
               </h2>
             </div>
@@ -50,44 +60,64 @@
               <div class="space-y-4">
                 <div class="flex items-center justify-between">
                   <span class="text-sm text-zinc-300">Total Tags</span>
-                  <span class="text-sm font-medium text-white">{{ len .TagsWithTasks }}</span>
+                  <div>
+                    <span class="text-sm font-medium text-white">{{
+                      len .TagsWithTasks
+                    }}</span>
+                  </div>
                 </div>
                 <div class="flex items-center justify-between">
                   <span class="text-sm text-zinc-300">Most Used</span>
-                  <span class="text-sm font-medium text-white">#work</span>
+                  <span class="text-sm font-medium text-white"
+                    >NOT IMPLEMENTED</span
+                  >
                 </div>
                 <div class="flex items-center justify-between">
                   <span class="text-sm text-zinc-300">Recently Added</span>
-                  <span class="text-sm font-medium text-white">#project</span>
+                  <span class="text-sm font-medium text-white"
+                    >NOT IMPLMENTED</span
+                  >
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
+
         <!-- Main Content -->
         <div class="flex-1 space-y-6">
           <!-- Tags List -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
-            <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                <i class="fas fa-tags text-purple-400"></i>
+          <div
+            class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80"
+          >
+            <div
+              class="p-5 border-b border-zinc-700/50 flex items-center justify-between"
+            >
+              <h2
+                class="text-lg font-semibold text-white flex items-center gap-2"
+              >
+                <i class="fas fa-tags text-indigo-500"></i>
                 Your Tags
               </h2>
-              
+
               <div class="flex items-center gap-2">
-                <button class="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-800/50 transition-colors tooltip" data-tooltip="Sort">
+                <button
+                  class="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-800/50 transition-colors tooltip"
+                  data-tooltip="Sort"
+                >
                   <i class="fas fa-sort text-xs"></i>
                 </button>
-                <button class="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-800/50 transition-colors tooltip" data-tooltip="View options">
+                <button
+                  class="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-800/50 transition-colors tooltip"
+                  data-tooltip="View options"
+                >
                   <i class="fas fa-th-large text-xs"></i>
                 </button>
               </div>
             </div>
-            
+
             <div id="tags-list-container" class="p-5">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {{ range .TagsWithTasks }}
+                {{ range.TagsWithTasks }}
                 {{ template "tag-card" . }}
                 {{ end }}
               </div>
@@ -95,19 +125,26 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Tag Creation Modal (Hidden by default) -->
       <div id="tag-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 bg-black/60"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-          <div class="glass rounded-xl shadow-xl w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
+          <div
+            class="bg-zinc-800/90 rounded-md shadow-xl w-full max-w-md border border-zinc-700/80"
+          >
+            <div
+              class="p-5 border-b border-zinc-700/50 flex items-center justify-between"
+            >
               <h3 class="text-lg font-semibold text-white">Create New Tag</h3>
-              <button id="close-tag-modal" class="text-zinc-400 hover:text-white">
+              <button
+                id="close-tag-modal"
+                class="text-zinc-400 hover:text-white"
+              >
                 <i class="fas fa-times"></i>
               </button>
             </div>
-            
+
             <div class="p-5">
               <form
                 id="tag-form"
@@ -118,11 +155,16 @@
                 class="space-y-4"
               >
                 <div>
-                  <label for="tag_name" class="block text-sm font-medium mb-1.5 text-zinc-300">
+                  <label
+                    for="tag_name"
+                    class="block text-sm font-medium mb-1.5 text-zinc-300"
+                  >
                     Tag Name
                   </label>
                   <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                    <span
+                      class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+                    >
                       <i class="fas fa-tag text-xs"></i>
                     </span>
                     <input
@@ -135,9 +177,9 @@
                     />
                   </div>
                 </div>
-                
+
                 <div id="add-tag-form-error" class="text-red-400 text-sm"></div>
-                
+
                 <div class="flex justify-end gap-3 pt-2">
                   <button
                     type="button"
@@ -159,48 +201,50 @@
         </div>
       </div>
     </main>
-    
+
     {{ template "footer" . }}
-    
+
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener("DOMContentLoaded", function () {
         // Tag modal functionality
-        const tagModal = document.getElementById('tag-modal');
-        const createTagButton = document.getElementById('create-tag-button');
-        const closeTagModal = document.getElementById('close-tag-modal');
-        const cancelTag = document.getElementById('cancel-tag');
-        
+        const tagModal = document.getElementById("tag-modal");
+        const createTagButton = document.getElementById("create-tag-button");
+        const closeTagModal = document.getElementById("close-tag-modal");
+        const cancelTag = document.getElementById("cancel-tag");
+
         if (tagModal && createTagButton && closeTagModal && cancelTag) {
-          createTagButton.addEventListener('click', function() {
-            tagModal.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
+          createTagButton.addEventListener("click", function () {
+            tagModal.classList.remove("hidden");
+            document.body.classList.add("overflow-hidden");
             setTimeout(() => {
-              document.getElementById('tag_name').focus();
+              document.getElementById("tag_name").focus();
             }, 100);
           });
-          
-          const closeTagModalFn = function() {
-            tagModal.classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
+
+          const closeTagModalFn = function () {
+            tagModal.classList.add("hidden");
+            document.body.classList.remove("overflow-hidden");
           };
-          
-          closeTagModal.addEventListener('click', closeTagModalFn);
-          cancelTag.addEventListener('click', closeTagModalFn);
-          
+
+          closeTagModal.addEventListener("click", closeTagModalFn);
+          cancelTag.addEventListener("click", closeTagModalFn);
+
           // Close on outside click
-          tagModal.addEventListener('click', function(event) {
+          tagModal.addEventListener("click", function (event) {
             if (event.target === tagModal) {
               closeTagModalFn();
             }
           });
-          
+
           // Close on successful form submission
-          document.getElementById('tag-form').addEventListener('htmx:afterRequest', function(event) {
-            if (event.detail.successful) {
-              closeTagModalFn();
-              window.showToast('Tag created successfully!', 'success');
-            }
-          });
+          document
+            .getElementById("tag-form")
+            .addEventListener("htmx:afterRequest", function (event) {
+              if (event.detail.successful) {
+                closeTagModalFn();
+                window.showToast("Tag created successfully!", "success");
+              }
+            });
         }
       });
     </script>
@@ -211,7 +255,7 @@
 {{ block "tag-card" . }}
 <article
   id="tag-{{.Tag.ID}}"
-  class="bg-zinc-800/40 border border-zinc-700/30 rounded-lg p-5 shadow-md hover:shadow-lg transition-all duration-300 card-hover"
+  class="bg-zinc-900 border border-zinc-700/80 rounded-md p-5 shadow-md hover:shadow-lg transition-all duration-300"
   role="listitem"
   aria-labelledby="tag-title-{{ .Tag.ID }}"
 >
@@ -220,7 +264,9 @@
       id="tag-title-{{ .Tag.ID }}"
       class="text-lg font-semibold text-white flex items-center gap-2"
     >
-      <span class="w-6 h-6 flex items-center justify-center bg-purple-600/20 text-purple-400 rounded-full">
+      <span
+        class="w-6 h-6 flex items-center justify-center bg-indigo-600/20 text-indigo-500 rounded-full"
+      >
         <i class="fas fa-tag text-xs"></i>
       </span>
       <span class="truncate" title="#{{ .Tag.Name }}">{{ .Tag.Name }}</span>
@@ -234,7 +280,7 @@
       >
         <i class="fas fa-pen text-xs"></i>
       </button>
-      
+
       <button
         class="text-red-400 hover:text-red-300 p-1.5 rounded-md hover:bg-zinc-700/50 transition-colors"
         hx-delete="/tags/{{ .Tag.ID }}/"
@@ -258,7 +304,9 @@
       class="space-y-3"
     >
       <div class="relative">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+        <span
+          class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+        >
           <i class="fas fa-pen text-xs"></i>
         </span>
         <input
@@ -296,7 +344,7 @@
       {{ if .RelatedTasks }}
       {{ range.RelatedTasks }}
       <div
-        class="text-xs group bg-blue-600/80 flex items-center gap-1 hover:bg-blue-500 text-white px-2.5 py-1 rounded-full transition-colors shadow-sm"
+        class="text-xs group bg-indigo-600 flex items-center gap-1 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-full transition-colors shadow-sm"
       >
         <a class="hover:underline" href="/tasks/{{.ID}}/">
           <i class="fa-solid fa-clipboard text-[10px] mr-1"></i> {{ .Name }}</a
@@ -327,7 +375,7 @@
       {{ end }}
     </div>
   </div>
-  
+
   <!-- Attach Task Form -->
   <div class="mb-4">
     <form
@@ -336,7 +384,10 @@
       hx-trigger="change"
       hx-swap="outerHTML"
     >
-      <label for="task-select-{{ .Tag.ID }}" class="block text-sm font-medium mb-1.5 text-zinc-400">
+      <label
+        for="task-select-{{ .Tag.ID }}"
+        class="block text-sm font-medium mb-1.5 text-zinc-400"
+      >
         Attach to task
       </label>
       <select
@@ -355,16 +406,20 @@
       </select>
     </form>
   </div>
-  
+
   <!-- Author Info -->
-  <div class="flex items-center justify-between pt-2 border-t border-zinc-700/30">
+  <div
+    class="flex items-center justify-between pt-2 border-t border-zinc-700/30"
+  >
     <div class="flex items-center gap-2">
       <img
         src="{{.Tag.Author.PathToPfp}}"
         alt="{{.Tag.Author.Username}}"
         class="w-6 h-6 rounded-full object-cover border border-white/10 shadow-sm"
       />
-      <span class="text-zinc-300 hover:text-white transition duration-200 text-sm">
+      <span
+        class="text-zinc-300 hover:text-white transition duration-200 text-sm"
+      >
         {{.Tag.Author.Username}}
       </span>
     </div>
@@ -374,17 +429,17 @@
       >#{{ .Tag.ID }}</span
     >
   </div>
-  
+
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const editButton = document.getElementById('edit-tag-{{ .Tag.ID }}');
-      const editForm = document.getElementById('edit-form-{{ .Tag.ID }}');
-      
+    document.addEventListener("DOMContentLoaded", function () {
+      const editButton = document.getElementById("edit-tag-{{ .Tag.ID }}");
+      const editForm = document.getElementById("edit-form-{{ .Tag.ID }}");
+
       if (editButton && editForm) {
-        editButton.addEventListener('click', function() {
-          editForm.classList.toggle('hidden');
-          if (!editForm.classList.contains('hidden')) {
-            editForm.querySelector('input').focus();
+        editButton.addEventListener("click", function () {
+          editForm.classList.toggle("hidden");
+          if (!editForm.classList.contains("hidden")) {
+            editForm.querySelector("input").focus();
           }
         });
       }

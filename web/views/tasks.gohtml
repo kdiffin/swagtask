@@ -2,7 +2,7 @@
 <html class="bg-zinc-900">
   {{ template "head" "Task Manager" }}
 
-  <body class="bg-gradient-to-br from-zinc-900 to-zinc-950 text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
+  <body class="bg-[#0f1015] text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
     {{ template "navbar" .Auth }}
     
     <main class="flex-1 container mx-auto px-4 py-8 mt-16 mb-8">
@@ -10,10 +10,10 @@
         <!-- Sidebar -->
         <div class="w-full lg:w-80 space-y-6">
           <!-- Quick Actions -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
-            <div class="p-5 border-b border-zinc-700/50">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80">
+            <div class="p-5 border-b border-zinc-700">
               <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                <i class="fas fa-bolt text-amber-400"></i>
+                <i class="fas fa-bolt text-amber-500"></i>
                 Quick Actions
               </h2>
             </div>
@@ -21,7 +21,7 @@
               <!-- Create Task Button -->
               <button
                 id="create-task-button"
-                class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <i class="fas fa-plus text-xs"></i>
                 <span>New Task</span>
@@ -30,7 +30,7 @@
               <!-- Create Tag Button -->
               <button
                 id="create-tag-button"
-                class="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <i class="fas fa-tag text-xs"></i>
                 <span>New Tag</span>
@@ -39,10 +39,10 @@
           </div>
           
           <!-- Filters -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50">
               <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                <i class="fas fa-filter text-blue-400"></i>
+                <i class="fas fa-filter text-indigo-500"></i>
                 Filters
               </h2>
             </div>
@@ -106,10 +106,10 @@
           {{ template "filters-section" .Filters }}
           
           <!-- Tasks Container -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
               <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                <i class="fas fa-list-check text-blue-400"></i>
+                <i class="fas fa-list-check text-indigo-500"></i>
                 Your Tasks
               </h2>
               
@@ -125,7 +125,7 @@
             
             <div id="tasks-container-error"></div>
             
-            <div id="tasks" class="divide-y divide-zinc-800/50">
+            <div id="tasks" class="divide-y divide-zinc-700/30">
               {{ range. }}
               {{ template "task" .}}
               {{ end }}
@@ -136,9 +136,9 @@
       
       <!-- Task Creation Modal (Hidden by default) -->
       <div id="task-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-          <div class="glass rounded-xl shadow-xl w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div class="bg-zinc-800 rounded-md shadow-xl w-full max-w-md border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
               <h3 class="text-lg font-semibold text-white">Create New Task</h3>
               <button id="close-task-modal" class="text-zinc-400 hover:text-white">
@@ -203,7 +203,7 @@
                   </button>
                   <button
                     type="submit"
-                    class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-sm hover:shadow-md transition-all"
                   >
                     Create Task
                   </button>

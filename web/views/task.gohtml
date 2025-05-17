@@ -2,7 +2,7 @@
 <html>
   {{ template "head" .Task.Name}}
 
-  <body class="bg-gradient-to-br from-zinc-900 to-zinc-950 text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
+  <body class="bg-[#0f1015] text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
     {{ template "navbar" .Auth}}
     
     <main class="flex-1 container mx-auto px-4 py-8 mt-16 mb-8">
@@ -10,10 +10,10 @@
         <!-- Main Content -->
         <div class="flex-1">
           <!-- Task Details -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden mb-6">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden mb-6 border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
               <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                <i class="fas fa-clipboard-check text-blue-400"></i>
+                <i class="fas fa-clipboard-check text-indigo-500"></i>
                 Task Details
               </h2>
               
@@ -40,7 +40,7 @@
         <!-- Sidebar -->
         <div class="w-full lg:w-80 space-y-6">
           <!-- Task Actions -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50">
               <h2 class="text-lg font-semibold text-white flex items-center gap-2">
                 <i class="fas fa-bolt text-amber-400"></i>
@@ -49,7 +49,7 @@
             </div>
             <div class="p-5 space-y-3">
               <button
-                class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
                 id="edit-task-button"
               >
                 <i class="fas fa-edit text-xs"></i>
@@ -61,7 +61,7 @@
                 hx-confirm="Are you sure you want to delete this task?"
                 hx-target="body"
                 hx-swap="outerHTML"
-                class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <i class="fas fa-trash text-xs"></i>
                 <span>Delete Task</span>
@@ -71,7 +71,7 @@
                 hx-post="/tasks/{{ .Task.ID }}/toggle-complete/"
                 hx-target="#task-{{ .Task.ID }}"
                 hx-swap="outerHTML swap:200ms transition:true"
-                class="w-full bg-gradient-to-r {{ if .Task.Completed }}from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700{{ else }}from-green-500 to-green-600 hover:from-green-600 hover:to-green-700{{ end }} text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                class="w-full bg-{{ if .Task.Completed }}amber-600 hover:bg-amber-700{{ else }}green-600 hover:bg-green-700{{ end }} text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <i class="fas {{ if .Task.Completed }}fa-undo{{ else }}fa-check{{ end }} text-xs"></i>
                 <span>{{ if .Task.Completed }}Mark as Incomplete{{ else }}Mark as Complete{{ end }}</span>
@@ -80,7 +80,7 @@
           </div>
           
           <!-- Related Tags -->
-          <div class="glass rounded-xl shadow-lg overflow-hidden">
+          <div class="bg-zinc-800/90 rounded-md shadow-lg overflow-hidden border border-zinc-700/80">
             <div class="p-5 border-b border-zinc-700/50">
               <h2 class="text-lg font-semibold text-white flex items-center gap-2">
                 <i class="fas fa-tags text-purple-400"></i>
@@ -92,7 +92,7 @@
                 {{ if .Task.Tags }}
                 {{ range.Task.Tags }}
                 <div
-                  class="text-xs group bg-purple-600/80 flex items-center gap-1 hover:bg-purple-500 text-white px-2.5 py-1 rounded-full transition-colors shadow-sm"
+                  class="text-xs bg-indigo-600 flex items-center gap-1 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-full transition-colors shadow-sm"
                 >
                   <a class="hover:underline" href="/tasks?tags={{.Name}}/">#{{ .Name }}</a>
                   
@@ -305,7 +305,7 @@
 {{ block "task" . }}
 <div
   id="task-{{ .ID }}"
-  class="request-container bg-zinc-800/40 relative border border-zinc-700/30 rounded-lg shadow-md p-5 transition-all hover:shadow-lg"
+  class="request-container bg-zinc-900 relative border border-zinc-700/50 rounded-md shadow-md p-5 transition-all hover:shadow-lg"
 >
   {{ block "task-header" . }}{{ end }}
 
@@ -361,7 +361,7 @@
         hx-target="#task-{{ .ID }}"
         hx-indicator="#completion-indicator-task-{{ .ID }}"
         hx-indicator-delay="300"
-        class="text-xs bg-green-600/90 px-2.5 py-1.5 hover:bg-green-500 text-white rounded-md transition-colors font-medium"
+        class="text-xs bg-green-600 px-2.5 py-1.5 hover:bg-green-500 text-white rounded-md transition-colors font-medium"
       >
         <i class="fas fa-check text-xs mr-1"></i> Complete
       </button>
@@ -398,7 +398,7 @@
   {{ if .Tags }}
   {{ range.Tags }}
   <div
-    class="text-xs group bg-purple-600/80 flex items-center gap-1 hover:bg-purple-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
+    class="text-xs bg-indigo-600 flex items-center gap-1 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-full transition-colors shadow-sm"
   >
     <a class="hover:underline" href="/tasks?tags={{.Name}}/">#{{ .Name }}</a>
 
