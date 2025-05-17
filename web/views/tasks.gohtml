@@ -2,15 +2,365 @@
 <html class="bg-zinc-900">
   {{ template "head" "Task Manager" }}
 
-  <body class="bg-zinc-900 text-zinc-200 min-h-screen font-sans antialiased">
+  <body class="bg-gradient-to-br from-zinc-900 to-zinc-950 text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
     {{ template "navbar" .Auth }}
-
-    <main class="container mx-auto px-4 py-6 max-w-5xl space-y-6">
-      {{ template "task-form-card" . }}
-      {{ template "filters-section" .Filters }}
-      {{ template "tasks-container" .Tasks }}
-      {{ template "footer" . }}
+    
+    <main class="flex-1 container mx-auto px-4 py-8 mt-16 mb-8">
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Sidebar -->
+        <div class="w-full lg:w-80 space-y-6">
+          <!-- Quick Actions -->
+          <div class="glass rounded-xl shadow-lg overflow-hidden">
+            <div class="p-5 border-b border-zinc-700/50">
+              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-bolt text-amber-400"></i>
+                Quick Actions
+              </h2>
+            </div>
+            <div class="p-5 space-y-4">
+              <!-- Create Task Button -->
+              <button
+                id="create-task-button"
+                class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                <i class="fas fa-plus text-xs"></i>
+                <span>New Task</span>
+              </button>
+              
+              <!-- Create Tag Button -->
+              <button
+                id="create-tag-button"
+                class="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                <i class="fas fa-tag text-xs"></i>
+                <span>New Tag</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Filters -->
+          <div class="glass rounded-xl shadow-lg overflow-hidden">
+            <div class="p-5 border-b border-zinc-700/50">
+              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-filter text-blue-400"></i>
+                Filters
+              </h2>
+            </div>
+            <div class="p-5 space-y-3">
+              <a 
+                href="/tasks/" 
+                class="flex items-center justify-between py-2 px-3 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800/50 transition-colors"
+              >
+                <span class="flex items-center gap-2">
+                  <i class="fas fa-list-ul text-xs"></i>
+                  <span class="text-sm">All Tasks</span>
+                </span>
+                <span class="text-xs bg-zinc-800 px-2 py-0.5 rounded-full">{{ len .Tasks }}</span>
+              </a>
+              
+              <a 
+                href="/tasks?completed=true/" 
+                class="flex items-center justify-between py-2 px-3 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800/50 transition-colors"
+              >
+                <span class="flex items-center gap-2">
+                  <i class="fas fa-check text-xs text-green-500"></i>
+                  <span class="text-sm">Completed</span>
+                </span>
+              </a>
+              
+              <a 
+                href="/tasks?completed=false/" 
+                class="flex items-center justify-between py-2 px-3 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800/50 transition-colors"
+              >
+                <span class="flex items-center gap-2">
+                  <i class="fas fa-clock text-xs text-amber-500"></i>
+                  <span class="text-sm">Pending</span>
+                </span>
+              </a>
+              
+              <div class="pt-2 border-t border-zinc-700/30">
+                <h3 class="text-sm font-medium text-zinc-400 mb-2">Recent Tags</h3>
+                <div class="flex flex-wrap gap-2">
+                  <!-- This would be populated dynamically with recent tags -->
+                  <a 
+                    href="/tasks?tags=work/" 
+                    class="text-xs bg-purple-600/80 hover:bg-purple-500 text-white px-2.5 py-1 rounded-full transition-colors"
+                  >
+                    #work
+                  </a>
+                  <a 
+                    href="/tasks?tags=personal/" 
+                    class="text-xs bg-purple-600/80 hover:bg-purple-500 text-white px-2.5 py-1 rounded-full transition-colors"
+                  >
+                    #personal
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 space-y-6">
+          <!-- Active Filters -->
+          {{ template "filters-section" .Filters }}
+          
+          <!-- Tasks Container -->
+          <div class="glass rounded-xl shadow-lg overflow-hidden">
+            <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-list-check text-blue-400"></i>
+                Your Tasks
+              </h2>
+              
+              <div class="flex items-center gap-2">
+                <button class="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-800/50 transition-colors tooltip" data-tooltip="Sort">
+                  <i class="fas fa-sort text-xs"></i>
+                </button>
+                <button class="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-800/50 transition-colors tooltip" data-tooltip="View options">
+                  <i class="fas fa-th-large text-xs"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div id="tasks-container-error"></div>
+            
+            <div id="tasks" class="divide-y divide-zinc-800/50">
+              {{ range. }}
+              {{ template "task" .}}
+              {{ end }}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Task Creation Modal (Hidden by default) -->
+      <div id="task-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+          <div class="glass rounded-xl shadow-xl w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-white">Create New Task</h3>
+              <button id="close-task-modal" class="text-zinc-400 hover:text-white">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="p-5">
+              <form
+                id="task-form"
+                hx-target="#tasks"
+                hx-swap="afterbegin swap:200ms transition:true"
+                hx-post="/tasks/"
+                class="space-y-4"
+              >
+                <div>
+                  <label for="task_name" class="block text-sm font-medium mb-1.5 text-zinc-300">
+                    Task Name
+                  </label>
+                  <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                      <i class="fas fa-pencil-alt text-xs"></i>
+                    </span>
+                    <input
+                      type="text"
+                      name="task_name"
+                      id="task_name"
+                      class="w-full bg-zinc-800/50 border border-zinc-700/50 text-white pl-10 pr-3 py-2.5 rounded-lg placeholder-zinc-500 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      placeholder="What needs to be done?"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label for="task_idea" class="block text-sm font-medium mb-1.5 text-zinc-300">
+                    Description
+                  </label>
+                  <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                      <i class="fas fa-lightbulb text-xs"></i>
+                    </span>
+                    <input
+                      type="text"
+                      name="task_idea"
+                      id="task_idea"
+                      class="w-full bg-zinc-800/50 border border-zinc-700/50 text-white pl-10 pr-3 py-2.5 rounded-lg placeholder-zinc-500 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      placeholder="Add details about this task"
+                    />
+                  </div>
+                </div>
+                
+                <div id="error-form" class="text-red-400 text-sm"></div>
+                
+                <div class="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    id="cancel-task"
+                    class="px-4 py-2 border border-zinc-700 text-zinc-300 hover:text-white rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all"
+                  >
+                    Create Task
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tag Creation Modal (Hidden by default) -->
+      <div id="tag-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+          <div class="glass rounded-xl shadow-xl w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-white">Create New Tag</h3>
+              <button id="close-tag-modal" class="text-zinc-400 hover:text-white">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="p-5">
+              <form
+                id="tag-form"
+                hx-post="/tags/"
+                hx-vals='{"source": "/tasks"}'
+                hx-swap="outerHTML swap:200ms transition:true"
+                hx-target="#tasks-container"
+                class="space-y-4"
+              >
+                <div>
+                  <label for="tag_name" class="block text-sm font-medium mb-1.5 text-zinc-300">
+                    Tag Name
+                  </label>
+                  <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                      <i class="fas fa-tag text-xs"></i>
+                    </span>
+                    <input
+                      type="text"
+                      name="tag_name"
+                      id="tag_name"
+                      class="w-full bg-zinc-800/50 border border-zinc-700/50 text-white pl-10 pr-3 py-2.5 rounded-lg placeholder-zinc-500 focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 transition-all"
+                      placeholder="e.g., work, personal, urgent"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div id="tag-error-form" class="text-red-400 text-sm"></div>
+                
+                <div class="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    id="cancel-tag"
+                    class="px-4 py-2 border border-zinc-700 text-zinc-300 hover:text-white rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all"
+                  >
+                    Create Tag
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
+    
+    {{ template "footer" . }}
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Task modal functionality
+        const taskModal = document.getElementById('task-modal');
+        const createTaskButton = document.getElementById('create-task-button');
+        const closeTaskModal = document.getElementById('close-task-modal');
+        const cancelTask = document.getElementById('cancel-task');
+        
+        if (taskModal && createTaskButton && closeTaskModal && cancelTask) {
+          createTaskButton.addEventListener('click', function() {
+            taskModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            setTimeout(() => {
+              document.getElementById('task_name').focus();
+            }, 100);
+          });
+          
+          const closeTaskModalFn = function() {
+            taskModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+          };
+          
+          closeTaskModal.addEventListener('click', closeTaskModalFn);
+          cancelTask.addEventListener('click', closeTaskModalFn);
+          
+          // Close on outside click
+          taskModal.addEventListener('click', function(event) {
+            if (event.target === taskModal) {
+              closeTaskModalFn();
+            }
+          });
+          
+          // Close on successful form submission
+          document.getElementById('task-form').addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.successful) {
+              closeTaskModalFn();
+              window.showToast('Task created successfully!', 'success');
+            }
+          });
+        }
+        
+        // Tag modal functionality
+        const tagModal = document.getElementById('tag-modal');
+        const createTagButton = document.getElementById('create-tag-button');
+        const closeTagModal = document.getElementById('close-tag-modal');
+        const cancelTag = document.getElementById('cancel-tag');
+        
+        if (tagModal && createTagButton && closeTagModal && cancelTag) {
+          createTagButton.addEventListener('click', function() {
+            tagModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            setTimeout(() => {
+              document.getElementById('tag_name').focus();
+            }, 100);
+          });
+          
+          const closeTagModalFn = function() {
+            tagModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+          };
+          
+          closeTagModal.addEventListener('click', closeTagModalFn);
+          cancelTag.addEventListener('click', closeTagModalFn);
+          
+          // Close on outside click
+          tagModal.addEventListener('click', function(event) {
+            if (event.target === tagModal) {
+              closeTagModalFn();
+            }
+          });
+          
+          // Close on successful form submission
+          document.getElementById('tag-form').addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.successful) {
+              closeTagModalFn();
+              window.showToast('Tag created successfully!', 'success');
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>
 {{ end }}
@@ -18,7 +368,7 @@
 {{ block "tasks-container-error" .}}
 <div hx-swap-oob="innerhtml" id="tasks-container-error">
   <div
-    class="bg-red-900/90 text-red-200 p-2.5 px-4 rounded-sm border border-red-700/50 text-sm flex items-center shadow-md"
+    class="m-5 bg-red-900/80 text-red-200 p-3 px-4 rounded-lg border border-red-700/50 text-sm flex items-center shadow-md"
   >
     <i class="fas fa-exclamation-circle text-xs mr-2"></i>{{ . }}
   </div>
@@ -28,32 +378,9 @@
 {{ block "tasks-container-success" .}}
 <div hx-swap-oob="innerhtml" id="tasks-container-error">
   <div
-    class="bg-green-900/90 text-green-200 p-2.5 px-4 rounded-sm border border-green-700/50 text-sm flex items-center shadow-md"
+    class="m-5 bg-green-900/80 text-green-200 p-3 px-4 rounded-lg border border-green-700/50 text-sm flex items-center shadow-md"
   >
     <i class="fas fa-check-circle text-xs mr-2"></i>{{ . }}
-  </div>
-</div>
-{{ end }}
-
-{{ block "tasks-container" . }}
-<div
-  id="tasks-container"
-  class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 backdrop-blur-sm"
->
-  <div class="p-5">
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center">
-        <i class="fas fa-list-check text-blue-400 mr-2.5 text-lg"></i>
-        <h2 class="text-lg font-semibold text-white">Your Tasks</h2>
-      </div>
-
-      <div id="tasks-container-error"></div>
-    </div>
-    <div id="tasks" class="space-y-4">
-      {{ range. }}
-      {{ template "task" .}}
-      {{ end }}
-    </div>
   </div>
 </div>
 {{ end }}
@@ -61,7 +388,7 @@
 {{ block "form-error" . }}
 <div hx-swap-oob="innerhtml" id="error-form">
   <div
-    class="bg-red-900/90 text-red-200 p-2.5 px-4 rounded-sm border border-red-700/50 text-sm flex items-center shadow-md"
+    class="bg-red-900/80 text-red-200 p-2.5 px-4 rounded-lg border border-red-700/50 text-sm flex items-center shadow-md"
   >
     <i class="fas fa-exclamation-circle text-xs mr-2"></i>{{ . }}
   </div>

@@ -2,71 +2,96 @@
 <html>
   {{ template "head" "Login"}}
 
-  <body class="bg-zinc-900 text-zinc-200 min-h-screen font-sans antialiased">
+  <body class="bg-gradient-to-br from-zinc-900 to-zinc-950 text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
     {{ template "navbar" . }}
-    <div class="container mx-auto px-4 py-12 max-w-md">
-      <div
-        class="bg-zinc-800/90 p-8 rounded-sm shadow-lg border border-zinc-700/50 backdrop-blur-sm"
-      >
-        <h1 class="text-2xl font-bold mb-6 text-white">Log In</h1>
-        <form action="/login/" method="post" class="space-y-5">
-          <div>
-            <label
-              for="username"
-              class="block text-sm font-medium mb-1.5 text-zinc-300"
-              >Username</label
-            >
-            <div class="relative">
-              <span
-                class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+    
+    <main class="flex-1 flex items-center justify-center px-4 py-20 mt-16">
+      <div class="w-full max-w-md">
+        <div class="glass rounded-xl shadow-xl overflow-hidden">
+          <div class="p-8">
+            <div class="text-center mb-6">
+              <h1 class="text-2xl font-bold text-white">Welcome back</h1>
+              <p class="text-zinc-400 text-sm mt-1">Sign in to your account to continue</p>
+            </div>
+            
+            <form action="/login/" method="post" class="space-y-5">
+              <div>
+                <label for="username" class="block text-sm font-medium mb-1.5 text-zinc-300">
+                  Username
+                </label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                    <i class="fas fa-user text-xs"></i>
+                  </span>
+                  <input
+                    type="text"
+                    name="username"
+                    id="username"
+                    class="w-full bg-zinc-800/50 border border-zinc-700/50 text-white pl-10 pr-3 py-2.5 rounded-lg placeholder-zinc-500 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                    placeholder="Enter your username"
+                    autocomplete="username"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label for="password" class="text-sm font-medium text-zinc-300">
+                    Password
+                  </label>
+                  <a href="#" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                    Forgot password?
+                  </a>
+                </div>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                    <i class="fas fa-lock text-xs"></i>
+                  </span>
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    class="w-full bg-zinc-800/50 border border-zinc-700/50 text-white pl-10 pr-3 py-2.5 rounded-lg placeholder-zinc-500 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                  />
+                </div>
+              </div>
+              
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="remember-me"
+                  name="remember-me"
+                  class="h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-blue-500 focus:ring-blue-500/30"
+                />
+                <label for="remember-me" class="ml-2 block text-sm text-zinc-400">
+                  Remember me
+                </label>
+              </div>
+              
+              <button
+                type="submit"
+                class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-colors duration-200 text-white font-medium py-2.5 rounded-lg shadow-sm hover:shadow-md"
               >
-                <i class="fas fa-user text-xs"></i>
-              </span>
-              <input
-                type="text"
-                name="username"
-                id="username"
-                class="w-full bg-zinc-900/90 border border-zinc-700 text-white pl-10 pr-3 py-2.5 rounded-sm placeholder-zinc-500 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
-                placeholder="Enter your username"
-              />
+                Sign in
+              </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+              <p class="text-sm text-zinc-400">
+                Don't have an account?
+                <a href="/sign-up/" class="text-blue-400 hover:text-blue-300 font-medium">
+                  Sign up
+                </a>
+              </p>
             </div>
           </div>
-          <div>
-            <label
-              for="password"
-              class="block text-sm font-medium mb-1.5 text-zinc-300"
-              >Password</label
-            >
-            <div class="relative">
-              <span
-                class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
-              >
-                <i class="fas fa-lock text-xs"></i>
-              </span>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                class="w-full bg-zinc-900/90 border border-zinc-700 text-white pl-10 pr-3 py-2.5 rounded-sm placeholder-zinc-500 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            class="w-full bg-blue-600 hover:bg-blue-500 transition-colors duration-200 text-white font-medium py-2.5 rounded-sm shadow-sm hover:shadow-md"
-          >
-            Log In
-          </button>
-          <div class="text-center text-sm text-zinc-400 mt-4">
-            Don't have an account?
-            <a href="/sign-up/" class="text-purple-400 hover:text-purple-300"
-              >Sign up</a
-            >
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </main>
+    
+    {{ template "footer" . }}
   </body>
 </html>
 {{ end }}
@@ -75,71 +100,92 @@
 <html>
   {{ template "head" "Sign Up"}}
 
-  <body class="bg-zinc-900 text-zinc-200 min-h-screen font-sans antialiased">
+  <body class="bg-gradient-to-br from-zinc-900 to-zinc-950 text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
     {{ template "navbar" . }}
-    <div class="container mx-auto px-4 py-12 max-w-md">
-      <div
-        class="bg-zinc-800/90 p-8 rounded-sm shadow-lg border border-zinc-700/50 backdrop-blur-sm"
-      >
-        <h1 class="text-2xl font-bold mb-6 text-white">Sign Up</h1>
-        <form action="/sign-up/" class="space-y-5" method="post">
-          <div>
-            <label
-              for="username"
-              class="block text-sm font-medium mb-1.5 text-zinc-300"
-              >Username</label
-            >
-            <div class="relative">
-              <span
-                class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+    
+    <main class="flex-1 flex items-center justify-center px-4 py-20 mt-16">
+      <div class="w-full max-w-md">
+        <div class="glass rounded-xl shadow-xl overflow-hidden">
+          <div class="p-8">
+            <div class="text-center mb-6">
+              <h1 class="text-2xl font-bold text-white">Create an account</h1>
+              <p class="text-zinc-400 text-sm mt-1">Join SwagTask to manage your tasks efficiently</p>
+            </div>
+            
+            <form action="/sign-up/" method="post" class="space-y-5">
+              <div>
+                <label for="username" class="block text-sm font-medium mb-1.5 text-zinc-300">
+                  Username
+                </label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                    <i class="fas fa-user text-xs"></i>
+                  </span>
+                  <input
+                    type="text"
+                    name="username"
+                    id="username"
+                    class="w-full bg-zinc-800/50 border border-zinc-700/50 text-white pl-10 pr-3 py-2.5 rounded-lg placeholder-zinc-500 focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 transition-all"
+                    placeholder="Choose a username"
+                    autocomplete="username"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label for="password" class="block text-sm font-medium mb-1.5 text-zinc-300">
+                  Password
+                </label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                    <i class="fas fa-lock text-xs"></i>
+                  </span>
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    class="w-full bg-zinc-800/50 border border-zinc-700/50 text-white pl-10 pr-3 py-2.5 rounded-lg placeholder-zinc-500 focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 transition-all"
+                    placeholder="Create a strong password"
+                    autocomplete="new-password"
+                  />
+                </div>
+              </div>
+              
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  name="terms"
+                  class="h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-purple-500 focus:ring-purple-500/30"
+                  required
+                />
+                <label for="terms" class="ml-2 block text-sm text-zinc-400">
+                  I agree to the <a href="#" class="text-purple-400 hover:text-purple-300">Terms of Service</a>
+                </label>
+              </div>
+              
+              <button
+                type="submit"
+                class="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 transition-colors duration-200 text-white font-medium py-2.5 rounded-lg shadow-sm hover:shadow-md"
               >
-                <i class="fas fa-user text-xs"></i>
-              </span>
-              <input
-                type="text"
-                name="username"
-                id="username"
-                class="w-full bg-zinc-900/90 border border-zinc-700 text-white pl-10 pr-3 py-2.5 rounded-sm placeholder-zinc-500 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
-                placeholder="Choose a username"
-              />
+                Create account
+              </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+              <p class="text-sm text-zinc-400">
+                Already have an account?
+                <a href="/login/" class="text-purple-400 hover:text-purple-300 font-medium">
+                  Sign in
+                </a>
+              </p>
             </div>
           </div>
-          <div>
-            <label
-              for="password"
-              class="block text-sm font-medium mb-1.5 text-zinc-300"
-              >Password</label
-            >
-            <div class="relative">
-              <span
-                class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
-              >
-                <i class="fas fa-lock text-xs"></i>
-              </span>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                class="w-full bg-zinc-900/90 border border-zinc-700 text-white pl-10 pr-3 py-2.5 rounded-sm placeholder-zinc-500 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
-                placeholder="Create a password"
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            class="w-full bg-purple-600 hover:bg-purple-500 transition-colors duration-200 text-white font-medium py-2.5 rounded-sm shadow-sm hover:shadow-md"
-          >
-            Sign Up
-          </button>
-          <div class="text-center text-sm text-zinc-400 mt-4">
-            Already have an account?
-            <a href="/login/" class="text-blue-400 hover:text-blue-300"
-              >Log in</a
-            >
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </main>
+    
+    {{ template "footer" . }}
   </body>
 </html>
 {{ end }}

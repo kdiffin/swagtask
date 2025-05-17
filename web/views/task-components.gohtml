@@ -1,23 +1,23 @@
 {{ block "task-form-card".  }}
-<div
-  class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 backdrop-blur-sm"
->
+<div class="bg-zinc-800/90 rounded-lg shadow-lg border border-zinc-700/50 backdrop-blur-sm">
   <div class="p-5">
     <div class="flex items-center mb-4">
-      <i class="fa-brands fa-wpforms text-blue-400 mr-2.5 text-lg"></i>
+      <i
+        class="fa-brands fa-wpforms text-blue-400 mr-2.5 text-lg"
+      ></i>
       <h2 class="text-lg font-semibold text-white">Create New</h2>
     </div>
-
+    
     <div class="grid md:grid-cols-2 gap-5">
-      <div class="bg-zinc-900/60 rounded-sm p-4 border border-zinc-700/30">
+      <div class="bg-zinc-900/60 rounded-md p-4 border border-zinc-700/30">
         <h3 class="text-sm font-medium text-zinc-300 mb-3 flex items-center">
           <i class="fas fa-clipboard-list text-blue-400 mr-2"></i>
           New Task
         </h3>
         {{ template "create-task" . }}
       </div>
-
-      <div class="bg-zinc-900/60 rounded-sm p-4 border border-zinc-700/30">
+      
+      <div class="bg-zinc-900/60 rounded-md p-4 border border-zinc-700/30">
         <h3 class="text-sm font-medium text-zinc-300 mb-3 flex items-center">
           <i class="fas fa-tag text-purple-400 mr-2"></i>
           New Tag
@@ -46,14 +46,14 @@
     </span>
     <input
       type="text"
-      class="w-full pl-10 pr-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-white text-sm transition-all"
+      class="w-full pl-10 pr-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-white text-sm transition-all"
       name="tag_name"
       placeholder="Tag name"
       required
     />
   </div>
   <button
-    class="w-full px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-sm transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md text-sm"
+    class="w-full px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-md transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md text-sm"
     type="submit"
   >
     <i class="fas fa-plus mr-2"></i> Create Tag
@@ -78,7 +78,7 @@
     </span>
     <input
       type="text"
-      class="w-full pl-10 pr-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm transition-all"
+      class="w-full pl-10 pr-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm transition-all"
       name="task_name"
       placeholder="Task name"
     />
@@ -91,13 +91,13 @@
     </span>
     <input
       type="text"
-      class="w-full pl-10 pr-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm transition-all"
+      class="w-full pl-10 pr-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm transition-all"
       name="task_idea"
       placeholder="Task description"
     />
   </div>
   <button
-    class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-sm transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md text-sm"
+    class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-md transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md text-sm"
     type="submit"
   >
     <i class="fas fa-plus mr-2"></i> Create Task

@@ -1,27 +1,38 @@
 {{ block "filters-section" . }}
 {{ if or .ActiveTag .SearchQuery }}
-<div
-  class="mb-4 bg-zinc-800/80 border border-zinc-700/50 p-3 rounded-sm shadow-sm backdrop-blur-sm"
->
+<div class="mb-6 animate-in fade-in slide-in-from-top-4 duration-300">
   <div class="flex flex-wrap items-center gap-2">
-    <span class="text-sm font-medium text-zinc-300">Active Filters:</span>
+    <span class="text-sm font-medium text-zinc-400">Filters:</span>
 
     {{ if .ActiveTag }}
     <div
-      class="text-xs font-medium bg-purple-600/90 flex items-center gap-1 hover:bg-purple-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
+      class="group relative"
     >
-      <span>#{{ .ActiveTag }}</span>
+      <div class="flex items-center gap-1.5 bg-gradient-to-br from-purple-500/90 to-purple-700/90 text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200">
+        <span class="flex items-center gap-1.5">
+          <i class="fas fa-tag text-[10px]"></i>
+          {{ .ActiveTag }}
+        </span>
+        <a href="/tasks/" class="ml-1 opacity-70 hover:opacity-100">
+          <i class="fas fa-times text-[10px]"></i>
+        </a>
+      </div>
     </div>
     {{ end }}
 
     {{ if .SearchQuery }}
     <div
-      class="text-xs font-medium bg-blue-600/90 flex items-center gap-1 hover:bg-blue-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
+      class="group relative"
     >
-      <span
-        ><i class="fa-search fas text-[10px] mr-1"></i>"{{ .SearchQuery
-        }}"</span
-      >
+      <div class="flex items-center gap-1.5 bg-gradient-to-br from-blue-500/90 to-blue-700/90 text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200">
+        <span class="flex items-center gap-1.5">
+          <i class="fas fa-search text-[10px]"></i>
+          "{{ .SearchQuery }}"
+        </span>
+        <a href="/tasks/" class="ml-1 opacity-70 hover:opacity-100">
+          <i class="fas fa-times text-[10px]"></i>
+        </a>
+      </div>
     </div>
     {{ end }}
   </div>
@@ -45,59 +56,257 @@
   <link rel="stylesheet" href="/css/index.css" />
   <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    :root {
+      --radius: 0.5rem;
+      --radius-full: 9999px;
+      --radius-sm: 0.25rem;
+    }
+    
+    html, body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      scroll-behavior: smooth;
+    }
+    
+    /* Animation utilities */
+    .animate-in {
+      animation-duration: 0.3s;
+      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      animation-fill-mode: both;
+    }
+    
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slide-in-from-top-4 {
+      from { transform: translateY(-1rem); }
+      to { transform: translateY(0); }
+    }
+    
+    @keyframes slide-in-from-bottom-4 {
+      from { transform: translateY(1rem); }
+      to { transform: translateY(0); }
+    }
+    
+    @keyframes slide-in-from-left-4 {
+      from { transform: translateX(-1rem); }
+      to { transform: translateX(0); }
+    }
+    
+    @keyframes slide-in-from-right-4 {
+      from { transform: translateX(1rem); }
+      to { transform: translateX(0); }
+    }
+    
+    .fade-in {
+      animation-name: fade-in;
+    }
+    
+    .slide-in-from-top-4 {
+      animation-name: slide-in-from-top-4;
+    }
+    
+    .slide-in-from-bottom-4 {
+      animation-name: slide-in-from-bottom-4;
+    }
+    
+    .slide-in-from-left-4 {
+      animation-name: slide-in-from-left-4;
+    }
+    
+    .slide-in-from-right-4 {
+      animation-name: slide-in-from-right-4;
+    }
+    
+    .duration-300 {
+      animation-duration: 0.3s;
+    }
+    
+    .duration-500 {
+      animation-duration: 0.5s;
+    }
+    
     /* Custom scrollbar */
     ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
     }
+    
     ::-webkit-scrollbar-track {
-      background: rgba(39, 39, 42, 0.2);
-      border-radius: 4px;
+      background: rgba(39, 39, 42, 0.1);
+      border-radius: var(--radius-full);
     }
+    
     ::-webkit-scrollbar-thumb {
-      background: rgba(82, 82, 91, 0.5);
-      border-radius: 4px;
+      background: rgba(82, 82, 91, 0.4);
+      border-radius: var(--radius-full);
     }
+    
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(113, 113, 122, 0.7);
+      background: rgba(113, 113, 122, 0.6);
     }
-
-    /* Smooth transitions */
-    * {
-      transition-property: background-color, border-color, color, fill, stroke,
-        opacity, box-shadow, transform;
-      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-      transition-duration: 150ms;
-    }
-
+    
     /* Focus styles */
     *:focus-visible {
       outline: 2px solid rgba(124, 58, 237, 0.6);
       outline-offset: 2px;
     }
+    
+    /* Card hover effect */
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-2px);
+    }
+    
+    /* Glass morphism */
+    .glass {
+      background: rgba(39, 39, 42, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .glass-light {
+      background: rgba(39, 39, 42, 0.4);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Tooltip */
+    .tooltip {
+      position: relative;
+    }
+    
+    .tooltip:before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-4px);
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius);
+      background: rgba(24, 24, 27, 0.95);
+      color: white;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      z-index: 50;
+    }
+    
+    .tooltip:hover:before {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-8px);
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spinner 0.6s linear infinite;
+    }
+    
+    @keyframes spinner {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Status indicators */
+    .status-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+    }
+    
+    .status-dot.completed {
+      background-color: #10b981;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    
+    .status-dot.pending {
+      background-color: #f59e0b;
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    }
   </style>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // HTMX error handling
       document.body.addEventListener("htmx:beforeSwap", (evt) => {
         if (evt.detail.xhr.status === 404) {
-          alert("Error: Could Not Find Resource");
+          showToast("Error: Could Not Find Resource", "error");
         } else if (evt.detail.xhr.status === 422) {
           evt.detail.shouldSwap = true;
           evt.detail.isError = false;
         } else if (evt.detail.xhr.status === 401) {
-          alert("Error: Unauthorized");
+          showToast("Error: Unauthorized", "error");
         } else if (evt.detail.xhr.status === 403) {
-          alert("Error: Forbidden");
+          showToast("Error: Forbidden", "error");
         } else if (evt.detail.xhr.status === 500) {
-          alert("Error: Internal Server Error");
-        } else if (evt.detail.xhr.status === 401) {
-          alert("Error: Bad Request");
+          showToast("Error: Internal Server Error", "error");
+        } else if (evt.detail.xhr.status === 400) {
+          showToast("Error: Bad Request", "error");
         }
       });
+      
       document.body.addEventListener("htmx:sendError", (evt) => {
-        alert("Error: Connection error");
+        showToast("Error: Connection error", "error");
       });
+      
+      // Toast notification system
+      window.showToast = function(message, type = "info") {
+        const toast = document.createElement("div");
+        toast.className = `fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+          type === "error" ? "bg-red-600 text-white" : 
+          type === "success" ? "bg-green-600 text-white" : 
+          "bg-blue-600 text-white"
+        }`;
+        
+        const icon = document.createElement("i");
+        icon.className = `fas ${
+          type === "error" ? "fa-exclamation-circle" : 
+          type === "success" ? "fa-check-circle" : 
+          "fa-info-circle"
+        } text-sm`;
+        
+        const text = document.createElement("span");
+        text.className = "text-sm font-medium";
+        text.textContent = message;
+        
+        toast.appendChild(icon);
+        toast.appendChild(text);
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateY(1rem)";
+          toast.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+          
+          setTimeout(() => {
+            document.body.removeChild(toast);
+          }, 300);
+        }, 3000);
+      };
+      
+      // Mobile menu toggle
+      const mobileMenuButton = document.getElementById("mobile-menu-button");
+      const mobileMenu = document.getElementById("mobile-menu");
+      
+      if (mobileMenuButton && mobileMenu) {
+        mobileMenuButton.addEventListener("click", () => {
+          mobileMenu.classList.toggle("hidden");
+        });
+      }
     });
+    
     htmx.logAll();
   </script>
 </head>

@@ -1,150 +1,231 @@
 {{ block "navbar" . }}
-<nav
-  class="bg-zinc-800/80 backdrop-blur-md shadow-md border-b border-zinc-700/50 sticky top-0 z-10 mb-6"
->
-  <div class="container mx-auto px-4 py-3">
-    <div class="flex items-center justify-between">
-      <!-- Left: Logo -->
-      <div class="flex items-center">
-        <i class="fas fa-tasks text-blue-500 mr-2 text-xl"></i>
-        <strong class="text-xl font-bold text-white">
-          <a href="/tasks/" class="hover:opacity-90 transition-opacity"
-            >SwagTask</a
-          >
-        </strong>
+<header class="fixed top-0 left-0 right-0 z-50 glass">
+  <div class="container mx-auto px-4">
+    <nav class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <div class="flex items-center gap-2">
+        <a href="/tasks/" class="flex items-center gap-2 text-white hover:opacity-90 transition-opacity">
+          <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md flex items-center justify-center shadow-md">
+            <i class="fas fa-check-double text-white"></i>
+          </div>
+          <span class="text-lg font-bold">SwagTask</span>
+        </a>
       </div>
-
-      <!-- Center: Search bar -->
-      <div class="flex-1 mx-10 max-w-md">
-        <form id="taskForm" class="relative flex items-center w-full">
-          <div class="relative w-full">
-            <span
-              class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
-            >
+      
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-6">
+        <a 
+          href="/tasks/" 
+          class="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors"
+        >
+          <i class="fas fa-list-check text-xs"></i>
+          <span>Tasks</span>
+        </a>
+        <a 
+          href="/tags/" 
+          class="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors"
+        >
+          <i class="fas fa-tags text-xs"></i>
+          <span>Tags</span>
+        </a>
+        <a 
+          href="/vaults/" 
+          class="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors"
+        >
+          <i class="fas fa-folder text-xs"></i>
+          <span>Vaults</span>
+        </a>
+      </div>
+      
+      <!-- Search & User Actions -->
+      <div class="flex items-center gap-4">
+        <!-- Search Trigger (Mobile) -->
+        <button 
+          id="search-trigger"
+          class="md:hidden text-zinc-300 hover:text-white p-2 rounded-full hover:bg-zinc-800/50 transition-colors"
+        >
+          <i class="fas fa-search text-sm"></i>
+        </button>
+        
+        <!-- Search Bar (Desktop) -->
+        <form id="taskForm" class="hidden md:block relative">
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
               <i class="fas fa-search text-xs"></i>
             </span>
             <input
-              class="w-full rounded-sm border border-zinc-700 bg-zinc-900/80 text-white placeholder-zinc-500 py-2 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+              class="w-64 rounded-full border border-zinc-700/50 bg-zinc-800/50 text-white placeholder-zinc-500 py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/30 transition-all"
               type="text"
               id="navbar-search-task"
               placeholder="Search tasks..."
               name="taskName"
-              required
             />
-            <button
-              type="submit"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 hover:text-zinc-300"
-            >
-              <i class="fas fa-arrow-right text-xs"></i>
-            </button>
           </div>
         </form>
-      </div>
-
-      <!-- Right: Nav & Auth -->
-      <div class="hidden md:flex items-center gap-4">
-        <div class="flex items-center space-x-4">
-          <a
-            href="/tasks/"
-            class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
+        
+        <!-- User Menu -->
+        {{ if .Authorized }}
+        <div class="relative">
+          <button 
+            id="user-menu-button"
+            class="flex items-center gap-2 text-zinc-300 hover:text-white transition-colors"
           >
-            Tasks
-          </a>
-          <a
-            href="/tags/"
-            class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
-          >
-            Tags
-          </a>
-          <a
-            href="/vaults/"
-            class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
-          >
-            Vaults
-          </a>
-        </div>
-
-        <div class="h-5 w-px bg-zinc-700/50"></div>
-
-        <div class="flex items-center gap-4">
-          {{ if .Authorized }}
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2">
-              <img
-                src="{{.User.PathToPfp}}"
-                alt="profile picture"
-                class="w-7 h-7 rounded-full object-cover border border-white/20 shadow-sm"
-              />
-              <span
-                class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
-              >
-                {{.User.Username}}
-              </span>
+            <img
+              src="{{.User.PathToPfp}}"
+              alt="{{.User.Username}}"
+              class="w-8 h-8 rounded-full object-cover border border-white/10 shadow-sm"
+            />
+            <span class="hidden md:block text-sm font-medium">{{.User.Username}}</span>
+            <i class="fas fa-chevron-down text-[10px] opacity-70"></i>
+          </button>
+          
+          <!-- Dropdown Menu -->
+          <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 glass rounded-lg shadow-lg py-1 z-50">
+            <div class="px-4 py-2 border-b border-zinc-700/50">
+              <p class="text-sm font-medium text-white">{{.User.Username}}</p>
+              <p class="text-xs text-zinc-400">Signed in</p>
             </div>
-            <form action="/logout/" method="post">
-              <button
-                type="submit"
-                class="text-red-400 hover:text-red-300 font-medium transition duration-200 text-sm"
-              >
-                <i class="fas fa-sign-out-alt text-xs mr-1"></i>Logout
-              </button>
-            </form>
-          </div>
-          {{ else }}
-          <div class="flex items-center gap-3">
-            <a
-              href="/login/"
-              class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
-            >
-              Log in
+            <a href="/profile/" class="block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 hover:text-white transition-colors">
+              <i class="fas fa-user text-xs mr-2"></i> Profile
             </a>
-            <a
-              href="/sign-up/"
-              class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-sm text-sm font-medium transition-colors duration-200"
-            >
-              Sign up
+            <a href="/settings/" class="block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 hover:text-white transition-colors">
+              <i class="fas fa-cog text-xs mr-2"></i> Settings
             </a>
+            <div class="border-t border-zinc-700/50 mt-1 pt-1">
+              <form action="/logout/" method="post">
+                <button
+                  type="submit"
+                  class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-700/50 hover:text-red-300 transition-colors"
+                >
+                  <i class="fas fa-sign-out-alt text-xs mr-2"></i> Log out
+                </button>
+              </form>
+            </div>
           </div>
-          {{ end }}
         </div>
+        {{ else }}
+        <div class="flex items-center gap-3">
+          <a
+            href="/login/"
+            class="text-zinc-300 hover:text-white text-sm font-medium transition-colors"
+          >
+            Log in
+          </a>
+          <a
+            href="/sign-up/"
+            class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-full text-sm font-medium transition-colors shadow-md hover:shadow-lg"
+          >
+            Sign up
+          </a>
+        </div>
+        {{ end }}
+        
+        <!-- Mobile Menu Button -->
+        <button 
+          id="mobile-menu-button"
+          class="md:hidden text-zinc-300 hover:text-white p-2 rounded-full hover:bg-zinc-800/50 transition-colors"
+        >
+          <i class="fas fa-bars text-sm"></i>
+        </button>
       </div>
-
-      <!-- Mobile menu button -->
-      <button class="md:hidden text-zinc-300 hover:text-white">
-        <i class="fas fa-bars"></i>
-      </button>
+    </nav>
+  </div>
+  
+  <!-- Mobile Search (Hidden by default) -->
+  <div id="mobile-search" class="hidden px-4 py-3 border-t border-zinc-700/50">
+    <form id="mobileTaskForm">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+          <i class="fas fa-search text-xs"></i>
+        </span>
+        <input
+          class="w-full rounded-lg border border-zinc-700/50 bg-zinc-800/50 text-white placeholder-zinc-500 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/30 transition-all"
+          type="text"
+          placeholder="Search tasks..."
+          name="taskName"
+        />
+      </div>
+    </form>
+  </div>
+  
+  <!-- Mobile Menu (Hidden by default) -->
+  <div id="mobile-menu" class="hidden md:hidden px-4 py-3 border-t border-zinc-700/50">
+    <div class="space-y-1">
+      <a 
+        href="/tasks/" 
+        class="block py-2 px-3 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg text-sm font-medium transition-colors"
+      >
+        <i class="fas fa-list-check text-xs mr-2"></i> Tasks
+      </a>
+      <a 
+        href="/tags/" 
+        class="block py-2 px-3 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg text-sm font-medium transition-colors"
+      >
+        <i class="fas fa-tags text-xs mr-2"></i> Tags
+      </a>
+      <a 
+        href="/vaults/" 
+        class="block py-2 px-3 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg text-sm font-medium transition-colors"
+      >
+        <i class="fas fa-folder text-xs mr-2"></i> Vaults
+      </a>
     </div>
   </div>
-
-  <!-- Mobile menu (hidden by default) -->
-  <div class="md:hidden hidden">
-    <!-- Mobile navigation links -->
-  </div>
-</nav>
+</header>
 
 <script>
-  // Get the form element
-  const form = document.getElementById("taskForm");
-
-  // Add an event listener for form submission
-  form.addEventListener("submit", function (event) {
-    event.preventDefault(); // Prevent the default form submission
-
-    // Get the input value
-    const taskName = document.getElementById("navbar-search-task").value;
-
-    // Get the current URL search parameters
-    const currentParams = new URLSearchParams(window.location.search);
-
-    // Add the new taskName parameter
-    currentParams.set("taskName", taskName);
-
-    // Construct the new URL with the updated query string
-    const newUrl = `/tasks?${currentParams.toString()}/`;
-
-    // Redirect to the updated URL
-    window.location.href = newUrl;
+  document.addEventListener('DOMContentLoaded', function() {
+    // User dropdown toggle
+    const userMenuButton = document.getElementById('user-menu-button');
+    const userDropdown = document.getElementById('user-dropdown');
+    
+    if (userMenuButton && userDropdown) {
+      userMenuButton.addEventListener('click', function() {
+        userDropdown.classList.toggle('hidden');
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        if (!userMenuButton.contains(event.target) && !userDropdown.contains(event.target)) {
+          userDropdown.classList.add('hidden');
+        }
+      });
+    }
+    
+    // Mobile search toggle
+    const searchTrigger = document.getElementById('search-trigger');
+    const mobileSearch = document.getElementById('mobile-search');
+    
+    if (searchTrigger && mobileSearch) {
+      searchTrigger.addEventListener('click', function() {
+        mobileSearch.classList.toggle('hidden');
+        if (!mobileSearch.classList.contains('hidden')) {
+          mobileSearch.querySelector('input').focus();
+        }
+      });
+    }
+    
+    // Task search form handling
+    const taskForm = document.getElementById('taskForm');
+    const mobileTaskForm = document.getElementById('mobileTaskForm');
+    
+    const handleSearchSubmit = function(event) {
+      event.preventDefault();
+      
+      const taskName = event.target.querySelector('input[name="taskName"]').value;
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.set("taskName", taskName);
+      
+      window.location.href = `/tasks?${currentParams.toString()}/`;
+    };
+    
+    if (taskForm) {
+      taskForm.addEventListener('submit', handleSearchSubmit);
+    }
+    
+    if (mobileTaskForm) {
+      mobileTaskForm.addEventListener('submit', handleSearchSubmit);
+    }
   });
 </script>
-
 {{ end }}

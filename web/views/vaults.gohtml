@@ -2,89 +2,241 @@
 <html class="bg-zinc-900">
   {{ template "head" "Vaults" }}
 
-  <body class="bg-zinc-900 text-zinc-200 min-h-screen font-sans antialiased">
+  <body class="bg-gradient-to-br from-zinc-900 to-zinc-950 text-zinc-200 min-h-screen font-sans antialiased flex flex-col">
     {{ template "navbar" .Auth }}
-
-    <main class="container mx-auto px-4 py-6 max-w-5xl space-y-6">
-      <!-- Add Vault Card -->
-      <div
-        class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 p-5 backdrop-blur-sm"
-      >
-        <div class="flex items-center mb-4">
-          <i class="fas fa-vault text-blue-400 mr-2.5 text-lg"></i>
-          <h2 class="text-lg font-semibold text-white">Add New Vault</h2>
-        </div>
-        <form
-          hx-post="/vaults/create"
-          hx-target="#vaults-list"
-          hx-swap="afterbegin swap:200ms transition:true"
-          class="flex flex-col md:flex-row items-center gap-3"
-        >
-          <div class="relative flex-grow">
-            <span
-              class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
-            >
-              <i class="fas fa-folder text-xs"></i>
-            </span>
-            <input
-              type="text"
-              id="vault-name"
-              name="vault_name"
-              class="w-full rounded-sm border border-zinc-700 bg-zinc-900/90 pl-10 pr-3 py-2.5 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-              placeholder="Vault name"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            class="flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-sm text-white font-medium shadow-sm text-sm transition-colors duration-200"
-          >
-            <i class="fas fa-plus mr-1.5"></i>Add Vault
-          </button>
-        </form>
-      </div>
-
-      <!-- Vaults List Card -->
-      <div
-        class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 backdrop-blur-sm"
-        id="vaults-list"
-      >
-        <div class="p-5 border-b border-zinc-700/70 flex items-center">
-          <i class="fas fa-list-ul text-blue-400 mr-2.5 text-lg"></i>
-          <h2 class="text-lg font-semibold text-white">Your Vaults</h2>
-        </div>
-        <div class="p-5">
-          <!-- Vaults will be dynamically added here -->
-          <div
-            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4"
-          >
-            {{ range.Vaults }}
-            <!-- Vault Square Component -->
-            <a
-              href="/vaults/{{ .ID }}"
-              class="group flex flex-col items-center justify-center aspect-square bg-zinc-900/80 border border-zinc-700/50 rounded-sm shadow-md hover:shadow-lg hover:bg-zinc-800 transition-all p-4 text-center"
-            >
-              <div
-                class="w-12 h-12 flex items-center justify-center bg-blue-600/20 text-blue-400 rounded-full mb-3 group-hover:bg-blue-600/30 transition-colors"
-              >
-                <i class="fas fa-folder text-xl"></i>
-              </div>
-              <span
-                class="text-white font-medium text-sm truncate w-full"
-                >{{ .Name }}</span
-              >
-            </a>
-            {{ else }}
-            <div class="col-span-full text-zinc-400 text-center py-8">
-              <i class="fas fa-folder-open text-2xl mb-2 text-zinc-500"></i>
-              <p>No vaults yet. Create your first vault above.</p>
+    
+    <main class="flex-1 container mx-auto px-4 py-8 mt-16 mb-8">
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Sidebar -->
+        <div class="w-full lg:w-80 space-y-6">
+          <!-- Quick Actions -->
+          <div class="glass rounded-xl shadow-lg overflow-hidden">
+            <div class="p-5 border-b border-zinc-700/50">
+              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-bolt text-amber-400"></i>
+                Quick Actions
+              </h2>
             </div>
-            {{ end }}
+            <div class="p-5 space-y-4">
+              <!-- Create Vault Button -->
+              <button
+                id="create-vault-button"
+                class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                <i class="fas fa-plus text-xs"></i>
+                <span>New Vault</span>
+              </button>
+              
+              <!-- View Tasks Button -->
+              <a
+                href="/tasks/"
+                class="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                <i class="fas fa-list-check text-xs"></i>
+                <span>View Tasks</span>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Vault Stats -->
+          <div class="glass rounded-xl shadow-lg overflow-hidden">
+            <div class="p-5 border-b border-zinc-700/50">
+              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-chart-pie text-blue-400"></i>
+                Vault Stats
+              </h2>
+            </div>
+            <div class="p-5">
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-zinc-300">Total Vaults</span>
+                  <span class="text-sm font-medium text-white">{{ len .Vaults }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-zinc-300">Most Used</span>
+                  <span class="text-sm font-medium text-white">Work Projects</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-zinc-300">Recently Added</span>
+                  <span class="text-sm font-medium text-white">Personal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 space-y-6">
+          <!-- Vaults Grid -->
+          <div class="glass rounded-xl shadow-lg overflow-hidden">
+            <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-folder text-blue-400"></i>
+                Your Vaults
+              </h2>
+              
+              <div class="flex items-center gap-2">
+                <button class="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-800/50 transition-colors tooltip" data-tooltip="Sort">
+                  <i class="fas fa-sort text-xs"></i>
+                </button>
+                <button class="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-800/50 transition-colors tooltip" data-tooltip="View options">
+                  <i class="fas fa-th-large text-xs"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div id="vaults-list" class="p-5">
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-5">
+                {{ range.Vaults }}
+                <!-- Vault Card -->
+                <a
+                  href="/vaults/{{ .ID }}"
+                  class="group flex flex-col items-center justify-center aspect-square bg-zinc-800/40 border border-zinc-700/30 rounded-lg shadow-md hover:shadow-lg hover:bg-zinc-800/60 transition-all p-5 text-center card-hover"
+                >
+                  <div class="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-400 rounded-full mb-3 group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-colors">
+                    <i class="fas fa-folder text-2xl"></i>
+                  </div>
+                  <span class="text-white font-medium text-sm truncate w-full">{{ .Name }}</span>
+                  <span class="text-xs text-zinc-400 mt-1">3 tasks</span>
+                </a>
+                {{ else }}
+                <div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                  <div class="w-16 h-16 flex items-center justify-center bg-zinc-800/50 text-zinc-500 rounded-full mb-4">
+                    <i class="fas fa-folder-open text-2xl"></i>
+                  </div>
+                  <h3 class="text-lg font-medium text-white mb-2">No vaults yet</h3>
+                  <p class="text-sm text-zinc-400 max-w-md mb-6">Create your first vault to organize your tasks into projects or categories.</p>
+                  <button
+                    id="empty-create-vault-button"
+                    class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <i class="fas fa-plus text-xs"></i>
+                    <span>Create Your First Vault</span>
+                  </button>
+                </div>
+                {{ end }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Vault Creation Modal (Hidden by default) -->
+      <div id="vault-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+          <div class="glass rounded-xl shadow-xl w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div class="p-5 border-b border-zinc-700/50 flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-white">Create New Vault</h3>
+              <button id="close-vault-modal" class="text-zinc-400 hover:text-white">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="p-5">
+              <form
+                id="vault-form"
+                hx-post="/vaults/create"
+                hx-target="#vaults-list"
+                hx-swap="outerHTML swap:200ms transition:true"
+                class="space-y-4"
+              >
+                <div>
+                  <label for="vault_name" class="block text-sm font-medium mb-1.5 text-zinc-300">
+                    Vault Name
+                  </label>
+                  <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                      <i class="fas fa-folder text-xs"></i>
+                    </span>
+                    <input
+                      type="text"
+                      name="vault_name"
+                      id="vault_name"
+                      class="w-full bg-zinc-800/50 border border-zinc-700/50 text-white pl-10 pr-3 py-2.5 rounded-lg placeholder-zinc-500 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      placeholder="e.g., Work Projects, Personal Goals"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div id="vault-error-form" class="text-red-400 text-sm"></div>
+                
+                <div class="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    id="cancel-vault"
+                    class="px-4 py-2 border border-zinc-700 text-zinc-300 hover:text-white rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all"
+                  >
+                    Create Vault
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
     </main>
+    
     {{ template "footer" . }}
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Vault modal functionality
+        const vaultModal = document.getElementById('vault-modal');
+        const createVaultButton = document.getElementById('create-vault-button');
+        const emptyCreateVaultButton = document.getElementById('empty-create-vault-button');
+        const closeVaultModal = document.getElementById('close-vault-modal');
+        const cancelVault = document.getElementById('cancel-vault');
+        
+        const openVaultModalFn = function() {
+          vaultModal.classList.remove('hidden');
+          document.body.classList.add('overflow-hidden');
+          setTimeout(() => {
+            document.getElementById('vault_name').focus();
+          }, 100);
+        };
+        
+        if (vaultModal && closeVaultModal && cancelVault) {
+          if (createVaultButton) {
+            createVaultButton.addEventListener('click', openVaultModalFn);
+          }
+          
+          if (emptyCreateVaultButton) {
+            emptyCreateVaultButton.addEventListener('click', openVaultModalFn);
+          }
+          
+          const closeVaultModalFn = function() {
+            vaultModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+          };
+          
+          closeVaultModal.addEventListener('click', closeVaultModalFn);
+          cancelVault.addEventListener('click', closeVaultModalFn);
+          
+          // Close on outside click
+          vaultModal.addEventListener('click', function(event) {
+            if (event.target === vaultModal) {
+              closeVaultModalFn();
+            }
+          });
+          
+          // Close on successful form submission
+          document.getElementById('vault-form').addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.successful) {
+              closeVaultModalFn();
+              window.showToast('Vault created successfully!', 'success');
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>
 {{ end }}
