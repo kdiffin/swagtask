@@ -60,11 +60,7 @@ func getTagWithTasksById(queries *db.Queries, tagId, userId, vaultId pgtype.UUID
 }
 
 func GetTagsWithTasks(queries *db.Queries, userId, vaultId pgtype.UUID, ctx context.Context) ([]tagWithTasks, error) {
-	// TODO: DO THIS WITH A JOIN
-	user, errUser := queries.GetUserInfo(ctx, userId)
-	if errUser != nil {
-		return nil, fmt.Errorf("%w: %v", utils.ErrNotFound, errUser)
-	}
+
 	tagsWithTasksRelations, errTags := queries.GetTagsWithTaskRelations(ctx, db.GetTagsWithTaskRelationsParams{
 		UserID:  userId,
 		VaultID: vaultId,
@@ -84,6 +80,7 @@ func GetTagsWithTasks(queries *db.Queries, userId, vaultId pgtype.UUID, ctx cont
 	orderedIds := []pgtype.UUID{}
 	idSeen := make(map[pgtype.UUID]bool)
 	for _, tag := range tagsWithTasksRelations {
+
 		if tag.TaskID.Valid && tag.TaskName.Valid {
 			tagIdToTaskOptions[tag.ID] = append(tagIdToTaskOptions[tag.ID], relatedTask{ID: tag.ID.String(), Name: tag.TaskName.String})
 		}
@@ -105,6 +102,13 @@ func GetTagsWithTasks(queries *db.Queries, userId, vaultId pgtype.UUID, ctx cont
 		tag := idToTag[id]
 		tagsOfTask := tagIdToTaskOptions[id]
 		avaialbleTags := getTagAvailableTasks(allTaskOptions, tagsOfTask)
+
+		// TODO: REDO THIS SO IT ACTUALLY WORKS WITH A JOIN
+		// WARNING: THIS IS A N+1 THS IS A N+1 N+1 N+1 N+1
+		user, errUser := queries.GetUserInfo(ctx, tag.UserID)
+		if errUser != nil {
+			return nil, fmt.Errorf("%w: %v", utils.ErrNotFound, errUser)
+		}
 
 		tagWithTasks := newTagWithTasks(tagUI{
 			VaultID: tag.VaultID.String(),

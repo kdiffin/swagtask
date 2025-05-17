@@ -57,11 +57,11 @@ chat gippity made most of my frontends styles btw
   - [x] replace auto incrementing ids with uuids (no random id guess attack vector)
   - [ ] make it work with the uuids and vault ids now
 
-    - [ ] change all of the queries to use vault ids
+    - [x] change all of the queries to use vault ids
     - [x] add default vault id to users, add vault type
     - [x] make the sign up create a default vault
 
-  - [ ] add author info to tags and tasks
+  - [ ] add author info to tags and tasks, fix the n+1s with joins
     - [x] tags
     - [ ] tasks
   - [ ] change constraints of uniqueness to include vaults
