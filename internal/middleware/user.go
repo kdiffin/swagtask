@@ -16,9 +16,10 @@ type contextKey string
 const userContextKey = contextKey("user")
 
 // Helper to get user from context
-func UserFromContext(ctx context.Context) (*auth.UserUI, error) {
-	user, ok := ctx.Value(userContextKey).(*auth.UserUI)
+func UserFromContext(ctx context.Context) (*auth.User, error) {
+	user, ok := ctx.Value(userContextKey).(*auth.User)
 	if !ok {
+		fmt.Println("error here at context")
 		return nil, utils.ErrUnauthorized
 	}
 	return user, nil
@@ -39,7 +40,7 @@ func getUserIDFromRequest(queries *db.Queries, r *http.Request) (pgtype.UUID, er
 	return sesh.UserID, nil
 }
 
-func getUserInfoFromSessionId(queries *db.Queries, r *http.Request) (*auth.UserUI, error) {
+func getUserInfoFromSessionId(queries *db.Queries, r *http.Request) (*auth.User, error) {
 	userId, err := getUserIDFromRequest(queries, r)
 	if err != nil {
 		utils.LogError("error at userid from request:", err)
@@ -51,10 +52,11 @@ func getUserInfoFromSessionId(queries *db.Queries, r *http.Request) (*auth.UserU
 		utils.LogError("error at user info:", errUser)
 		return nil, fmt.Errorf("%w: %v", utils.ErrUnauthorized, errUser)
 	}
-	user := auth.UserUI{
-		ID:        userId.String(),
-		PathToPfp: userDb.PathToPfp.String,
-		Username:  userDb.Username,
+	user := auth.User{
+		ID:             userId.String(),
+		PathToPfp:      userDb.PathToPfp.String,
+		Username:       userDb.Username,
+		DefaultVaultID: userDb.DefaultVaultID.String(),
 	}
 	return &user, nil
 
@@ -65,6 +67,7 @@ func HandlerWithUser(queries *db.Queries, next http.Handler) http.Handler {
 		user, err := getUserInfoFromSessionId(queries, r)
 		if err != nil {
 			utils.LogError("error at session value from cookie:", err)
+			w.Header().Add("hx-redirect", "/login/")
 			http.Redirect(w, r, "/login/", http.StatusSeeOther)
 			return
 		}

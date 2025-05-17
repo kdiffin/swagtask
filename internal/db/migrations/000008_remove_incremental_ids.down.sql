@@ -1,4 +1,4 @@
--- GIPPITY MDE THIS 
+-- gippity made
 -- Recreate sequences
 CREATE SEQUENCE IF NOT EXISTS tag_task_relations_id_seq;
 CREATE SEQUENCE IF NOT EXISTS tags_id_seq;
@@ -89,6 +89,11 @@ ALTER TABLE vault_user_relations
 
 ALTER TABLE vault_user_relations
     ALTER COLUMN user_id SET DEFAULT nextval('users_id_seq');
+
+-- Clean up orphaned sessions before restoring foreign keys
+DELETE FROM sessions
+WHERE user_id IS NOT NULL
+  AND user_id NOT IN (SELECT id FROM users);
 
 -- Restore all foreign keys
 ALTER TABLE tag_task_relations ADD CONSTRAINT fk_tag FOREIGN KEY (tag_id) REFERENCES tags (id);

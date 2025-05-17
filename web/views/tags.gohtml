@@ -77,32 +77,29 @@
 
 {{ block "tag-card" . }}
 <article
-  id="tag-{{.ID}}"
+  id="tag-{{.Tag.ID}}"
   class="bg-zinc-900 border border-zinc-700 rounded-sm p-4 shadow-sm flex flex-col hover:shadow-zinc-700/20 transition-shadow duration-300"
   role="listitem"
-  aria-labelledby="tag-title-{{ .ID }}"
+  aria-labelledby="tag-title-{{ .Tag.ID }}"
 >
   <div class="">
     <header class="flex justify-between items-center mb-4">
       <h2
-        id="tag-title-{{ .ID }}"
+        id="tag-title-{{ .Tag.ID }}"
         class="text-lg font-semibold truncate select-text"
-        title="#{{ .Name }}"
+        title="#{{ .Tag.Name }}"
       >
-        <span class="text-purple-400">#</span>{{ .Name }}
+        <span class="text-purple-400">#</span>{{ .Tag.Name }}
       </h2>
+
       <div class="flex items-center gap-2">
-        <span
-          class="text-xs text-zinc-400 bg-zinc-700 px-2 py-1 rounded hover:text-white hover:bg-zinc-600"
-          >#{{ .ID }}</span
-        >
         <button
           class="text-red-400 hover:text-red-300 p-1 rounded hover:bg-zinc-700 transition-colors duration-200"
-          hx-delete="/tags/{{ .ID }}/"
+          hx-delete="/tags/{{ .Tag.ID }}/"
           hx-target="closest article"
           hx-swap="outerHTML swap:200ms transition:true"
-          title="Delete tag #{{ .Name }}"
-          aria-label="Delete tag #{{ .Name }}"
+          title="Delete tag #{{ .Tag.Name }}"
+          aria-label="Delete tag #{{ .Tag.Name }}"
           type="button"
         >
           <i class="fas fa-trash text-base"></i>
@@ -115,10 +112,27 @@
 
   {{ template "rename-tag-form" . }}
   {{ template "tag-tasks" .}}
+  <hr size="12px" class="border-zinc-700 my-4" />
+  <div class="flex items-center justify-between gap-2">
+    <div class="flex items-center rounded-sm border-dashed gap-2">
+      <img
+        src="{{.Tag.Author.PathToPfp}}"
+        alt="profile picture"
+        class="w-6 h-6 rounded-full object-cover border border-white/20 shadow-sm"
+      />
+      <span class="text-gray-300 hover:text-white transition duration-200">
+        {{.Tag.Author.Username}}
+      </span>
+    </div>
+    <span
+      title="{{.Tag.ID}}"
+      class="text-xs w-16 hover:min-w-max truncate text-zinc-400 bg-zinc-700 px-2 py-1 rounded hover:text-white hover:bg-zinc-600"
+      >#{{ .Tag.ID }}</span
+    >
+  </div>
 </article>
 {{ end }}
 
-<!-- pass in RelatedTasks -->
 {{ block "tag-tasks" .}}
 <div class="flex flex-wrap gap-2">
   {{ if .RelatedTasks }}
@@ -159,23 +173,23 @@
 {{ block "rename-tag-form" . }}
 <form
   class="mb-4 space-y-2"
-  hx-target="#tag-{{.ID}}"
-  hx-put="/tags/{{ .ID }}/"
+  hx-target="#tag-{{.Tag.ID}}"
+  hx-put="/tags/{{ .Tag.ID }}/"
   hx-swap="outerHTML swap:200ms transition:true"
   novalidate
 >
   <label
-    for="rename-tag-{{ .ID }}"
+    for="rename-tag-{{ .Tag.ID }}"
     class="block text-xs font-semibold text-zinc-400"
   >
     Rename tag
   </label>
   <div class="flex gap-2">
     <input
-      id="rename-tag-{{ .ID }}"
+      id="rename-tag-{{ .Tag.ID }}"
       name="tag_name"
       type="text"
-      value="{{ .Name }}"
+      value="{{ .Tag.Name }}"
       required
       autocomplete="off"
       class="flex-grow rounded-sm border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition"
@@ -193,8 +207,8 @@
 
 {{ block "attach-task-form"  . }}
 <form
-  hx-post="/tags/{{.ID}}/tasks/"
-  hx-target="#tag-{{.ID}}"
+  hx-post="/tags/{{.Tag.ID}}/tasks/"
+  hx-target="#tag-{{.Tag.ID}}"
   hx-trigger="change"
   hx-swap="outerHTML"
   class="space-y-2 flex flex-col"

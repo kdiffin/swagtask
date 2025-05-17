@@ -12,6 +12,8 @@ func CheckError(w http.ResponseWriter, r *http.Request, err error) bool {
 		if errors.Is(err, knownErr) {
 			if status == http.StatusUnauthorized {
 				LogError("", err)
+				// for htmx routes
+				w.Header().Add("hx-redirect", "/login/")
 				http.Redirect(w, r, "/login/", http.StatusSeeOther)
 				return true
 			} else {

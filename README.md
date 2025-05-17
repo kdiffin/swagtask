@@ -43,7 +43,7 @@ chat gippity made most of my frontends styles btw
   - [x] make an indicator showing if the user is logged in or not
   - [x] finish fetching the tags and shit
   - [x] change the hx-redirects to just forms with actions
-  - [ ] block csrf, add session expirations
+  - [ ] block csrf, add session expirations, add jwt
 
 - [ ] refactor v3 (vaults)
 
@@ -56,8 +56,18 @@ chat gippity made most of my frontends styles btw
   - **objectives**
   - [x] replace auto incrementing ids with uuids (no random id guess attack vector)
   - [ ] make it work with the uuids and vault ids now
+
     - [ ] change all of the queries to use vault ids
-  - [ ] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./code-structure.md)
+    - [x] add default vault id to users, add vault type
+    - [x] make the sign up create a default vault
+
+  - [ ] add author info to tags and tasks
+    - [x] tags
+    - [ ] tasks
+  - [ ] change constraints of uniqueness to include vaults
+  - [ ] add redirect to tasks/vault filter on tag click
+  - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./code-structure.md)
+  - [ ] ALWAYS Update the updated_now fields so its actually true
 
 - [ ] add live editing via websockets between 2 users
 - [ ] add notification system via sse

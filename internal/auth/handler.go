@@ -18,9 +18,19 @@ func HandleSignup(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defaultVaultId, errDefaultVault := queries.CreateDefaultVault(r.Context(), db.CreateDefaultVaultParams{
+		Name:        "Default",
+		Description: "This is your default vault. Only you can access this.",
+	})
+	if errDefaultVault != nil {
+		http.Error(w, "Error creating default vault"+http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
 	err = queries.CreateUser(r.Context(), db.CreateUserParams{
-		Username:     username,
-		PasswordHash: hash,
+		Username:       username,
+		PasswordHash:   hash,
+		DefaultVaultID: defaultVaultId,
 	})
 	if err != nil {
 		http.Error(w, "User exists", 400)

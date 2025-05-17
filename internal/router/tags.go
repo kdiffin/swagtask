@@ -17,12 +17,12 @@ func SetupTagRoutes(mux *http.ServeMux, queries *db.Queries, templates *template
 	mux.Handle("GET /tags/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerGetTags(w, r, queries, templates)
 	})))
-	mux.HandleFunc("PUT /tags/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("PUT /tags/{id}/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerUpdateTag(w, r, queries, templates)
-	})
-	mux.HandleFunc("DELETE /tags/{id}/{$}", func(w http.ResponseWriter, r *http.Request) {
+	})))
+	mux.Handle("DELETE /tags/{id}/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerDeleteTag(w, r, queries, templates)
-	})
+	})))
 	// mux.HandleFunc("POST /tags/{id}/tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
 	// 	idStr := r.PathValue("id")
 	// 	id, errConv := strconv.Atoi(idStr)

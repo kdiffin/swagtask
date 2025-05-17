@@ -41,9 +41,11 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
+	fmt.Println(user.DefaultVaultID)
 	err := queries.CreateTag(r.Context(), db.CreateTagParams{
-		Name:   tagName,
-		UserID: utils.PgUUID(user.ID),
+		Name:    tagName,
+		UserID:  utils.PgUUID(user.ID),
+		VaultID: utils.PgUUID(user.DefaultVaultID),
 	})
 	if utils.CheckError(w, r, err) {
 		fmt.Println("error was here1")
@@ -62,7 +64,7 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 	// 	return
 	case "/tags":
 		// tagsWithTasks
-		tagsWithTasks, errTags := tag.GetTagsWithTasks(queries, utils.PgUUID(user.ID), r.Context())
+		tagsWithTasks, errTags := tag.GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
 		if utils.CheckError(w, r, errTags) {
 			fmt.Println("error was here")
 			return

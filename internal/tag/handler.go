@@ -13,10 +13,11 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 	if utils.CheckError(w, r, err) {
 		return
 	}
-	tagsWithTasks, errTag := GetTagsWithTasks(queries, utils.PgUUID(user.ID), defaultVault, r.Context())
+	tagsWithTasks, errTag := GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
 	if utils.CheckError(w, r, errTag) {
 		return
 	}
+
 	page := newTagsPage(tagsWithTasks, true, user.PathToPfp, user.Username)
 	templates.Render(w, "tags-page", page)
 }
@@ -35,7 +36,7 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	tagWithTask, err := updateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), defaultVault, tagName, r.Context())
+	tagWithTask, err := updateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), tagName, r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -50,7 +51,7 @@ func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	err := deleteTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), defaultVault, r.Context())
+	err := deleteTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}

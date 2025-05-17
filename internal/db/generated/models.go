@@ -5,8 +5,54 @@
 package db
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type VaultRoleType string
+
+const (
+	VaultRoleTypeDefault       VaultRoleType = "default"
+	VaultRoleTypeCollaborative VaultRoleType = "collaborative"
+	VaultRoleTypePublic        VaultRoleType = "public"
+)
+
+func (e *VaultRoleType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = VaultRoleType(s)
+	case string:
+		*e = VaultRoleType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for VaultRoleType: %T", src)
+	}
+	return nil
+}
+
+type NullVaultRoleType struct {
+	VaultRoleType VaultRoleType
+	Valid         bool // Valid is true if VaultRoleType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullVaultRoleType) Scan(value interface{}) error {
+	if value == nil {
+		ns.VaultRoleType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.VaultRoleType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullVaultRoleType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.VaultRoleType), nil
+}
 
 type Session struct {
 	ID        string
@@ -41,12 +87,13 @@ type Task struct {
 }
 
 type User struct {
-	ID           pgtype.UUID
-	Username     string
-	PasswordHash string
-	CreatedAt    pgtype.Timestamp
-	UpdatedAt    pgtype.Timestamp
-	PathToPfp    pgtype.Text
+	ID             pgtype.UUID
+	Username       string
+	PasswordHash   string
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	PathToPfp      pgtype.Text
+	DefaultVaultID pgtype.UUID
 }
 
 type Vault struct {
@@ -56,6 +103,7 @@ type Vault struct {
 	Locked      pgtype.Bool
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
+	Kind        VaultRoleType
 }
 
 type VaultUserRelation struct {

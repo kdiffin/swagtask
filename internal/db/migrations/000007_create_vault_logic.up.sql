@@ -7,8 +7,8 @@ CREATE TABLE
         name TEXT NOT NULL,
         description TEXT NOT NULL,
         locked BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP NOT NULL DEFAULT now (),
-        updated_at TIMESTAMP NOT NULL DEFAULT now ()
+        created_at TIMESTAMP DEFAULT now (),
+        updated_at TIMESTAMP DEFAULT now ()
     );
 
 CREATE TABLE

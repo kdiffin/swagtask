@@ -1,6 +1,9 @@
 package utils
 
-import "github.com/jackc/pgx/v5/pgtype"
+import (
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 func Int32ToPgInt4(i int32) pgtype.Int4 {
 	var pgi pgtype.Int4
@@ -25,9 +28,16 @@ func PgUUID(str string) pgtype.UUID {
 	var pgs pgtype.UUID
 	if str == "" {
 		pgs.Valid = false
-	} else {
-		copy(pgs.Bytes[:], str)
-		pgs.Valid = true
+		return pgs
 	}
+
+	parsed, err := uuid.Parse(str)
+	if err != nil {
+		pgs.Valid = false
+		return pgs
+	}
+
+	copy(pgs.Bytes[:], parsed[:])
+	pgs.Valid = true
 	return pgs
 }
