@@ -25,21 +25,6 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) er
 	return err
 }
 
-const createUser = `-- name: CreateUser :exec
-INSERT INTO users (username, password_hash, default_vault_id) VALUES ($1, $2, $3)
-`
-
-type CreateUserParams struct {
-	Username       string
-	PasswordHash   string
-	DefaultVaultID pgtype.UUID
-}
-
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.Exec(ctx, createUser, arg.Username, arg.PasswordHash, arg.DefaultVaultID)
-	return err
-}
-
 const deleteSession = `-- name: DeleteSession :exec
 DELETE FROM sessions WHERE id = $1
 `

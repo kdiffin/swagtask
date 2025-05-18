@@ -1,3 +1,4 @@
+-- TODO: fix this broken thing
 -- 1. Drop foreign keys first
 ALTER TABLE tag_task_relations DROP CONSTRAINT IF EXISTS fk_tag;
 ALTER TABLE tag_task_relations DROP CONSTRAINT IF EXISTS fk_task;

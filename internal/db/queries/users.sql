@@ -1,5 +1,3 @@
--- name: CreateUser :exec
-INSERT INTO users (username, password_hash, default_vault_id) VALUES ($1, $2, $3);
 
 -- name: GetUserCredentials :one
 SELECT id, password_hash FROM users WHERE username=$1;

@@ -16,7 +16,6 @@ type VaultKindType string
 const (
 	VaultKindTypeDefault       VaultKindType = "default"
 	VaultKindTypeCollaborative VaultKindType = "collaborative"
-	VaultKindTypePublic        VaultKindType = "public"
 )
 
 func (e *VaultKindType) Scan(src interface{}) error {

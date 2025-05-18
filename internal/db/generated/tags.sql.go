@@ -12,8 +12,15 @@ import (
 )
 
 const createTag = `-- name: CreateTag :exec
+WITH authorized_user AS (
+  SELECT 1
+  FROM vault_user_relations
+  WHERE user_id = $2::UUID
+    AND vault_id = $3::UUID
+)
 INSERT INTO tags (name, user_id, vault_id)
-VALUES ($1, $2, $3)
+SELECT $1, $2::UUID, $3::UUID
+FROM authorized_user
 `
 
 type CreateTagParams struct {
@@ -28,34 +35,46 @@ func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) error {
 }
 
 const deleteTag = `-- name: DeleteTag :exec
-DELETE FROM tags
-WHERE id = $1 AND user_id = $2 AND vault_id = $3
+DELETE FROM tags tg
+WHERE tg.id = $1 AND tg.vault_id = $2::UUID
+  -- authorization, checks if user is inside of this vault
+  AND EXISTS(
+    SELECT 1 FROM vault_user_relations v_u_rel
+      WHERE v_u_rel.user_id = $3::UUID 
+      AND v_u_rel.vault_id = $2::UUID
+  )
 `
 
 type DeleteTagParams struct {
 	ID      pgtype.UUID
-	UserID  pgtype.UUID
 	VaultID pgtype.UUID
+	UserID  pgtype.UUID
 }
 
 func (q *Queries) DeleteTag(ctx context.Context, arg DeleteTagParams) error {
-	_, err := q.db.Exec(ctx, deleteTag, arg.ID, arg.UserID, arg.VaultID)
+	_, err := q.db.Exec(ctx, deleteTag, arg.ID, arg.VaultID, arg.UserID)
 	return err
 }
 
 const getAllTagsDesc = `-- name: GetAllTagsDesc :many
 SELECT id, name, created_at, updated_at, user_id, vault_id FROM tags
-WHERE user_id = $1 AND vault_id = $2
+WHERE vault_id = $1::UUID
+  AND EXISTS(
+    SELECT 1 FROM vault_user_relations v_u_rel
+      WHERE v_u_rel.user_id = $2::UUID 
+      AND v_u_rel.vault_id = $1::UUID
+  )
 ORDER BY id DESC
 `
 
 type GetAllTagsDescParams struct {
-	UserID  pgtype.UUID
 	VaultID pgtype.UUID
+	UserID  pgtype.UUID
 }
 
+// authorization, checks if user is inside of this vault
 func (q *Queries) GetAllTagsDesc(ctx context.Context, arg GetAllTagsDescParams) ([]Tag, error) {
-	rows, err := q.db.Query(ctx, getAllTagsDesc, arg.UserID, arg.VaultID)
+	rows, err := q.db.Query(ctx, getAllTagsDesc, arg.VaultID, arg.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -82,25 +101,32 @@ func (q *Queries) GetAllTagsDesc(ctx context.Context, arg GetAllTagsDescParams) 
 }
 
 const getTagWithTaskRelations = `-- name: GetTagWithTaskRelations :many
-WITH tg_u AS (
+WITH tg_author AS (
   SELECT tg.id, tg.name, tg.user_id, tg.vault_id, tg.created_at, tg.updated_at,
          u.path_to_pfp, u.username
   FROM tags tg
   JOIN users u ON tg.user_id = u.id
 )
-SELECT tg_u.id, tg_u.name, tg_u.user_id, tg_u.vault_id, tg_u.created_at, tg_u.updated_at,
+SELECT tg_author.id, tg_author.name, tg_author.user_id, tg_author.vault_id, tg_author.created_at, tg_author.updated_at,
        t.id AS task_id, t.name AS task_name, t.user_id AS task_user_id,
-       tg_u.path_to_pfp AS author_path_to_pfp, tg_u.username AS author_username
-FROM tg_u
-LEFT JOIN tag_task_relations rel ON tg_u.id = rel.tag_id
+       tg_author.path_to_pfp AS author_path_to_pfp, tg_author.username AS author_username
+FROM tg_author
+LEFT JOIN tag_task_relations rel ON tg_author.id = rel.tag_id
 LEFT JOIN tasks t ON t.id = rel.task_id
-WHERE tg_u.id = $1::UUID AND tg_u.user_id = $2::UUID AND tg_u.vault_id = $3::UUID
+WHERE tg_author.id = $1::UUID 
+  AND tg_author.vault_id = $2::UUID
+  -- authorization, checks if user is inside of this vault
+  AND EXISTS(
+    SELECT 1 FROM vault_user_relations v_u_rel
+      WHERE v_u_rel.user_id = $3::UUID 
+      AND v_u_rel.vault_id = $2::UUID
+  )
 `
 
 type GetTagWithTaskRelationsParams struct {
 	ID      pgtype.UUID
-	UserID  pgtype.UUID
 	VaultID pgtype.UUID
+	UserID  pgtype.UUID
 }
 
 type GetTagWithTaskRelationsRow struct {
@@ -118,7 +144,7 @@ type GetTagWithTaskRelationsRow struct {
 }
 
 func (q *Queries) GetTagWithTaskRelations(ctx context.Context, arg GetTagWithTaskRelationsParams) ([]GetTagWithTaskRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTagWithTaskRelations, arg.ID, arg.UserID, arg.VaultID)
+	rows, err := q.db.Query(ctx, getTagWithTaskRelations, arg.ID, arg.VaultID, arg.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -150,24 +176,30 @@ func (q *Queries) GetTagWithTaskRelations(ctx context.Context, arg GetTagWithTas
 }
 
 const getTagsWithTaskRelations = `-- name: GetTagsWithTaskRelations :many
-WITH tg_u AS (
+WITH tg_author AS (
   SELECT tg.id, tg.name, tg.user_id, tg.vault_id, tg.created_at, tg.updated_at,
          u.path_to_pfp, u.username
   FROM tags tg
   JOIN users u ON tg.user_id = u.id
 )
-SELECT tg_u.id, tg_u.name, tg_u.user_id, tg_u.vault_id, tg_u.created_at, tg_u.updated_at,
+SELECT tg_author.id, tg_author.name, tg_author.user_id, tg_author.vault_id, tg_author.created_at, tg_author.updated_at,
        t.id AS task_id, t.name AS task_name, t.user_id AS task_user_id,
-       tg_u.path_to_pfp AS author_path_to_pfp, tg_u.username AS author_username
-FROM tg_u
-LEFT JOIN tag_task_relations rel ON tg_u.id = rel.tag_id
+       tg_author.path_to_pfp AS author_path_to_pfp, tg_author.username AS author_username
+FROM tg_author
+LEFT JOIN tag_task_relations rel ON tg_author.id = rel.tag_id
 LEFT JOIN tasks t ON t.id = rel.task_id
-WHERE tg_u.user_id = $1::UUID  AND tg_u.vault_id = $2::UUID
+WHERE tg_author.vault_id = $1::UUID
+  -- authorization, checks if user is inside of this vault
+  AND EXISTS(
+    SELECT 1 FROM vault_user_relations v_u_rel
+      WHERE v_u_rel.user_id = $2::UUID 
+      AND v_u_rel.vault_id = $1::UUID
+  )
 `
 
 type GetTagsWithTaskRelationsParams struct {
-	UserID  pgtype.UUID
 	VaultID pgtype.UUID
+	UserID  pgtype.UUID
 }
 
 type GetTagsWithTaskRelationsRow struct {
@@ -185,7 +217,7 @@ type GetTagsWithTaskRelationsRow struct {
 }
 
 func (q *Queries) GetTagsWithTaskRelations(ctx context.Context, arg GetTagsWithTaskRelationsParams) ([]GetTagsWithTaskRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTagsWithTaskRelations, arg.UserID, arg.VaultID)
+	rows, err := q.db.Query(ctx, getTagsWithTaskRelations, arg.VaultID, arg.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -217,24 +249,30 @@ func (q *Queries) GetTagsWithTaskRelations(ctx context.Context, arg GetTagsWithT
 }
 
 const updateTag = `-- name: UpdateTag :exec
-UPDATE tags
-SET name = $1
-WHERE id = $2 AND user_id = $3 AND vault_id = $4
+UPDATE tags 
+SET name = $1::TEXT
+WHERE id = $2::UUID AND vault_id = $3::UUID
+  -- authorization, checks if user is inside of this vault
+ AND EXISTS(
+    SELECT 1 FROM vault_user_relations v_u_rel
+      WHERE v_u_rel.user_id = $4::UUID 
+      AND v_u_rel.vault_id = $3::UUID
+  )
 `
 
 type UpdateTagParams struct {
 	Name    string
 	ID      pgtype.UUID
-	UserID  pgtype.UUID
 	VaultID pgtype.UUID
+	UserID  pgtype.UUID
 }
 
 func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) error {
 	_, err := q.db.Exec(ctx, updateTag,
 		arg.Name,
 		arg.ID,
-		arg.UserID,
 		arg.VaultID,
+		arg.UserID,
 	)
 	return err
 }

@@ -58,17 +58,23 @@ chat gippity made most of my frontends styles btw
   - [ ] make it work with the uuids and vault ids now
 
     - [ ] change all of the queries to use vault ids
+    - [ ]
     - [x] add default vault id to users, add vault type
     - [x] make the sign up create a default vault
 
   - [x] add author info to tags and tasks, fix the n+1s with joins, fix updatednow
+
     - [x] tags
-    - [ ] tasks
-    - [ ] fix the n+1 problem with author info
-  - [ ] change constraints of uniqueness to include vaults
+    - [x] tasks
+    - [x] fix the n+1 problem with author info
+
+  - [x] fix the workflow
+    - [x] make all queries work with roles and vaults
+    - [x] change constraints of uniqueness to include vaults
   - [ ] add redirect to tasks/vault filter on tag click
+  - [ ] fix that one dumb down migration at 8
   - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./code-structure.md)
-  - [ ] ALWAYS Update the updated_now fields so its actually true
+  - [x] ALWAYS Update the updated_now fields so its actually true
 
 - [ ] add live editing via websockets between 2 users
 - [ ] add notification system via sse
