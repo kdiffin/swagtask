@@ -57,13 +57,14 @@ chat gippity made most of my frontends styles btw
   - [x] replace auto incrementing ids with uuids (no random id guess attack vector)
   - [ ] make it work with the uuids and vault ids now
 
-    - [x] change all of the queries to use vault ids
+    - [ ] change all of the queries to use vault ids
     - [x] add default vault id to users, add vault type
     - [x] make the sign up create a default vault
 
-  - [ ] add author info to tags and tasks, fix the n+1s with joins
+  - [x] add author info to tags and tasks, fix the n+1s with joins, fix updatednow
     - [x] tags
     - [ ] tasks
+    - [ ] fix the n+1 problem with author info
   - [ ] change constraints of uniqueness to include vaults
   - [ ] add redirect to tasks/vault filter on tag click
   - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./code-structure.md)
