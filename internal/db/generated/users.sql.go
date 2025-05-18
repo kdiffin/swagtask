@@ -87,7 +87,7 @@ SELECT username, path_to_pfp, default_vault_id FROM users WHERE id = $1
 
 type GetUserInfoRow struct {
 	Username       string
-	PathToPfp      pgtype.Text
+	PathToPfp      string
 	DefaultVaultID pgtype.UUID
 }
 

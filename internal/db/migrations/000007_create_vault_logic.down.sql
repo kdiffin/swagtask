@@ -18,4 +18,6 @@ DROP CONSTRAINT fk_vault_id;
 
 DROP TABLE IF EXISTS vault_user_relations;
 
+DROP TYPE vault_rel_role_type;
+
 DROP TABLE IF EXISTS vaults;

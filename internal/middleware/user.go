@@ -54,7 +54,7 @@ func getUserInfoFromSessionId(queries *db.Queries, r *http.Request) (*auth.User,
 	}
 	user := auth.User{
 		ID:             userId.String(),
-		PathToPfp:      userDb.PathToPfp.String,
+		PathToPfp:      userDb.PathToPfp,
 		Username:       userDb.Username,
 		DefaultVaultID: userDb.DefaultVaultID.String(),
 	}

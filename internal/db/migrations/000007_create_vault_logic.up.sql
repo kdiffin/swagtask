@@ -11,12 +11,14 @@ CREATE TABLE
         updated_at TIMESTAMP DEFAULT now ()
     );
 
+CREATE TYPE vault_rel_role_type AS ENUM ('owner', 'collaborator', 'viewer');
+
 CREATE TABLE
     vault_user_relations (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
         vault_id UUID NOT NULL,
         user_id INTEGER NOT NULL,
-        role TEXT DEFAULT 'collaborator'
+        role vault_rel_role_type NOT NULL
     );
 
 ALTER TABLE vault_user_relations ADD CONSTRAINT unique_vault_user_pair UNIQUE (vault_id, user_id);

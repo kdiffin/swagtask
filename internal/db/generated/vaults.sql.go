@@ -7,22 +7,18 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createDefaultVault = `-- name: CreateDefaultVault :one
-INSERT INTO vaults (name, description, kind) VALUES($1, $2, 'default') RETURNING id
+BEGIN
 `
 
-type CreateDefaultVaultParams struct {
-	Name        string
-	Description string
+type CreateDefaultVaultRow struct {
 }
 
-func (q *Queries) CreateDefaultVault(ctx context.Context, arg CreateDefaultVaultParams) (pgtype.UUID, error) {
-	row := q.db.QueryRow(ctx, createDefaultVault, arg.Name, arg.Description)
-	var id pgtype.UUID
-	err := row.Scan(&id)
-	return id, err
+func (q *Queries) CreateDefaultVault(ctx context.Context) (CreateDefaultVaultRow, error) {
+	row := q.db.QueryRow(ctx, createDefaultVault)
+	var i CreateDefaultVaultRow
+	err := row.Scan()
+	return i, err
 }

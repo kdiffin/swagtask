@@ -11,12 +11,6 @@ import (
 
 func getTagWithTasksById(queries *db.Queries, tagId, userId, vaultId pgtype.UUID,
 	ctx context.Context) (*tagWithTasks, error) {
-	// TODO: DO THIS WITH A JOIN
-	user, errUser := queries.GetUserInfo(ctx, userId)
-	if errUser != nil {
-		return nil, fmt.Errorf("%w: %v", utils.ErrNotFound, errUser)
-	}
-
 	tagsWithTaskRelations, err := queries.GetTagWithTaskRelations(ctx, db.GetTagWithTaskRelationsParams{
 		ID:      tagId,
 		UserID:  userId,
@@ -29,13 +23,16 @@ func getTagWithTasksById(queries *db.Queries, tagId, userId, vaultId pgtype.UUID
 		return nil, utils.ErrNotFound
 	}
 
-	var tagName string
-	var tagID string
-	var vaultID string
+	var tagUIStruct tagUI
 	relatedTasks := []relatedTask{}
 	for _, tagWithTaskRelation := range tagsWithTaskRelations {
-		tagName = tagWithTaskRelation.Name
-		tagID = tagWithTaskRelation.ID.String()
+		tagUIStruct.Name = tagWithTaskRelation.Name
+		tagUIStruct.ID = tagWithTaskRelation.ID.String()
+		tagUIStruct.Author = tagAuthor{
+			PathToPfp: tagWithTaskRelation.AuthorPathToPfp,
+			Username:  tagWithTaskRelation.AuthorUsername,
+		}
+		tagUIStruct.VaultID = tagWithTaskRelation.VaultID.String()
 
 		if tagWithTaskRelation.TaskID.Valid && tagWithTaskRelation.TaskName.Valid {
 			relatedTasks = append(relatedTasks, relatedTask{
@@ -50,11 +47,7 @@ func getTagWithTasksById(queries *db.Queries, tagId, userId, vaultId pgtype.UUID
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, errGettingAllTasks)
 	}
 	availableTags := getTagAvailableTasks(allTaskOptions, relatedTasks)
-	tagWithTasks := newTagWithTasks(
-		tagUI{ID: tagID, Author: tagAuthor{
-			PathToPfp: user.PathToPfp.String,
-			Username:  user.Username,
-		}, Name: tagName, VaultID: vaultID}, relatedTasks, availableTags)
+	tagWithTasks := newTagWithTasks(tagUIStruct, relatedTasks, availableTags)
 
 	return &tagWithTasks, nil
 }
@@ -76,7 +69,7 @@ func GetTagsWithTasks(queries *db.Queries, userId, vaultId pgtype.UUID, ctx cont
 
 	tagsWithTasks := []tagWithTasks{}
 	tagIdToTaskOptions := make(map[pgtype.UUID][]relatedTask)
-	idToTag := make(map[pgtype.UUID]db.Tag)
+	idToTag := make(map[pgtype.UUID]db.GetTagsWithTaskRelationsRow)
 	orderedIds := []pgtype.UUID{}
 	idSeen := make(map[pgtype.UUID]bool)
 	for _, tag := range tagsWithTasksRelations {
@@ -87,14 +80,7 @@ func GetTagsWithTasks(queries *db.Queries, userId, vaultId pgtype.UUID, ctx cont
 		if !idSeen[tag.ID] {
 			orderedIds = append(orderedIds, tag.ID)
 		}
-		idToTag[tag.ID] = db.Tag{
-			ID:        tag.ID,
-			VaultID:   vaultId,
-			Name:      tag.Name,
-			CreatedAt: tag.CreatedAt,
-			UpdatedAt: tag.UpdatedAt,
-			UserID:    tag.UserID,
-		}
+		idToTag[tag.ID] = tag
 		idSeen[tag.ID] = true
 	}
 
@@ -103,19 +89,12 @@ func GetTagsWithTasks(queries *db.Queries, userId, vaultId pgtype.UUID, ctx cont
 		tagsOfTask := tagIdToTaskOptions[id]
 		avaialbleTags := getTagAvailableTasks(allTaskOptions, tagsOfTask)
 
-		// TODO: REDO THIS SO IT ACTUALLY WORKS WITH A JOIN
-		// WARNING: THIS IS A N+1 THS IS A N+1 N+1 N+1 N+1
-		user, errUser := queries.GetUserInfo(ctx, tag.UserID)
-		if errUser != nil {
-			return nil, fmt.Errorf("%w: %v", utils.ErrNotFound, errUser)
-		}
-
 		tagWithTasks := newTagWithTasks(tagUI{
 			VaultID: tag.VaultID.String(),
 			Name:    tag.Name,
 			Author: tagAuthor{
-				PathToPfp: user.PathToPfp.String,
-				Username:  user.Username,
+				PathToPfp: tag.AuthorPathToPfp,
+				Username:  tag.AuthorUsername,
 			},
 			ID: tag.ID.String(),
 		}, tagsOfTask, avaialbleTags)

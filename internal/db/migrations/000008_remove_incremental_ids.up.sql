@@ -32,13 +32,6 @@ ALTER COLUMN id
 SET
     DATA TYPE UUID USING (gen_random_uuid ()),
 ALTER COLUMN id
-SET DEFAULT gen_random_uuid (),
-ALTER COLUMN user_id
-DROP DEFAULT,
-ALTER COLUMN user_id
-SET
-    DATA TYPE UUID USING (gen_random_uuid ()),
-ALTER COLUMN user_id
 SET DEFAULT gen_random_uuid ();
 
 -- Tasks table
@@ -52,27 +45,7 @@ ALTER COLUMN id
 SET
     DATA TYPE UUID USING (gen_random_uuid ()),
 ALTER COLUMN id
-SET DEFAULT gen_random_uuid (),
-ALTER COLUMN user_id
-DROP DEFAULT,
-ALTER COLUMN user_id
-SET
-    DATA TYPE UUID USING (gen_random_uuid ()),
-ALTER COLUMN user_id
 SET DEFAULT gen_random_uuid ();
-
-ALTER TABLE tag_task_relations
-ALTER COLUMN id
-DROP DEFAULT,
-ALTER COLUMN id
-SET
-    DATA TYPE UUID USING (gen_random_uuid ()),
-ALTER COLUMN id
-SET DEFAULT gen_random_uuid ();
-
-ALTER TABLE tag_task_relations ADD CONSTRAINT fk_tag FOREIGN KEY (tag_id) REFERENCES tags (id);
-
-ALTER TABLE tag_task_relations ADD CONSTRAINT fk_task FOREIGN KEY (task_id) REFERENCES tasks (id);
 
 -- User table 
 ALTER TABLE sessions
@@ -90,33 +63,58 @@ SET
 ALTER COLUMN id
 SET DEFAULT gen_random_uuid ();
 
-ALTER TABLE tags ADD CONSTRAINT fk_tags_user FOREIGN KEY (user_id) REFERENCES users (id);
+-- Now convert all referencing user_id columns to UUID
+ALTER TABLE tags
+ALTER COLUMN user_id
+DROP DEFAULT,
+ALTER COLUMN user_id
+SET
+    DATA TYPE UUID USING (gen_random_uuid ());
 
-ALTER TABLE tasks ADD CONSTRAINT fk_tasks_user FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE tasks
+ALTER COLUMN user_id
+DROP DEFAULT,
+ALTER COLUMN user_id
+SET
+    DATA TYPE UUID USING (gen_random_uuid ());
 
--- Sessions table
 ALTER TABLE sessions
 ALTER COLUMN user_id
 DROP DEFAULT,
 ALTER COLUMN user_id
 SET
-    DATA TYPE UUID USING (gen_random_uuid ()),
-ALTER COLUMN user_id
-SET DEFAULT gen_random_uuid ();
+    DATA TYPE UUID USING (gen_random_uuid ());
 
-ALTER TABLE sessions ADD CONSTRAINT fk_sessions_user FOREIGN KEY (user_id) REFERENCES users (id);
-
--- Vault-User table 
 ALTER TABLE vault_user_relations
 ALTER COLUMN user_id
 DROP DEFAULT,
 ALTER COLUMN user_id
 SET
+    DATA TYPE UUID USING (gen_random_uuid ());
+
+-- Now add all foreign keys back
+ALTER TABLE tags ADD CONSTRAINT fk_user_tags FOREIGN KEY (user_id) REFERENCES users (id);
+
+ALTER TABLE tasks ADD CONSTRAINT fk_user_tasks FOREIGN KEY (user_id) REFERENCES users (id);
+
+ALTER TABLE sessions ADD CONSTRAINT fk_sessions_user FOREIGN KEY (user_id) REFERENCES users (id);
+
+ALTER TABLE vault_user_relations ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id);
+
+-- Tag-Task id column
+ALTER TABLE tag_task_relations
+ALTER COLUMN id
+DROP DEFAULT,
+ALTER COLUMN id
+SET
     DATA TYPE UUID USING (gen_random_uuid ()),
-ALTER COLUMN user_id
+ALTER COLUMN id
 SET DEFAULT gen_random_uuid ();
 
-ALTER TABLE sessions ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id);
+-- Add back tag_task_relations foreign keys
+ALTER TABLE tag_task_relations ADD CONSTRAINT fk_tag FOREIGN KEY (tag_id) REFERENCES tags (id);
+
+ALTER TABLE tag_task_relations ADD CONSTRAINT fk_task FOREIGN KEY (task_id) REFERENCES tasks (id);
 
 -- removing the sequence stuff
 DROP SEQUENCE IF EXISTS tag_task_relations_id_seq;

@@ -11,47 +11,90 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type VaultRoleType string
+type VaultKindType string
 
 const (
-	VaultRoleTypeDefault       VaultRoleType = "default"
-	VaultRoleTypeCollaborative VaultRoleType = "collaborative"
-	VaultRoleTypePublic        VaultRoleType = "public"
+	VaultKindTypeDefault       VaultKindType = "default"
+	VaultKindTypeCollaborative VaultKindType = "collaborative"
+	VaultKindTypePublic        VaultKindType = "public"
 )
 
-func (e *VaultRoleType) Scan(src interface{}) error {
+func (e *VaultKindType) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = VaultRoleType(s)
+		*e = VaultKindType(s)
 	case string:
-		*e = VaultRoleType(s)
+		*e = VaultKindType(s)
 	default:
-		return fmt.Errorf("unsupported scan type for VaultRoleType: %T", src)
+		return fmt.Errorf("unsupported scan type for VaultKindType: %T", src)
 	}
 	return nil
 }
 
-type NullVaultRoleType struct {
-	VaultRoleType VaultRoleType
-	Valid         bool // Valid is true if VaultRoleType is not NULL
+type NullVaultKindType struct {
+	VaultKindType VaultKindType
+	Valid         bool // Valid is true if VaultKindType is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullVaultRoleType) Scan(value interface{}) error {
+func (ns *NullVaultKindType) Scan(value interface{}) error {
 	if value == nil {
-		ns.VaultRoleType, ns.Valid = "", false
+		ns.VaultKindType, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.VaultRoleType.Scan(value)
+	return ns.VaultKindType.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullVaultRoleType) Value() (driver.Value, error) {
+func (ns NullVaultKindType) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.VaultRoleType), nil
+	return string(ns.VaultKindType), nil
+}
+
+type VaultRelRoleType string
+
+const (
+	VaultRelRoleTypeOwner        VaultRelRoleType = "owner"
+	VaultRelRoleTypeCollaborator VaultRelRoleType = "collaborator"
+	VaultRelRoleTypeViewer       VaultRelRoleType = "viewer"
+)
+
+func (e *VaultRelRoleType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = VaultRelRoleType(s)
+	case string:
+		*e = VaultRelRoleType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for VaultRelRoleType: %T", src)
+	}
+	return nil
+}
+
+type NullVaultRelRoleType struct {
+	VaultRelRoleType VaultRelRoleType
+	Valid            bool // Valid is true if VaultRelRoleType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullVaultRelRoleType) Scan(value interface{}) error {
+	if value == nil {
+		ns.VaultRelRoleType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.VaultRelRoleType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullVaultRelRoleType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.VaultRelRoleType), nil
 }
 
 type Session struct {
@@ -79,7 +122,7 @@ type Task struct {
 	ID        pgtype.UUID
 	Name      string
 	Idea      string
-	Completed pgtype.Bool
+	Completed bool
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 	UserID    pgtype.UUID
@@ -92,7 +135,7 @@ type User struct {
 	PasswordHash   string
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
-	PathToPfp      pgtype.Text
+	PathToPfp      string
 	DefaultVaultID pgtype.UUID
 }
 
@@ -100,15 +143,15 @@ type Vault struct {
 	ID          pgtype.UUID
 	Name        string
 	Description string
-	Locked      pgtype.Bool
+	Locked      bool
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
-	Kind        VaultRoleType
+	Kind        VaultKindType
 }
 
 type VaultUserRelation struct {
 	ID      pgtype.UUID
 	VaultID pgtype.UUID
 	UserID  pgtype.UUID
-	Role    pgtype.Text
+	Role    VaultRelRoleType
 }

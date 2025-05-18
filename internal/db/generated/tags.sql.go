@@ -12,7 +12,8 @@ import (
 )
 
 const createTag = `-- name: CreateTag :exec
-INSERT INTO tags (name, user_id, vault_id) VALUES($1, $2, $3)
+INSERT INTO tags (name, user_id, vault_id)
+VALUES ($1, $2, $3)
 `
 
 type CreateTagParams struct {
@@ -27,7 +28,8 @@ func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) error {
 }
 
 const deleteTag = `-- name: DeleteTag :exec
-DELETE FROM tags WHERE id = $1 AND user_id = $2 AND vault_id = $3
+DELETE FROM tags
+WHERE id = $1 AND user_id = $2 AND vault_id = $3
 `
 
 type DeleteTagParams struct {
@@ -42,7 +44,9 @@ func (q *Queries) DeleteTag(ctx context.Context, arg DeleteTagParams) error {
 }
 
 const getAllTagsDesc = `-- name: GetAllTagsDesc :many
-SELECT id, name, created_at, updated_at, user_id, vault_id FROM tags WHERE user_id = $1 AND vault_id = $2 ORDER BY id DESC
+SELECT id, name, created_at, updated_at, user_id, vault_id FROM tags
+WHERE user_id = $1 AND vault_id = $2
+ORDER BY id DESC
 `
 
 type GetAllTagsDescParams struct {
@@ -78,14 +82,19 @@ func (q *Queries) GetAllTagsDesc(ctx context.Context, arg GetAllTagsDescParams) 
 }
 
 const getTagWithTaskRelations = `-- name: GetTagWithTaskRelations :many
-SELECT tg.ID, tg.name, tg.user_id, tg.created_at, tg.updated_at,
-    t.ID AS task_id, t.name AS task_name, t.user_id AS task_user_id
-    FROM tags tg
-    LEFT JOIN tag_task_relations rel 
-        ON tg.ID = rel.tag_id
-    LEFT JOIN tasks t 
-        ON t.ID = rel.task_id
-    WHERE tg.id = $1 AND tg.user_id = $2 AND tg.vault_id = $3
+WITH tg_u AS (
+  SELECT tg.id, tg.name, tg.user_id, tg.vault_id, tg.created_at, tg.updated_at,
+         u.path_to_pfp, u.username
+  FROM tags tg
+  JOIN users u ON tg.user_id = u.id
+)
+SELECT tg_u.id, tg_u.name, tg_u.user_id, tg_u.vault_id, tg_u.created_at, tg_u.updated_at,
+       t.id AS task_id, t.name AS task_name, t.user_id AS task_user_id,
+       tg_u.path_to_pfp AS author_path_to_pfp, tg_u.username AS author_username
+FROM tg_u
+LEFT JOIN tag_task_relations rel ON tg_u.id = rel.tag_id
+LEFT JOIN tasks t ON t.id = rel.task_id
+WHERE tg_u.id = $1::UUID AND tg_u.user_id = $2::UUID AND tg_u.vault_id = $3::UUID
 `
 
 type GetTagWithTaskRelationsParams struct {
@@ -95,14 +104,17 @@ type GetTagWithTaskRelationsParams struct {
 }
 
 type GetTagWithTaskRelationsRow struct {
-	ID         pgtype.UUID
-	Name       string
-	UserID     pgtype.UUID
-	CreatedAt  pgtype.Timestamp
-	UpdatedAt  pgtype.Timestamp
-	TaskID     pgtype.UUID
-	TaskName   pgtype.Text
-	TaskUserID pgtype.UUID
+	ID              pgtype.UUID
+	Name            string
+	UserID          pgtype.UUID
+	VaultID         pgtype.UUID
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
+	TaskID          pgtype.UUID
+	TaskName        pgtype.Text
+	TaskUserID      pgtype.UUID
+	AuthorPathToPfp string
+	AuthorUsername  string
 }
 
 func (q *Queries) GetTagWithTaskRelations(ctx context.Context, arg GetTagWithTaskRelationsParams) ([]GetTagWithTaskRelationsRow, error) {
@@ -118,11 +130,14 @@ func (q *Queries) GetTagWithTaskRelations(ctx context.Context, arg GetTagWithTas
 			&i.ID,
 			&i.Name,
 			&i.UserID,
+			&i.VaultID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.TaskID,
 			&i.TaskName,
 			&i.TaskUserID,
+			&i.AuthorPathToPfp,
+			&i.AuthorUsername,
 		); err != nil {
 			return nil, err
 		}
@@ -135,14 +150,19 @@ func (q *Queries) GetTagWithTaskRelations(ctx context.Context, arg GetTagWithTas
 }
 
 const getTagsWithTaskRelations = `-- name: GetTagsWithTaskRelations :many
-SELECT tg.ID, tg.name, tg.user_id, tg.created_at, tg.updated_at,
-    t.ID AS task_id, t.name AS task_name, t.user_id AS task_user_id
-    FROM tags tg
-    LEFT JOIN tag_task_relations rel 
-        ON tg.ID = rel.tag_id
-    LEFT JOIN tasks t 
-        ON t.ID = rel.task_id
-    WHERE tg.user_id = $1 AND tg.vault_id = $2
+WITH tg_u AS (
+  SELECT tg.id, tg.name, tg.user_id, tg.vault_id, tg.created_at, tg.updated_at,
+         u.path_to_pfp, u.username
+  FROM tags tg
+  JOIN users u ON tg.user_id = u.id
+)
+SELECT tg_u.id, tg_u.name, tg_u.user_id, tg_u.vault_id, tg_u.created_at, tg_u.updated_at,
+       t.id AS task_id, t.name AS task_name, t.user_id AS task_user_id,
+       tg_u.path_to_pfp AS author_path_to_pfp, tg_u.username AS author_username
+FROM tg_u
+LEFT JOIN tag_task_relations rel ON tg_u.id = rel.tag_id
+LEFT JOIN tasks t ON t.id = rel.task_id
+WHERE tg_u.user_id = $1::UUID  AND tg_u.vault_id = $2::UUID
 `
 
 type GetTagsWithTaskRelationsParams struct {
@@ -151,14 +171,17 @@ type GetTagsWithTaskRelationsParams struct {
 }
 
 type GetTagsWithTaskRelationsRow struct {
-	ID         pgtype.UUID
-	Name       string
-	UserID     pgtype.UUID
-	CreatedAt  pgtype.Timestamp
-	UpdatedAt  pgtype.Timestamp
-	TaskID     pgtype.UUID
-	TaskName   pgtype.Text
-	TaskUserID pgtype.UUID
+	ID              pgtype.UUID
+	Name            string
+	UserID          pgtype.UUID
+	VaultID         pgtype.UUID
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
+	TaskID          pgtype.UUID
+	TaskName        pgtype.Text
+	TaskUserID      pgtype.UUID
+	AuthorPathToPfp string
+	AuthorUsername  string
 }
 
 func (q *Queries) GetTagsWithTaskRelations(ctx context.Context, arg GetTagsWithTaskRelationsParams) ([]GetTagsWithTaskRelationsRow, error) {
@@ -174,11 +197,14 @@ func (q *Queries) GetTagsWithTaskRelations(ctx context.Context, arg GetTagsWithT
 			&i.ID,
 			&i.Name,
 			&i.UserID,
+			&i.VaultID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.TaskID,
 			&i.TaskName,
 			&i.TaskUserID,
+			&i.AuthorPathToPfp,
+			&i.AuthorUsername,
 		); err != nil {
 			return nil, err
 		}
@@ -191,7 +217,9 @@ func (q *Queries) GetTagsWithTaskRelations(ctx context.Context, arg GetTagsWithT
 }
 
 const updateTag = `-- name: UpdateTag :exec
-UPDATE tags SET name = $1 WHERE id = $2 AND user_id = $3 AND vault_id = $4
+UPDATE tags
+SET name = $1
+WHERE id = $2 AND user_id = $3 AND vault_id = $4
 `
 
 type UpdateTagParams struct {

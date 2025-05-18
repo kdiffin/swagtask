@@ -88,7 +88,7 @@ type GetFilteredTasksRow struct {
 	Name      string
 	Idea      string
 	ID        pgtype.UUID
-	Completed pgtype.Bool
+	Completed bool
 	UserID    pgtype.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
@@ -190,7 +190,7 @@ type GetTaskWithTagRelationsRow struct {
 	ID        pgtype.UUID
 	Name      string
 	Idea      string
-	Completed pgtype.Bool
+	Completed bool
 	UserID    pgtype.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
@@ -246,7 +246,7 @@ type GetTasksWithTagRelationsRow struct {
 	Name      string
 	Idea      string
 	ID        pgtype.UUID
-	Completed pgtype.Bool
+	Completed bool
 	UserID    pgtype.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp

@@ -22,6 +22,17 @@ ALTER COLUMN completed
 SET
     NOT NULL;
 
+ALTER TABLE users
+ALTER COLUMN created_at
+SET
+    NOT NULL,
+ALTER COLUMN updated_at
+SET
+    NOT NULL,
+ALTER COLUMN path_to_pfp
+SET
+    NOT NULL;
+
 ALTER TABLE vault_user_relations
 ALTER COLUMN role
 SET

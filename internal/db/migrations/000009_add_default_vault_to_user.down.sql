@@ -8,4 +8,4 @@ DROP COLUMN default_vault_id;
 ALTER TABLE vaults
 DROP COLUMN kind;
 
-DROP TYPE vault_role_type;
+DROP TYPE vault_kind_type;
