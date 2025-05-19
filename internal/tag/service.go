@@ -75,7 +75,7 @@ func GetTagsWithTasks(queries *db.Queries, userId, vaultId pgtype.UUID, ctx cont
 	for _, tag := range tagsWithTasksRelations {
 
 		if tag.TaskID.Valid && tag.TaskName.Valid {
-			tagIdToTaskOptions[tag.ID] = append(tagIdToTaskOptions[tag.ID], relatedTask{ID: tag.ID.String(), Name: tag.TaskName.String})
+			tagIdToTaskOptions[tag.ID] = append(tagIdToTaskOptions[tag.ID], relatedTask{ID: tag.TaskID.String(), Name: tag.TaskName.String})
 		}
 		if !idSeen[tag.ID] {
 			orderedIds = append(orderedIds, tag.ID)
@@ -151,7 +151,7 @@ func deleteTaskRelationFromTag(queries *db.Queries, tagId, taskId, userId, vault
 
 	tagWithTasks, errTag := getTagWithTasksById(queries, tagId, userId, vaultId, ctx)
 	if errTag != nil {
-		return nil, err
+		return nil, errTag
 	}
 
 	return tagWithTasks, nil

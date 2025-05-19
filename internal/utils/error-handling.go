@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"runtime"
+	"runtime/debug"
 )
 
 func CheckError(w http.ResponseWriter, r *http.Request, err error) bool {
@@ -46,8 +47,9 @@ func LogError(context string, err error) {
 		"----------------------------------\n"+
 			"❌ [Error] %s:%d\n"+
 			"Description: %s\n"+
-			"Error: %v\n"+
+			"Error: %+v\n"+
+			"Stack Trace:\n%s"+
 			"----------------------------------\n",
-		file, line, context, err,
+		file, line, context, err, debug.Stack(),
 	)
 }

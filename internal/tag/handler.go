@@ -60,3 +60,33 @@ func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(nil))
 }
+
+func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+	tagId := r.PathValue("id")
+	taskId := r.FormValue("task_id")
+	user, errUser := middleware.UserFromContext(r.Context())
+	if utils.CheckError(w, r, errUser) {
+		return
+	}
+	tagWithTasks, err := addTaskToTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(user.DefaultVaultID), r.Context())
+	if utils.CheckError(w, r, err) {
+		return
+	}
+
+	templates.Render(w, "tag-card", tagWithTasks)
+}
+
+func HandlerRemoveTaskFromTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+	tagId := r.PathValue("id")
+	taskId := r.FormValue("task_id")
+	user, errUser := middleware.UserFromContext(r.Context())
+	if utils.CheckError(w, r, errUser) {
+		return
+	}
+	tagWithTasks, err := deleteTaskRelationFromTag(queries, utils.PgUUID(tagId), utils.PgUUID(taskId), utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
+	if utils.CheckError(w, r, err) {
+		return
+	}
+
+	templates.Render(w, "tag-card", tagWithTasks)
+}

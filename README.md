@@ -55,10 +55,9 @@ chat gippity made most of my frontends styles btw
 
   - **objectives**
   - [x] replace auto incrementing ids with uuids (no random id guess attack vector)
-  - [ ] make it work with the uuids and vault ids now
+  - [x] make it work with the uuids and vault ids now
 
-    - [ ] change all of the queries to use vault ids
-    - [ ]
+    - [x] change all of the queries to use vault ids
     - [x] add default vault id to users, add vault type
     - [x] make the sign up create a default vault
 
@@ -71,10 +70,13 @@ chat gippity made most of my frontends styles btw
   - [x] fix the workflow
     - [x] make all queries work with roles and vaults
     - [x] change constraints of uniqueness to include vaults
-  - [ ] add redirect to tasks/vault filter on tag click
+  - [ ] add redirect to tasks/vault filter on tag id click
   - [ ] fix that one dumb down migration at 8
   - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./code-structure.md)
   - [x] ALWAYS Update the updated_now fields so its actually true
+  - [ ] order everything by created_at
+  - [ ] add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
+  - [ ] add decent error logging
 
 - [ ] add live editing via websockets between 2 users
 - [ ] add notification system via sse

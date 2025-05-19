@@ -12,6 +12,7 @@ type tasksPageFilters struct {
 }
 
 func newTasksPageFilters(tagName string, taskName string) tasksPageFilters {
+
 	return tasksPageFilters{
 		ActiveTag:   tagName,
 		SearchQuery: taskName,
@@ -29,7 +30,47 @@ type taskPageButtons struct {
 	NextButton taskButton
 }
 type taskPage struct {
-	task    taskWithTags
+	taskWithTags
 	Buttons taskPageButtons
 	Auth    auth.AuthenticatedPage
+}
+
+func newTaskPage(task taskWithTags, prevButton, nextButton taskButton, authorized bool, pathToPfp string, username string) taskPage {
+	return taskPage{
+		taskWithTags: task,
+		Buttons: taskPageButtons{
+			PrevButton: prevButton,
+			NextButton: nextButton,
+		},
+		Auth: auth.AuthenticatedPage{
+			Authorized: authorized,
+			User: auth.UserUI{
+				PathToPfp: pathToPfp,
+				Username:  username,
+			},
+		},
+	}
+}
+
+// tasks.gohtml
+type tasksPage struct {
+	Tasks   []taskWithTags
+	Filters tasksPageFilters
+	Auth    auth.AuthenticatedPage
+}
+
+func newTasksPage(tasks []taskWithTags, filters tasksPageFilters,
+	authorized bool, pathToPfp string, username string) tasksPage {
+	return tasksPage{
+		Tasks:   tasks,
+		Filters: filters,
+		Auth: auth.AuthenticatedPage{
+			Authorized: authorized,
+			User: auth.UserUI{
+				PathToPfp: pathToPfp,
+				Username:  username,
+			},
+		},
+	}
+
 }

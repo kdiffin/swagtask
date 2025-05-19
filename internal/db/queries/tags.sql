@@ -7,7 +7,7 @@ WHERE vault_id = sqlc.arg('vault_id')::UUID
       WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
       AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
   )
-ORDER BY id DESC;
+ORDER BY created_at DESC;
 
 -- name: CreateTag :exec
 WITH authorized_user AS (
@@ -40,7 +40,8 @@ WHERE tg_author.id = sqlc.arg('id')::UUID
     SELECT 1 FROM vault_user_relations v_u_rel
       WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
       AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
-  );
+  )
+ORDER BY tg_author.created_at DESC;
 
 -- name: GetTagsWithTaskRelations :many
 WITH tg_author AS (
@@ -61,7 +62,8 @@ WHERE tg_author.vault_id = sqlc.arg('vault_id')::UUID
     SELECT 1 FROM vault_user_relations v_u_rel
       WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
       AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
-  );
+  )
+ORDER BY tg_author.created_at DESC;
 
 -- name: DeleteTag :exec
 DELETE FROM tags tg

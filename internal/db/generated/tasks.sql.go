@@ -12,93 +12,118 @@ import (
 )
 
 const createTask = `-- name: CreateTask :one
-INSERT INTO tasks (name, idea, user_id) VALUES ($1, $2, $3) RETURNING id, name, idea, completed, created_at, updated_at, user_id, vault_id
+INSERT INTO tasks (name, idea, user_id, vault_id) VALUES ($1, $2, $3, $4) RETURNING id
 `
 
 type CreateTaskParams struct {
-	Name   string
-	Idea   string
-	UserID pgtype.UUID
+	Name    string
+	Idea    string
+	UserID  pgtype.UUID
+	VaultID pgtype.UUID
 }
 
 // CREATE
-func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, error) {
-	row := q.db.QueryRow(ctx, createTask, arg.Name, arg.Idea, arg.UserID)
-	var i Task
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Idea,
-		&i.Completed,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.UserID,
-		&i.VaultID,
+func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createTask,
+		arg.Name,
+		arg.Idea,
+		arg.UserID,
+		arg.VaultID,
 	)
-	return i, err
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteTask = `-- name: DeleteTask :exec
-DELETE FROM tasks WHERE id = $1 AND user_id = $2
+DELETE FROM tasks t
+WHERE 
+	t.id = $1
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = $2::UUID 
+		AND v_u_rel.vault_id = $3::UUID
+)
 `
 
 type DeleteTaskParams struct {
-	ID     pgtype.UUID
-	UserID pgtype.UUID
+	ID      pgtype.UUID
+	UserID  pgtype.UUID
+	VaultID pgtype.UUID
 }
 
 // DELETE
 func (q *Queries) DeleteTask(ctx context.Context, arg DeleteTaskParams) error {
-	_, err := q.db.Exec(ctx, deleteTask, arg.ID, arg.UserID)
+	_, err := q.db.Exec(ctx, deleteTask, arg.ID, arg.UserID, arg.VaultID)
 	return err
 }
 
 const getFilteredTasks = `-- name: GetFilteredTasks :many
-SELECT t.name, t.idea, t.ID, t.completed, t.user_id, t.created_at, t.updated_at,
-		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id
-FROM tasks t
-LEFT JOIN tag_task_relations rel ON rel.task_id = t.ID
+WITH t_with_author AS (
+  SELECT t.id, t.name, t.idea, t.completed, t.user_id, t.vault_id, t.created_at, t.updated_at,
+         u.path_to_pfp, u.username
+  FROM tasks t
+  JOIN users u ON t.user_id = u.id
+)
+SELECT t_with_author.name, t_with_author.idea, t_with_author.ID, t_with_author.vault_id, t_with_author.completed, t_with_author.user_id, t_with_author.created_at, t_with_author.updated_at,
+		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id,
+    	t_with_author.path_to_pfp AS author_path_to_pfp, t_with_author.username AS author_username
+FROM t_with_author
+LEFT JOIN tag_task_relations rel ON rel.task_id = t_with_author.ID
 LEFT JOIN tags tg ON tg.ID = rel.tag_id
 WHERE
 	-- where the name is like the task filter (if the filter exists)
-	(t.name ILIKE '%' || COALESCE($2::text, t.name) || '%')
+	(t_with_author.name ILIKE '%' || COALESCE($1::text, t_with_author.name) || '%')
 	AND
 	-- if the tag filter exists, return the rows of the tasks who have a relation to that tag  
-	($3::text IS NULL OR 
+	($2::text IS NULL OR 
 		EXISTS (
 			SELECT 1
 			FROM tag_task_relations r2
 			-- to get tag id from name
 			JOIN tags tg2 
-				ON tg2.name = $3::text
-			WHERE r2.task_id = t.ID AND r2.tag_id = tg2.id
+				ON tg2.name = $2::text
+			WHERE r2.task_id = t_with_author.ID AND r2.tag_id = tg2.id
 		)
 	)
-	AND t.user_id = $1
-ORDER BY t.ID DESC
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = $3::UUID 
+		AND v_u_rel.vault_id = $4::UUID
+	)
+ORDER BY t_with_author.created_at DESC
 `
 
 type GetFilteredTasksParams struct {
-	UserID   pgtype.UUID
 	TaskName pgtype.Text
 	TagName  pgtype.Text
+	UserID   pgtype.UUID
+	VaultID  pgtype.UUID
 }
 
 type GetFilteredTasksRow struct {
-	Name      string
-	Idea      string
-	ID        pgtype.UUID
-	Completed bool
-	UserID    pgtype.UUID
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
-	TagID     pgtype.UUID
-	TagName   pgtype.Text
-	TagUserID pgtype.UUID
+	Name            string
+	Idea            string
+	ID              pgtype.UUID
+	VaultID         pgtype.UUID
+	Completed       bool
+	UserID          pgtype.UUID
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
+	TagID           pgtype.UUID
+	TagName         pgtype.Text
+	TagUserID       pgtype.UUID
+	AuthorPathToPfp string
+	AuthorUsername  string
 }
 
 func (q *Queries) GetFilteredTasks(ctx context.Context, arg GetFilteredTasksParams) ([]GetFilteredTasksRow, error) {
-	rows, err := q.db.Query(ctx, getFilteredTasks, arg.UserID, arg.TaskName, arg.TagName)
+	rows, err := q.db.Query(ctx, getFilteredTasks,
+		arg.TaskName,
+		arg.TagName,
+		arg.UserID,
+		arg.VaultID,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -110,6 +135,7 @@ func (q *Queries) GetFilteredTasks(ctx context.Context, arg GetFilteredTasksPara
 			&i.Name,
 			&i.Idea,
 			&i.ID,
+			&i.VaultID,
 			&i.Completed,
 			&i.UserID,
 			&i.CreatedAt,
@@ -117,6 +143,8 @@ func (q *Queries) GetFilteredTasks(ctx context.Context, arg GetFilteredTasksPara
 			&i.TagID,
 			&i.TagName,
 			&i.TagUserID,
+			&i.AuthorPathToPfp,
+			&i.AuthorUsername,
 		); err != nil {
 			return nil, err
 		}
@@ -129,12 +157,20 @@ func (q *Queries) GetFilteredTasks(ctx context.Context, arg GetFilteredTasksPara
 }
 
 const getNextTaskDetails = `-- name: GetNextTaskDetails :one
-SELECT name, id FROM tasks WHERE id > $1 AND user_id = $2  ORDER BY id ASC LIMIT 1
+SELECT name, id FROM tasks 
+WHERE created_at > $1
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = $2::UUID 
+		AND v_u_rel.vault_id = $3::UUID
+	)
+ORDER BY created_at ASC LIMIT 1
 `
 
 type GetNextTaskDetailsParams struct {
-	ID     pgtype.UUID
-	UserID pgtype.UUID
+	CreatedAt pgtype.Timestamp
+	UserID    pgtype.UUID
+	VaultID   pgtype.UUID
 }
 
 type GetNextTaskDetailsRow struct {
@@ -143,19 +179,27 @@ type GetNextTaskDetailsRow struct {
 }
 
 func (q *Queries) GetNextTaskDetails(ctx context.Context, arg GetNextTaskDetailsParams) (GetNextTaskDetailsRow, error) {
-	row := q.db.QueryRow(ctx, getNextTaskDetails, arg.ID, arg.UserID)
+	row := q.db.QueryRow(ctx, getNextTaskDetails, arg.CreatedAt, arg.UserID, arg.VaultID)
 	var i GetNextTaskDetailsRow
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err
 }
 
 const getPreviousTaskDetails = `-- name: GetPreviousTaskDetails :one
-SELECT name, id FROM tasks WHERE id < $1 AND user_id = $2 ORDER BY id DESC LIMIT 1
+SELECT name, id FROM tasks 
+WHERE created_at < $1
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = $2::UUID 
+		AND v_u_rel.vault_id = $3::UUID
+	)  
+ORDER BY created_at DESC LIMIT 1
 `
 
 type GetPreviousTaskDetailsParams struct {
-	ID     pgtype.UUID
-	UserID pgtype.UUID
+	CreatedAt pgtype.Timestamp
+	UserID    pgtype.UUID
+	VaultID   pgtype.UUID
 }
 
 type GetPreviousTaskDetailsRow struct {
@@ -163,44 +207,63 @@ type GetPreviousTaskDetailsRow struct {
 	ID   pgtype.UUID
 }
 
+// TODO: reimplement
 func (q *Queries) GetPreviousTaskDetails(ctx context.Context, arg GetPreviousTaskDetailsParams) (GetPreviousTaskDetailsRow, error) {
-	row := q.db.QueryRow(ctx, getPreviousTaskDetails, arg.ID, arg.UserID)
+	row := q.db.QueryRow(ctx, getPreviousTaskDetails, arg.CreatedAt, arg.UserID, arg.VaultID)
 	var i GetPreviousTaskDetailsRow
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err
 }
 
 const getTaskWithTagRelations = `-- name: GetTaskWithTagRelations :many
-SELECT t.ID, t.name, t.idea, t.completed, t.user_id, t.created_at, t.updated_at,
-	tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id
-	FROM tasks t
-	LEFT JOIN tag_task_relations rel
-		ON t.ID = rel.task_id
-	LEFT JOIN tags tg 
-		ON rel.tag_id = tg.ID
-	WHERE t.ID = $1 AND t.user_id = $2
+WITH t_with_author AS (
+  SELECT t.id, t.name, t.idea, t.completed, t.user_id, t.vault_id, t.created_at, t.updated_at,
+         u.path_to_pfp, u.username
+  FROM tasks t
+  JOIN users u ON t.user_id = u.id
+)
+SELECT t_with_author.name, t_with_author.idea, t_with_author.ID, t_with_author.vault_id, t_with_author.completed, t_with_author.user_id, t_with_author.created_at, t_with_author.updated_at,
+		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id,
+    	t_with_author.path_to_pfp AS author_path_to_pfp, t_with_author.username AS author_username
+FROM t_with_author
+LEFT JOIN tag_task_relations rel
+	ON t_with_author.ID = rel.task_id
+LEFT JOIN tags tg 
+	ON rel.tag_id = tg.ID
+WHERE t_with_author.ID = $1::UUID 
+  	-- authorization, checks if user is inside of this vault
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = $2::UUID 
+		AND v_u_rel.vault_id = $3::UUID
+)
+ORDER BY t_with_author.created_at DESC
 `
 
 type GetTaskWithTagRelationsParams struct {
-	ID     pgtype.UUID
-	UserID pgtype.UUID
+	ID      pgtype.UUID
+	UserID  pgtype.UUID
+	VaultID pgtype.UUID
 }
 
 type GetTaskWithTagRelationsRow struct {
-	ID        pgtype.UUID
-	Name      string
-	Idea      string
-	Completed bool
-	UserID    pgtype.UUID
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
-	TagID     pgtype.UUID
-	TagName   pgtype.Text
-	TagUserID pgtype.UUID
+	Name            string
+	Idea            string
+	ID              pgtype.UUID
+	VaultID         pgtype.UUID
+	Completed       bool
+	UserID          pgtype.UUID
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
+	TagID           pgtype.UUID
+	TagName         pgtype.Text
+	TagUserID       pgtype.UUID
+	AuthorPathToPfp string
+	AuthorUsername  string
 }
 
 func (q *Queries) GetTaskWithTagRelations(ctx context.Context, arg GetTaskWithTagRelationsParams) ([]GetTaskWithTagRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTaskWithTagRelations, arg.ID, arg.UserID)
+	rows, err := q.db.Query(ctx, getTaskWithTagRelations, arg.ID, arg.UserID, arg.VaultID)
 	if err != nil {
 		return nil, err
 	}
@@ -209,9 +272,10 @@ func (q *Queries) GetTaskWithTagRelations(ctx context.Context, arg GetTaskWithTa
 	for rows.Next() {
 		var i GetTaskWithTagRelationsRow
 		if err := rows.Scan(
-			&i.ID,
 			&i.Name,
 			&i.Idea,
+			&i.ID,
+			&i.VaultID,
 			&i.Completed,
 			&i.UserID,
 			&i.CreatedAt,
@@ -219,6 +283,8 @@ func (q *Queries) GetTaskWithTagRelations(ctx context.Context, arg GetTaskWithTa
 			&i.TagID,
 			&i.TagName,
 			&i.TagUserID,
+			&i.AuthorPathToPfp,
+			&i.AuthorUsername,
 		); err != nil {
 			return nil, err
 		}
@@ -231,33 +297,54 @@ func (q *Queries) GetTaskWithTagRelations(ctx context.Context, arg GetTaskWithTa
 }
 
 const getTasksWithTagRelations = `-- name: GetTasksWithTagRelations :many
-SELECT t.name, t.Idea, t.ID, t.completed, t.user_id, t.created_at, t.updated_at,
-		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id
-		FROM tasks t
-		LEFT JOIN tag_task_relations rel 
-			ON t.ID = rel.task_id 
-		LEFT JOIN tags tg 
-			ON tg.ID = rel.tag_id
-		WHERE t.user_id = $1
-		ORDER BY t.ID DESC
+WITH t_with_author AS (
+  SELECT t.id, t.name, t.idea, t.completed, t.user_id, t.vault_id, t.created_at, t.updated_at,
+         u.path_to_pfp, u.username
+  FROM tasks t
+  JOIN users u ON t_with_author.user_id = u.id
+)
+SELECT t_with_author.name, t_with_author.idea, t_with_author.ID, t_with_author.vault_id, t_with_author.completed, t_with_author.user_id, t_with_author.created_at, t_with_author.updated_at,
+		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id,
+    	t_with_author.path_to_pfp AS author_path_to_pfp, t_with_author.username AS author_username
+FROM t_with_author
+LEFT JOIN tag_task_relations rel 
+	ON t_with_author.ID = rel.task_id 
+LEFT JOIN tags tg 
+	ON tg.ID = rel.tag_id
+WHERE
+  	-- authorization, checks if user is inside of this vault
+	EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = $1::UUID 
+		AND v_u_rel.vault_id = $2::UUID
+	)
+ORDER BY t_with_author.created_at DESC
 `
 
+type GetTasksWithTagRelationsParams struct {
+	UserID  pgtype.UUID
+	VaultID pgtype.UUID
+}
+
 type GetTasksWithTagRelationsRow struct {
-	Name      string
-	Idea      string
-	ID        pgtype.UUID
-	Completed bool
-	UserID    pgtype.UUID
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
-	TagID     pgtype.UUID
-	TagName   pgtype.Text
-	TagUserID pgtype.UUID
+	Name            string
+	Idea            string
+	ID              pgtype.UUID
+	VaultID         pgtype.UUID
+	Completed       bool
+	UserID          pgtype.UUID
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
+	TagID           pgtype.UUID
+	TagName         pgtype.Text
+	TagUserID       pgtype.UUID
+	AuthorPathToPfp string
+	AuthorUsername  string
 }
 
 // READ
-func (q *Queries) GetTasksWithTagRelations(ctx context.Context, userID pgtype.UUID) ([]GetTasksWithTagRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTasksWithTagRelations, userID)
+func (q *Queries) GetTasksWithTagRelations(ctx context.Context, arg GetTasksWithTagRelationsParams) ([]GetTasksWithTagRelationsRow, error) {
+	rows, err := q.db.Query(ctx, getTasksWithTagRelations, arg.UserID, arg.VaultID)
 	if err != nil {
 		return nil, err
 	}
@@ -269,6 +356,7 @@ func (q *Queries) GetTasksWithTagRelations(ctx context.Context, userID pgtype.UU
 			&i.Name,
 			&i.Idea,
 			&i.ID,
+			&i.VaultID,
 			&i.Completed,
 			&i.UserID,
 			&i.CreatedAt,
@@ -276,6 +364,8 @@ func (q *Queries) GetTasksWithTagRelations(ctx context.Context, userID pgtype.UU
 			&i.TagID,
 			&i.TagName,
 			&i.TagUserID,
+			&i.AuthorPathToPfp,
+			&i.AuthorUsername,
 		); err != nil {
 			return nil, err
 		}
@@ -288,17 +378,22 @@ func (q *Queries) GetTasksWithTagRelations(ctx context.Context, userID pgtype.UU
 }
 
 const toggleTaskCompletion = `-- name: ToggleTaskCompletion :exec
-UPDATE tasks SET completed = NOT completed WHERE id = $1 AND user_id = $2
+UPDATE tasks SET completed = NOT completed WHERE tasks.id = $1 AND EXISTS(
+SELECT 1 FROM vault_user_relations v_u_rel
+WHERE v_u_rel.user_id = $2::UUID 
+	AND v_u_rel.vault_id = $3::UUID
+)
 `
 
 type ToggleTaskCompletionParams struct {
-	ID     pgtype.UUID
-	UserID pgtype.UUID
+	ID      pgtype.UUID
+	UserID  pgtype.UUID
+	VaultID pgtype.UUID
 }
 
 // UPDATE
 func (q *Queries) ToggleTaskCompletion(ctx context.Context, arg ToggleTaskCompletionParams) error {
-	_, err := q.db.Exec(ctx, toggleTaskCompletion, arg.ID, arg.UserID)
+	_, err := q.db.Exec(ctx, toggleTaskCompletion, arg.ID, arg.UserID, arg.VaultID)
 	return err
 }
 
@@ -307,14 +402,21 @@ UPDATE tasks
 SET
   name = COALESCE($1, name),
   idea = COALESCE($2, idea)
-WHERE id = $3::int AND user_id = $4::int
+WHERE 
+	id = $3::UUID
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = $4::UUID 
+		AND v_u_rel.vault_id = $5::UUID
+)
 `
 
 type UpdateTaskParams struct {
-	Name   pgtype.Text
-	Idea   pgtype.Text
-	ID     int32
-	UserID int32
+	Name    pgtype.Text
+	Idea    pgtype.Text
+	ID      pgtype.UUID
+	UserID  pgtype.UUID
+	VaultID pgtype.UUID
 }
 
 func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) error {
@@ -323,6 +425,7 @@ func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) error {
 		arg.Idea,
 		arg.ID,
 		arg.UserID,
+		arg.VaultID,
 	)
 	return err
 }

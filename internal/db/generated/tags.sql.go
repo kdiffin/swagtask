@@ -64,7 +64,7 @@ WHERE vault_id = $1::UUID
       WHERE v_u_rel.user_id = $2::UUID 
       AND v_u_rel.vault_id = $1::UUID
   )
-ORDER BY id DESC
+ORDER BY created_at DESC
 `
 
 type GetAllTagsDescParams struct {
@@ -121,6 +121,7 @@ WHERE tg_author.id = $1::UUID
       WHERE v_u_rel.user_id = $3::UUID 
       AND v_u_rel.vault_id = $2::UUID
   )
+ORDER BY tg_author.created_at DESC
 `
 
 type GetTagWithTaskRelationsParams struct {
@@ -195,6 +196,7 @@ WHERE tg_author.vault_id = $1::UUID
       WHERE v_u_rel.user_id = $2::UUID 
       AND v_u_rel.vault_id = $1::UUID
   )
+ORDER BY tg_author.created_at DESC
 `
 
 type GetTagsWithTaskRelationsParams struct {

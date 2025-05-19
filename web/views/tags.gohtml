@@ -88,29 +88,29 @@
 
 {{ block "tag-card" . }}
 <article
-  id="tag-{{.Tag.ID}}"
+  id="tag-{{.ID}}"
   class="bg-zinc-900/90 border border-zinc-700/50 rounded-sm p-5 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col"
   role="listitem"
-  aria-labelledby="tag-title-{{ .Tag.ID }}"
+  aria-labelledby="tag-title-{{ .ID }}"
 >
   <div class="">
     <header class="flex justify-between items-center mb-4">
       <h2
-        id="tag-title-{{ .Tag.ID }}"
+        id="tag-title-{{ .ID }}"
         class="text-lg font-semibold truncate select-text"
-        title="#{{ .Tag.Name }}"
+        title="#{{ .Name }}"
       >
-        <span class="text-purple-400">#</span>{{ .Tag.Name }}
+        <span class="text-purple-400">#</span>{{ .Name }}
       </h2>
 
       <div class="flex items-center gap-2">
         <button
           class="text-red-400 hover:text-red-300 p-1.5 rounded-sm hover:bg-zinc-800/80 transition-colors duration-200"
-          hx-delete="/tags/{{ .Tag.ID }}/"
+          hx-delete="/tags/{{ .ID }}/"
           hx-target="closest article"
           hx-swap="outerHTML swap:200ms transition:true"
-          title="Delete tag #{{ .Tag.Name }}"
-          aria-label="Delete tag #{{ .Tag.Name }}"
+          title="Delete tag #{{ .Name }}"
+          aria-label="Delete tag #{{ .Name }}"
           type="button"
         >
           <i class="fas fa-trash text-sm"></i>
@@ -127,20 +127,20 @@
   <div class="flex items-center justify-between gap-2">
     <div class="flex items-center rounded-sm gap-2">
       <img
-        src="{{.Tag.Author.PathToPfp}}"
+        src="{{.Author.PathToPfp}}"
         alt="profile picture"
         class="w-6 h-6 rounded-full object-cover border border-white/20 shadow-sm"
       />
       <span
         class="text-zinc-300 hover:text-white transition duration-200 text-sm"
       >
-        {{.Tag.Author.Username}}
+        {{.Author.Username}}
       </span>
     </div>
     <span
-      title="{{.Tag.ID}}"
+      title="{{.ID}}"
       class="text-xs w-16 hover:min-w-max truncate text-zinc-400 bg-zinc-800/80 px-2 py-1 rounded-sm hover:text-white hover:bg-zinc-700"
-      >#{{ .Tag.ID }}</span
+      >#{{ .ID }}</span
     >
   </div>
 </article>
@@ -154,7 +154,7 @@
     class="text-xs group bg-blue-600/90 flex items-center gap-1 hover:bg-blue-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
   >
     <a class="hover:underline" href="/tasks/{{.ID}}/">
-      <i class="fa-solid fa-clipboard text-[10px] mr-1"></i> {{ .Name }}</a
+      <i class="fa-solid fa-clipboard text-[10px] mr-1"></i> {{.Name}}</a
     >
 
     <form
@@ -186,13 +186,13 @@
 {{ block "rename-tag-form" . }}
 <form
   class="mb-4 space-y-2"
-  hx-target="#tag-{{.Tag.ID}}"
-  hx-put="/tags/{{ .Tag.ID }}/"
+  hx-target="#tag-{{.ID}}"
+  hx-put="/tags/{{ .ID }}/"
   hx-swap="outerHTML swap:200ms transition:true"
   novalidate
 >
   <label
-    for="rename-tag-{{ .Tag.ID }}"
+    for="rename-tag-{{ .ID }}"
     class="block text-xs font-medium text-zinc-400"
   >
     Rename tag
@@ -205,10 +205,10 @@
         <i class="fas fa-pen text-xs"></i>
       </span>
       <input
-        id="rename-tag-{{ .Tag.ID }}"
+        id="rename-tag-{{ .ID }}"
         name="tag_name"
         type="text"
-        value="{{ .Tag.Name }}"
+        value="{{ .Name }}"
         required
         autocomplete="off"
         class="w-full rounded-sm border border-zinc-700 bg-zinc-800/90 pl-10 pr-3 py-2 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
@@ -227,8 +227,8 @@
 
 {{ block "attach-task-form"  . }}
 <form
-  hx-post="/tags/{{.Tag.ID}}/tasks/"
-  hx-target="#tag-{{.Tag.ID}}"
+  hx-post="/tags/{{.ID}}/tasks/"
+  hx-target="#tag-{{.ID}}"
   hx-trigger="change"
   hx-swap="outerHTML"
   class="space-y-2 flex flex-col"

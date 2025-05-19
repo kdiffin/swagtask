@@ -23,7 +23,7 @@ func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 		HandlerCreateTag(w, r, queries, templates)
 	})))
 	SetupAuthRoutes(mux, queries, templates)
-	// SetupTaskRoutes(mux, queries, templates)
+	SetupTaskRoutes(mux, queries, templates)
 	SetupTagRoutes(mux, queries, templates)
 	// TODO:
 

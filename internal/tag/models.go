@@ -10,23 +10,21 @@ type tagUI struct {
 	Name    string
 	ID      string
 }
-type availableTask struct {
+type taskOption struct {
 	Name string
 	ID   string
 }
-type relatedTask struct {
-	Name string
-	ID   string
-}
+type availableTask = taskOption
+type relatedTask taskOption
 type tagWithTasks struct {
-	Tag            tagUI
+	tagUI
 	RelatedTasks   []relatedTask
 	AvailableTasks []availableTask
 }
 
 func newTagWithTasks(tag tagUI, relatedTasks []relatedTask, availableTasks []availableTask) tagWithTasks {
 	return tagWithTasks{
-		Tag:            tag,
+		tagUI:          tag,
 		RelatedTasks:   relatedTasks,
 		AvailableTasks: availableTasks,
 	}

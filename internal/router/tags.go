@@ -23,32 +23,12 @@ func SetupTagRoutes(mux *http.ServeMux, queries *db.Queries, templates *template
 	mux.Handle("DELETE /tags/{id}/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerDeleteTag(w, r, queries, templates)
 	})))
-	// mux.HandleFunc("POST /tags/{id}/tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
-	// 	idStr := r.PathValue("id")
-	// 	id, errConv := strconv.Atoi(idStr)
-	// 	taskIdStr := r.FormValue("task_id")
-	// 	taskId, errConv2 := strconv.Atoi(taskIdStr)
-	// 	if errConv != nil || errConv2 != nil {
-	// 		utils.LogError("couldnt convert to str", errConv)
-	// 		utils.LogError("couldnt convert to str2", errConv2)
-	// 		return
-	// 	}
-
-	// 	tag.(w, r, queries, templates, int32(taskId), int32(id))
-	// })
-	// mux.HandleFunc("DELETE /tags/{id}/tasks/{$}", func(w http.ResponseWriter, r *http.Request) {
-	// 	idStr := r.PathValue("id")
-	// 	id, errConv := strconv.Atoi(idStr)
-	// 	taskIdStr := r.FormValue("task_id")
-	// 	taskId, errConv2 := strconv.Atoi(taskIdStr)
-	// 	if errConv != nil || errConv2 != nil {
-	// 		utils.LogError("couldnt convert to str", errConv)
-	// 		utils.LogError("couldnt convert to str2", errConv2)
-	// 		return
-	// 	}
-
-	// 	tag.HandlerRemoveTaskFromTag(w, r, queries, templates, int32(taskId), int32(id))
-	// })
+	mux.Handle("POST /tags/{id}/tasks/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tag.HandlerAddTaskToTag(w, r, queries, templates)
+	})))
+	mux.Handle("DELETE /tags/{id}/tasks/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tag.HandlerRemoveTaskFromTag(w, r, queries, templates)
+	})))
 	mux.HandleFunc("GET /json", func(w http.ResponseWriter, r *http.Request) {
 		// Prepare the response data
 		response := map[string]string{

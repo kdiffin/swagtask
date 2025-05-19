@@ -1,54 +1,68 @@
 -- READ
 -- name: GetTasksWithTagRelations :many
-SELECT t.name, t.Idea, t.ID, t.completed, t.user_id, t.created_at, t.updated_at,
-		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id
-		FROM tasks t
-		LEFT JOIN tag_task_relations rel 
-			ON t.ID = rel.task_id 
-		LEFT JOIN tags tg 
-			ON tg.ID = rel.tag_id
-		WHERE t.user_id = $1
-		ORDER BY t.ID DESC; 
+WITH t_with_author AS (
+  SELECT t.id, t.name, t.idea, t.completed, t.user_id, t.vault_id, t.created_at, t.updated_at,
+         u.path_to_pfp, u.username
+  FROM tasks t
+  JOIN users u ON t_with_author.user_id = u.id
+)
+SELECT t_with_author.name, t_with_author.idea, t_with_author.ID, t_with_author.vault_id, t_with_author.completed, t_with_author.user_id, t_with_author.created_at, t_with_author.updated_at,
+		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id,
+    	t_with_author.path_to_pfp AS author_path_to_pfp, t_with_author.username AS author_username
+FROM t_with_author
+LEFT JOIN tag_task_relations rel 
+	ON t_with_author.ID = rel.task_id 
+LEFT JOIN tags tg 
+	ON tg.ID = rel.tag_id
+WHERE
+  	-- authorization, checks if user is inside of this vault
+	EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
+		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+	)
+ORDER BY t_with_author.created_at DESC; 
 
 -- name: GetTaskWithTagRelations :many 
-SELECT t.ID, t.name, t.idea, t.completed, t.user_id, t.created_at, t.updated_at,
-	tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id
-	FROM tasks t
-	LEFT JOIN tag_task_relations rel
-		ON t.ID = rel.task_id
-	LEFT JOIN tags tg 
-		ON rel.tag_id = tg.ID
-	WHERE t.ID = $1 AND t.user_id = $2;
--- name: GetPreviousTaskDetails :one
-SELECT name, id FROM tasks WHERE id < $1 AND user_id = $2 ORDER BY id DESC LIMIT 1;
--- name: GetNextTaskDetails :one
-SELECT name, id FROM tasks WHERE id > $1 AND user_id = $2  ORDER BY id ASC LIMIT 1;
-
--- CREATE
--- name: CreateTask :one
-INSERT INTO tasks (name, idea, user_id) VALUES ($1, $2, $3) RETURNING *;
-
-
--- UPDATE
--- name: ToggleTaskCompletion :exec
-UPDATE tasks SET completed = NOT completed WHERE id = $1 AND user_id = $2;
-
--- name: UpdateTask :exec
-UPDATE tasks
-SET
-  name = COALESCE(sqlc.narg('name'), name),
-  idea = COALESCE(sqlc.narg('idea'), idea)
-WHERE id = sqlc.arg('id')::int AND user_id = sqlc.arg('user_id')::int;
+WITH t_with_author AS (
+  SELECT t.id, t.name, t.idea, t.completed, t.user_id, t.vault_id, t.created_at, t.updated_at,
+         u.path_to_pfp, u.username
+  FROM tasks t
+  JOIN users u ON t.user_id = u.id
+)
+SELECT t_with_author.name, t_with_author.idea, t_with_author.ID, t_with_author.vault_id, t_with_author.completed, t_with_author.user_id, t_with_author.created_at, t_with_author.updated_at,
+		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id,
+    	t_with_author.path_to_pfp AS author_path_to_pfp, t_with_author.username AS author_username
+FROM t_with_author
+LEFT JOIN tag_task_relations rel
+	ON t_with_author.ID = rel.task_id
+LEFT JOIN tags tg 
+	ON rel.tag_id = tg.ID
+WHERE t_with_author.ID = sqlc.arg('id')::UUID 
+  	-- authorization, checks if user is inside of this vault
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
+		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+)
+ORDER BY t_with_author.created_at DESC;
 
 -- name: GetFilteredTasks :many
-SELECT t.name, t.idea, t.ID, t.completed, t.user_id, t.created_at, t.updated_at,
-		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id
-FROM tasks t
-LEFT JOIN tag_task_relations rel ON rel.task_id = t.ID
+WITH t_with_author AS (
+  SELECT t.id, t.name, t.idea, t.completed, t.user_id, t.vault_id, t.created_at, t.updated_at,
+         u.path_to_pfp, u.username
+  FROM tasks t
+  JOIN users u ON t.user_id = u.id
+)
+SELECT t_with_author.name, t_with_author.idea, t_with_author.ID, t_with_author.vault_id, t_with_author.completed, t_with_author.user_id, t_with_author.created_at, t_with_author.updated_at,
+		tg.ID AS tag_id, tg.name AS tag_name, tg.user_id AS tag_user_id,
+    	t_with_author.path_to_pfp AS author_path_to_pfp, t_with_author.username AS author_username
+FROM t_with_author
+LEFT JOIN tag_task_relations rel ON rel.task_id = t_with_author.ID
 LEFT JOIN tags tg ON tg.ID = rel.tag_id
 WHERE
 	-- where the name is like the task filter (if the filter exists)
-	(t.name ILIKE '%' || COALESCE(sqlc.narg('task_name')::text, t.name) || '%')
+	(t_with_author.name ILIKE '%' || COALESCE(sqlc.narg('task_name')::text, t_with_author.name) || '%')
 	AND
 	-- if the tag filter exists, return the rows of the tasks who have a relation to that tag  
 	(sqlc.narg('tag_name')::text IS NULL OR 
@@ -58,15 +72,70 @@ WHERE
 			-- to get tag id from name
 			JOIN tags tg2 
 				ON tg2.name = sqlc.narg('tag_name')::text
-			WHERE r2.task_id = t.ID AND r2.tag_id = tg2.id
+			WHERE r2.task_id = t_with_author.ID AND r2.tag_id = tg2.id
 		)
 	)
-	AND t.user_id = $1
-ORDER BY t.ID DESC;
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
+		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+	)
+ORDER BY t_with_author.created_at DESC; 
+
+-- TODO: reimplement
+-- name: GetPreviousTaskDetails :one
+SELECT name, id FROM tasks 
+WHERE created_at < $1
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
+		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+	)  
+ORDER BY created_at DESC LIMIT 1;
+
+-- name: GetNextTaskDetails :one
+SELECT name, id FROM tasks 
+WHERE created_at > $1
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
+		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+	)
+ORDER BY created_at ASC LIMIT 1;
+
+-- CREATE
+-- name: CreateTask :one
+INSERT INTO tasks (name, idea, user_id, vault_id) VALUES ($1, $2, $3, $4) RETURNING id;
 
 
-	
+-- UPDATE
+-- name: ToggleTaskCompletion :exec
+UPDATE tasks SET completed = NOT completed WHERE tasks.id = $1 AND EXISTS(
+SELECT 1 FROM vault_user_relations v_u_rel
+WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
+	AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+);
+
+-- name: UpdateTask :exec
+UPDATE tasks
+SET
+  name = COALESCE(sqlc.narg('name'), name),
+  idea = COALESCE(sqlc.narg('idea'), idea)
+WHERE 
+	id = sqlc.arg('id')::UUID
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
+		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+);	
 
 -- DELETE 
 -- name: DeleteTask :exec
-DELETE FROM tasks WHERE id = $1 AND user_id = $2;
+DELETE FROM tasks t
+WHERE 
+	t.id = $1
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
+		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+); 

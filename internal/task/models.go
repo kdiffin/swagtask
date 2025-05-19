@@ -1,18 +1,23 @@
 package task
 
-import db "swagtask/internal/db/generated"
+import (
+	"swagtask/internal/auth"
+	db "swagtask/internal/db/generated"
+)
 
 type taskUI struct {
 	ID        string
 	Name      string
+	Author    auth.Author
 	Idea      string
 	Completed bool
 }
 
-func newUITask(task db.Task) taskUI {
+func newUITask(task db.Task, author auth.Author) taskUI {
 
 	return taskUI{
 		ID:        task.ID.String(),
+		Author:    author,
 		Name:      task.Name,
 		Idea:      task.Idea,
 		Completed: task.Completed,
@@ -28,15 +33,17 @@ type tagOption struct {
 type availableTag = tagOption
 type relatedTag tagOption
 type taskWithTags struct {
-	Task          taskUI
+	taskUI
+	Author        auth.Author
 	RelatedTags   []relatedTag
 	AvailableTags []availableTag
 }
 
 func newTaskWithTags(task taskUI, relatedTags []relatedTag, availableTags []availableTag) taskWithTags {
 	return taskWithTags{
-		Task:          task,
+		taskUI:        task,
 		RelatedTags:   relatedTags,
 		AvailableTags: availableTags,
+		Author:        task.Author,
 	}
 }
