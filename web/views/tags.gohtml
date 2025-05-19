@@ -137,10 +137,11 @@
         {{.Author.Username}}
       </span>
     </div>
-    <span
+    <a
       title="{{.ID}}"
+      href="/tasks/?tags={{.Name}}"
       class="text-xs w-16 hover:min-w-max truncate text-zinc-400 bg-zinc-800/80 px-2 py-1 rounded-sm hover:text-white hover:bg-zinc-700"
-      >#{{ .ID }}</span
+      >#{{ .ID }}</a
     >
   </div>
 </article>

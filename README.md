@@ -70,13 +70,16 @@ chat gippity made most of my frontends styles btw
   - [x] fix the workflow
     - [x] make all queries work with roles and vaults
     - [x] change constraints of uniqueness to include vaults
-  - [ ] add redirect to tasks/vault filter on tag id click
-  - [ ] fix that one dumb down migration at 8
-  - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./code-structure.md)
+  - [x] add redirect to tasks/vault filter on tag id click
+  - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./mds/code-structure.md)
   - [x] ALWAYS Update the updated_now fields so its actually true
   - [x] order everything by created_at
-  - [ ] add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
+  - [ ] add RBAC to the tag CUD operations as per [example](./mds/flow.jpeg)
+  - [ ] !!! add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
   - [ ] add decent error logging
+  - [ ] fix that one dumb down migration at 8
+  - [ ] add vaults page, add all the owner operations on the vaults
+  - **move onto phase with collaborative vaults with websockets**
 
 - [ ] add live editing via websockets between 2 users
 - [ ] add notification system via sse
