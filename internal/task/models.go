@@ -21,21 +21,19 @@ func newUITask(task db.Task) taskUI {
 
 // ---- FOR UI ----
 // tasks
-type availableTag struct {
+type tagOption struct {
 	Name string
 	ID   string
 }
-type relatedTag struct {
-	Name string
-	ID   string
-}
+type availableTag = tagOption
+type relatedTag tagOption
 type taskWithTags struct {
 	Task          taskUI
 	RelatedTags   []relatedTag
 	AvailableTags []availableTag
 }
 
-func NewTaskWithTags(task taskUI, relatedTags []relatedTag, availableTags []availableTag) taskWithTags {
+func newTaskWithTags(task taskUI, relatedTags []relatedTag, availableTags []availableTag) taskWithTags {
 	return taskWithTags{
 		Task:          task,
 		RelatedTags:   relatedTags,
