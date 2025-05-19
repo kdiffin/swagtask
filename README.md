@@ -74,7 +74,7 @@ chat gippity made most of my frontends styles btw
   - [ ] fix that one dumb down migration at 8
   - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./code-structure.md)
   - [x] ALWAYS Update the updated_now fields so its actually true
-  - [ ] order everything by created_at
+  - [x] order everything by created_at
   - [ ] add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
   - [ ] add decent error logging
 
