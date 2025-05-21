@@ -14,19 +14,19 @@ func SetupTagRoutes(mux *http.ServeMux, queries *db.Queries, templates *template
 	// mux.HandleFunc("POST /tags/{$}", func(w http.ResponseWriter, r *http.Request) {
 	// 	tag.HandlerCreateTag(w, r, queries, templates)
 	// })
-	mux.Handle("GET /tags/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("GET /tags/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerGetTags(w, r, queries, templates)
 	})))
-	mux.Handle("PUT /tags/{id}/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("PUT /tags/{id}/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerUpdateTag(w, r, queries, templates)
 	})))
-	mux.Handle("DELETE /tags/{id}/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("DELETE /tags/{id}/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerDeleteTag(w, r, queries, templates)
 	})))
-	mux.Handle("POST /tags/{id}/tasks/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("POST /tags/{id}/tasks/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerAddTaskToTag(w, r, queries, templates)
 	})))
-	mux.Handle("DELETE /tags/{id}/tasks/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("DELETE /tags/{id}/tasks/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerRemoveTaskFromTag(w, r, queries, templates)
 	})))
 	mux.HandleFunc("GET /json", func(w http.ResponseWriter, r *http.Request) {

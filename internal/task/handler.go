@@ -15,11 +15,15 @@ func HandlerAddTagToTask(w http.ResponseWriter, r *http.Request, queries *db.Que
 	taskId := r.PathValue("id")
 	tagId := r.FormValue("tag_id")
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
 
-	taskWithTags, err := addTagToTask(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(user.DefaultVaultID), r.Context())
+	taskWithTags, err := addTagToTask(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -31,10 +35,14 @@ func HandlerRemoveTagFromTask(w http.ResponseWriter, r *http.Request, queries *d
 	taskId := r.PathValue("id")
 	tagId := r.FormValue("tag_id")
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
-	taskWithTags, err := deleteTagRelationFromTask(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), utils.PgUUID(taskId), r.Context())
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
+	taskWithTags, err := deleteTagRelationFromTask(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -44,12 +52,16 @@ func HandlerRemoveTagFromTask(w http.ResponseWriter, r *http.Request, queries *d
 
 func HandlerGetTasks(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
+		return
+	}
+	if utils.CheckError(w, r, errVault) {
 		return
 	}
 
 	filters := filterParams(r)
-	tasks, err := getFilteredTasksWithTags(queries, filters, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
+	tasks, err := getFilteredTasksWithTags(queries, filters, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -62,15 +74,19 @@ func HandlerGetTask(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 	id := r.PathValue("id")
 
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
-	taskWithTags, createdAt, err := getTaskPage(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), utils.PgUUID(id), r.Context())
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
+	taskWithTags, createdAt, err := getTaskPage(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(id), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	prevButton, nextButton := getTaskNavigationButtons(r.Context(), queries, createdAt, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), utils.PgUUID(id))
+	prevButton, nextButton := getTaskNavigationButtons(r.Context(), queries, createdAt, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(id))
 	page := newTaskPage(*taskWithTags, prevButton, nextButton, true, user.PathToPfp, user.Username)
 	templates.Render(w, "task-page", page)
 }
@@ -79,14 +95,18 @@ func HandlerGetTask(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 
 func HandlerCreateTask(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
+		return
+	}
+	if utils.CheckError(w, r, errVault) {
 		return
 	}
 	name := r.FormValue("task_name")
 	idea := r.FormValue("task_idea")
 	filters := filterParams(r)
 
-	task, err := createTask(queries, name, idea, filters, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
+	task, err := createTask(queries, name, idea, filters, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if err != nil {
 		if errors.Is(err, utils.ErrUnprocessable) {
 			utils.LogError("error adding task", err)
@@ -108,11 +128,15 @@ func HandlerCreateTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 func HandlerTaskToggleComplete(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
 	taskId := r.PathValue("id")
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
 
-	taskWithTags, err := updateTaskCompletion(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), utils.PgUUID(taskId), r.Context())
+	taskWithTags, err := updateTaskCompletion(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -126,11 +150,15 @@ func HandlerUpdateTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 	idea := r.FormValue("task_idea")
 
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
 
-	taskWithTags, errUpdate := updateTask(queries, utils.PgUUID(user.DefaultVaultID), utils.PgUUID(taskId), utils.PgUUID(user.ID), name, idea, r.Context())
+	taskWithTags, errUpdate := updateTask(queries, utils.PgUUID(vaultId), utils.PgUUID(taskId), utils.PgUUID(user.ID), name, idea, r.Context())
 	if errUpdate != nil {
 		// return no contents
 		// if theres no update to tasks skip
@@ -140,7 +168,7 @@ func HandlerUpdateTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 			return
 		} else if errors.Is(errUpdate, utils.ErrUnprocessable) {
 			templates.Render(w, "tasks-container-error", "Task has same idea: "+idea)
-			taskWithTags, _ := getTaskWithTagsById(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), utils.PgUUID(taskId), r.Context())
+			taskWithTags, _ := getTaskWithTagsById(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
 			templates.Render(w, "task", taskWithTags)
 			return
 		} else if utils.CheckError(w, r, errUpdate) {
@@ -156,11 +184,15 @@ func HandlerUpdateTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 func HandlerDeleteTask(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
 	taskId := r.PathValue("id")
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
 
-	err = deleteTask(queries, utils.PgUUID(taskId), utils.PgUUID(user.DefaultVaultID), utils.PgUUID(user.ID), r.Context())
+	err = deleteTask(queries, utils.PgUUID(taskId), utils.PgUUID(vaultId), utils.PgUUID(user.ID), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}

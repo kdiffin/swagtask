@@ -10,10 +10,14 @@ import (
 
 func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
-	tagsWithTasks, errTag := GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
+	tagsWithTasks, errTag := GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errTag) {
 		return
 	}
@@ -32,11 +36,15 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
 
-	tagWithTask, err := updateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), tagName, r.Context())
+	tagWithTask, err := updateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), tagName, r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -46,13 +54,17 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 
 func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
 	tagId := r.PathValue("id")
-	user, errUser := middleware.UserFromContext(r.Context())
-	if utils.CheckError(w, r, errUser) {
+	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
+	if utils.CheckError(w, r, err) {
+		return
+	}
+	if utils.CheckError(w, r, errVault) {
 		return
 	}
 
-	err := deleteTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
-	if utils.CheckError(w, r, err) {
+	errTag := deleteTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	if utils.CheckError(w, r, errTag) {
 		return
 	}
 
@@ -64,11 +76,16 @@ func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
 	tagId := r.PathValue("id")
 	taskId := r.FormValue("task_id")
-	user, errUser := middleware.UserFromContext(r.Context())
-	if utils.CheckError(w, r, errUser) {
+	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
+	if utils.CheckError(w, r, err) {
 		return
 	}
-	tagWithTasks, err := addTaskToTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(user.DefaultVaultID), r.Context())
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
+
+	tagWithTasks, err := addTaskToTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -79,11 +96,15 @@ func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Que
 func HandlerRemoveTaskFromTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
 	tagId := r.PathValue("id")
 	taskId := r.FormValue("task_id")
-	user, errUser := middleware.UserFromContext(r.Context())
-	if utils.CheckError(w, r, errUser) {
+	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
+	if utils.CheckError(w, r, err) {
 		return
 	}
-	tagWithTasks, err := deleteTaskRelationFromTag(queries, utils.PgUUID(tagId), utils.PgUUID(taskId), utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
+	tagWithTasks, err := deleteTaskRelationFromTag(queries, utils.PgUUID(tagId), utils.PgUUID(taskId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}

@@ -24,7 +24,7 @@ func VaultIDFromContext(ctx context.Context) (string, error) {
 }
 
 // Middleware to extract vault ID from the URL path
-func VaultIDFromPathMiddleware(next http.Handler) http.Handler {
+func HandlerWithVaultIdFromPath(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vaultID := r.PathValue("vaultId")
 		if vaultID == "" {
@@ -37,7 +37,7 @@ func VaultIDFromPathMiddleware(next http.Handler) http.Handler {
 }
 
 // Middleware to extract vault ID from the user's default
-func VaultIDFromUserDefaultMiddleware(queries *db.Queries, next http.Handler) http.Handler {
+func HandlerWithVaultIdFromUser(queries *db.Queries, next http.Handler) http.Handler {
 	return HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, err := UserFromContext(r.Context())
 		if utils.CheckError(w, r, err) {
@@ -45,7 +45,7 @@ func VaultIDFromUserDefaultMiddleware(queries *db.Queries, next http.Handler) ht
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), vaultContextKey, VaultInfo{ID: user.DefaultVaultID})
+		ctx := context.WithValue(r.Context(), vaultContextKey, &VaultInfo{ID: user.DefaultVaultID})
 		next.ServeHTTP(w, r.WithContext(ctx))
 
 	}))
