@@ -2,7 +2,7 @@
 WITH
   new_vault AS (
     INSERT INTO vaults (name, description, kind)
-    VALUES ('Your default vault', 'This is your default vault. Only you can access this.', 'default')
+    VALUES ('Default', 'This is your default vault. Only you can access this.', 'default')
     RETURNING id
   ),
   new_user AS (

@@ -34,7 +34,6 @@ type availableTag = tagOption
 type relatedTag tagOption
 type taskWithTags struct {
 	taskUI
-	Author        auth.Author
 	RelatedTags   []relatedTag
 	AvailableTags []availableTag
 }
@@ -44,6 +43,5 @@ func newTaskWithTags(task taskUI, relatedTags []relatedTag, availableTags []avai
 		taskUI:        task,
 		RelatedTags:   relatedTags,
 		AvailableTags: availableTags,
-		Author:        task.Author,
 	}
 }

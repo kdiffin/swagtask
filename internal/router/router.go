@@ -8,14 +8,13 @@ import (
 	"swagtask/internal/tag"
 	"swagtask/internal/template"
 	"swagtask/internal/utils"
+	"swagtask/web/static"
 )
 
 func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("./web/images"))))
-	mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./web/css"))))
-	mux.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./web/js"))))
+	mux.Handle("/", http.StripPrefix("/", http.FileServer(http.FS(static.StaticFiles))))
 	mux.HandleFunc("/{$}", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("hellow orld"))
 	})
@@ -25,8 +24,6 @@ func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 	SetupAuthRoutes(mux, queries, templates)
 	SetupTaskRoutes(mux, queries, templates)
 	SetupTagRoutes(mux, queries, templates)
-	// TODO:
-
 	SetupVaultRoutes(mux, queries, templates)
 
 	return mux

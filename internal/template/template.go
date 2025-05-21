@@ -13,8 +13,10 @@ type Template struct {
 
 // NewTemplate parses all templates and returns a Template
 func NewTemplate() *Template {
+	t := template.Must(template.ParseGlob("./web/views/components/**.gohtml"))
+	template.Must(t.ParseGlob("./web/views/**.gohtml"))
 	return &Template{
-		tmpl: template.Must(template.ParseGlob("./web/views/**.gohtml")), // fixed your glob pattern too
+		tmpl: t,
 	}
 }
 

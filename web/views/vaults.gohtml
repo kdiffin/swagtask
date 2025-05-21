@@ -8,19 +8,20 @@
     <main class="container mx-auto px-4 py-6 max-w-5xl space-y-6">
       <!-- Add Vault Card -->
       <div
-        class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 p-5 backdrop-blur-sm"
+        class="bg-zinc-800 rounded-sm shadow-md border border-zinc-700/50 p-5"
       >
         <div class="flex items-center mb-4">
           <i class="fas fa-vault text-blue-400 mr-2.5 text-lg"></i>
           <h2 class="text-lg font-semibold text-white">Add New Vault</h2>
         </div>
+
         <form
-          hx-post="/vaults/create"
-          hx-target="#vaults-list"
+          hx-post="/vaults/"
+          hx-target="#vaults-list-container"
           hx-swap="afterbegin swap:200ms transition:true"
-          class="flex flex-col md:flex-row items-center gap-3"
+          class="space-y-3"
         >
-          <div class="relative flex-grow">
+          <div class="relative">
             <span
               class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
             >
@@ -28,57 +29,57 @@
             </span>
             <input
               type="text"
-              id="vault-name"
+              id="vault-name-create"
               name="vault_name"
               class="w-full rounded-sm border border-zinc-700 bg-zinc-900/90 pl-10 pr-3 py-2.5 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
               placeholder="Vault name"
               required
             />
           </div>
-          <button
-            type="submit"
-            class="flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-sm text-white font-medium shadow-sm text-sm transition-colors duration-200"
-          >
-            <i class="fas fa-plus mr-1.5"></i>Add Vault
-          </button>
+
+          <div class="relative flex items-center gap-3">
+            <span
+              class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+            >
+              <i class="fas fa-align-left text-xs"></i>
+            </span>
+            <input
+              type="text"
+              name="vault_description"
+              class="w-full rounded-sm border border-zinc-700 bg-zinc-900/90 pl-10 pr-3 py-2.5 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+              placeholder="Description (optional)"
+            />
+            <div class="flex justify-end">
+              <button
+                type="submit"
+                class="flex items-center min-w-max justify-center gap-1 bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-sm text-white font-medium shadow-sm text-sm transition-colors duration-200"
+              >
+                <i class="fas fa-plus mr-1.5"></i>Add Vault
+              </button>
+            </div>
+          </div>
         </form>
       </div>
 
       <!-- Vaults List Card -->
       <div
         class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 backdrop-blur-sm"
-        id="vaults-list"
       >
         <div class="p-5 border-b border-zinc-700/70 flex items-center">
           <i class="fas fa-list-ul text-blue-400 mr-2.5 text-lg"></i>
           <h2 class="text-lg font-semibold text-white">Your Vaults</h2>
         </div>
         <div class="p-5">
-          <!-- Vaults will be dynamically added here -->
           <div
-            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4"
+            id="vaults-list-container"
+            class="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             {{ range.Vaults }}
-            <!-- Vault Square Component -->
-            <a
-              href="/vaults/{{ .ID }}"
-              class="group flex flex-col items-center justify-center aspect-square bg-zinc-900/80 border border-zinc-700/50 rounded-sm shadow-md hover:shadow-lg hover:bg-zinc-800 transition-all p-4 text-center"
-            >
-              <div
-                class="w-12 h-12 flex items-center justify-center bg-blue-600/20 text-blue-400 rounded-full mb-3 group-hover:bg-blue-600/30 transition-colors"
-              >
-                <i class="fas fa-folder text-xl"></i>
-              </div>
-              <span
-                class="text-white font-medium text-sm truncate w-full"
-                >{{ .Name }}</span
-              >
-            </a>
+            {{ if eq .Name "Default" }}
+            {{ template "default-vault-card-template" . }}
             {{ else }}
-            <div class="col-span-full text-zinc-400 text-center py-8">
-              <i class="fas fa-folder-open text-2xl mb-2 text-zinc-500"></i>
-              <p>No vaults yet. Create your first vault above.</p>
-            </div>
+            {{ template "standard-vault-card-template" . }}
+            {{ end }}
             {{ end }}
           </div>
         </div>
@@ -87,4 +88,293 @@
     {{ template "footer" . }}
   </body>
 </html>
+{{ end }}
+
+{{ define "standard-vault-card-template" }}
+<div
+  id="vault-card-{{ .ID }}"
+  class="request-container bg-zinc-900/80 space-y-4 relative border border-zinc-700/50 rounded-sm shadow-md p-5 transition-all hover:shadow-lg"
+>
+  <!-- Card Header: Icon, Name, Kind, Lock -->
+  <div class="flex justify-between items-start">
+    <div>
+      <div class="flex items-center">
+        <h3 class="text-xl font-semibold text-white">{{ .Name }}</h3>
+        {{ if .Kind }}
+        <span
+          class="text-xs text-zinc-400 bg-zinc-700/50 px-2 py-0.5 rounded-full inline-block ml-2"
+          >{{ .Kind }}</span
+        >
+        {{ end }}
+        {{ if .Locked }}
+        <div class="ml-2">
+          <i class="fas fa-lock text-yellow-400 text-sm" title="Locked"></i>
+        </div>
+        {{ end }}
+      </div>
+      {{ if .Description }}
+      <p class="text-sm text-zinc-400 mt-1.5" title="{{ .Description }}">
+        {{ .Description }}
+      </p>
+      {{ end }}
+    </div>
+    <div class="space-y-3">
+      <div class="flex items-center gap-2">
+        <div class="relative w-6 h-6">
+          <img
+            id="indicator-edit-vault-{{ .ID }}"
+            src="/images/bars.svg"
+            class="w-full htmx-indicator absolute top-0 left-0"
+            alt="loading"
+          />
+          <img
+            id="indicator-delete-vault-{{ .ID }}"
+            src="/images/bars.svg"
+            class="w-full htmx-indicator absolute top-0 left-0"
+            alt="loading"
+          />
+          <img
+            id="indicator-manage-collaborator-{{ .ID }}"
+            src="/images/bars.svg"
+            class="w-full htmx-indicator absolute top-0 left-0"
+            alt="loading"
+          />
+        </div>
+
+        <a
+          href="/vaults/{{ .ID }}"
+          class="text-xs text-zinc-400 bg-zinc-800 px-2.5 py-1.5 w-16 truncate hover:min-w-max rounded-sm hover:text-white hover:bg-zinc-700 transition-colors"
+          title="Go to vault details"
+        >
+          #{{ .ID }}
+        </a>
+
+        <button
+          hx-delete="/vaults/{{ .ID }}/"
+          hx-target="#vault-card-{{ .ID }}"
+          hx-swap="outerHTML swap:200ms transition:true"
+          hx-confirm="Are you sure you want to PERMANENTLY DELETE '{{ .Name }}'? This action cannot be undone."
+          hx-indicator="#indicator-delete-vault-{{ .ID }}"
+          class="text-red-400 hover:text-red-300 p-2 rounded-sm hover:bg-zinc-800 transition-colors"
+        >
+          <i class="fas fa-trash text-sm"></i>
+        </button>
+      </div>
+
+      <div class="float-right">
+        {{ if .Author }}
+        <div class="flex items-center rounded-sm gap-2">
+          <img
+            src="{{ .Author.PathToPfp }}"
+            alt="{{ .Author.Username }}'s PFP"
+            class="w-6 h-6 rounded-full object-cover border shadow-sm"
+          />
+          <span
+            class="text-zinc-300 hover:text-white transition duration-200 text-sm"
+          >
+            {{ .Author.Username }}
+          </span>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Collaborators Tags -->
+  <div class="flex flex-wrap gap-2">
+    {{ range.RelatedCollaborators }}
+    <div
+      class="text-xs group bg-blue-600/90 flex items-center gap-1 hover:bg-blue-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
+    >
+      <span>{{ .Name }}</span>
+
+      <form
+        hx-post="/vaults/{{ $.ID }}/collaborators/remove"
+        hx-vals="{&quot;user_id&quot;: &quot;{{ .Name }}&quot;}"
+        hx-target="#vault-card-{{ $.ID }}"
+        hx-swap="outerHTML"
+        hx-indicator="#indicator-manage-collaborator-{{ $.ID }}"
+      >
+        <button
+          class="group-hover:flex hidden font-semibold ml-1"
+          hx-confirm="Remove {{ .Name }} from this vault?"
+        >
+          <i class="fas fa-times text-[10px]"></i>
+        </button>
+      </form>
+    </div>
+    {{ end }}
+
+    <!-- Add Collaborator Form -->
+    <form
+      hx-post="/vaults/{{ .ID }}/collaborators/add"
+      hx-target="#vault-card-{{ .ID }}"
+      hx-swap="outerHTML"
+      hx-indicator="#indicator-manage-collaborator-{{ .ID }}"
+    >
+      <input
+        type="text"
+        name="user_identifier"
+        class="text-xs bg-zinc-800/90 border border-zinc-700/50 text-white px-2.5 py-1 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+        placeholder="+ add collaborator"
+        required
+      />
+    </form>
+  </div>
+
+  <!-- Edit Vault Form -->
+  <form
+    hx-put="/vaults/{{ .ID }}/"
+    hx-target="#vault-card-{{ .ID }}"
+    hx-swap="outerHTML"
+    hx-indicator="#indicator-edit-vault-{{ .ID }}"
+    class="space-y-3 pt-2 border-t border-zinc-700/30"
+  >
+    <div class="relative">
+      <span
+        class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+      >
+        <i class="fas fa-folder text-xs"></i>
+      </span>
+      <input
+        type="text"
+        name="vault_name"
+        value="{{ .Name }}"
+        class="w-full rounded-sm border border-zinc-700 bg-zinc-800/90 pl-10 pr-3 py-2.5 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+        placeholder="Vault name"
+        required
+      />
+    </div>
+
+    <div class="relative">
+      <span
+        class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+      >
+        <i class="fas fa-align-left text-xs"></i>
+      </span>
+      <input
+        type="text"
+        name="vault_description"
+        value="{{ .Description }}"
+        class="w-full rounded-sm border border-zinc-700 bg-zinc-800/90 pl-10 pr-3 py-2.5 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+        placeholder="Description (optional)"
+      />
+    </div>
+
+    <div class="flex items-center">
+      <input
+        type="checkbox"
+        id="vault-locked-{{ .ID }}"
+        name="vault_locked"
+        class="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-blue-600 focus:ring-blue-500/50"
+        {{
+        if
+        .Locked
+        }}checked{{
+        end
+        }}
+      />
+      <label for="vault-locked-{{ .ID }}" class="ml-2 text-sm text-zinc-300">
+        <i class="fas fa-lock text-yellow-400 text-xs mr-1.5"></i>
+        Lock this vault
+      </label>
+    </div>
+
+    <input type="hidden" name="vault_kind" value="{{ .Kind }}" />
+
+    <div class="flex justify-end">
+      <button
+        type="submit"
+        class="text-sm bg-blue-600 hover:bg-blue-500 px-3 py-2.5 rounded-sm text-white font-medium transition-colors shadow-sm"
+      >
+        <i class="fas fa-save mr-1.5"></i> Save Changes
+      </button>
+    </div>
+  </form>
+
+  <div class="text-right text-xs text-zinc-500 pt-1">
+    Created: {{ .CreatedAt }}
+  </div>
+</div>
+{{ end }}
+
+{{ define "default-vault-card-template" }}
+<div
+  id="vault-card-{{ .ID }}"
+  class="request-container bg-zinc-900/80 space-y-4 relative border border-blue-500/30 rounded-sm shadow-md p-5 transition-all hover:shadow-lg"
+>
+  <!-- Default vault specific border -->
+  <!-- Card Header: Icon, Name, Kind, Lock -->
+  <div class="flex justify-between items-start">
+    <div>
+      <div class="flex items-center">
+        <!-- Default vault specific name color -->
+        <h3 class="text-xl font-semibold text-blue-300">{{ .Name }}</h3>
+        {{ if .Kind }}
+        <span
+          class="text-xs text-zinc-400 bg-zinc-700/50 px-2 py-0.5 rounded-full inline-block ml-2"
+          >{{ .Kind }}</span
+        >
+        {{ end }}
+        {{ if .Locked }}
+        <!-- Assuming default vault could potentially be locked -->
+        <div class="ml-2">
+          <i class="fas fa-lock text-yellow-400 text-sm" title="Locked"></i>
+        </div>
+        {{ end }}
+      </div>
+      {{ if .Description }}
+      <p class="text-sm text-zinc-400 mt-1.5" title="{{ .Description }}">
+        {{ .Description }}
+      </p>
+      {{ end }}
+    </div>
+    <div class="space-y-3">
+      <div class="flex items-center gap-2">
+        <!-- No specific htmx indicators needed here for default vault actions -->
+        <div class="relative w-6 h-6"></div>
+        <a
+          href="/vaults/{{ .ID }}"
+          class="text-xs text-zinc-400 bg-zinc-800 px-2.5 py-1.5 w-16 truncate hover:min-w-max rounded-sm hover:text-white hover:bg-zinc-700 transition-colors"
+          title="Go to vault details"
+        >
+          #{{ .ID }}
+        </a>
+        <!-- No delete button for default vault -->
+      </div>
+
+      <div class="float-right">
+        {{ if .Author }}
+        <div class="flex items-center rounded-sm gap-2">
+          <img
+            src="{{ .Author.PathToPfp }}"
+            alt="{{ .Author.Username }}'s PFP"
+            class="w-6 h-6 rounded-full object-cover border shadow-sm"
+          />
+          <span
+            class="text-zinc-300 hover:text-white transition duration-200 text-sm"
+          >
+            {{ .Author.Username }}
+          </span>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+
+  <!-- No Collaborators or Edit Form for Default Vault -->
+
+  <!-- Default vault notice -->
+  <div class="pt-6 border-t border-zinc-700/30 py-20 text-center text-zinc-400">
+    <i class="fas fa-info-circle mr-1.5 text-blue-400"></i>
+    This is the default vault and cannot be edited. <br />
+    You access it by entering the
+    <a href="/tasks/" class="text-blue-300 hover:text-blue-200">/tasks/</a> or
+    <a href="/tags/" class="text-blue-300 hover:text-blue-200">/tags/</a> page.
+  </div>
+
+  <div class="text-right text-xs text-zinc-500 pt-1">
+    Created: {{ .CreatedAt }}
+  </div>
+</div>
 {{ end }}

@@ -42,6 +42,7 @@ func HandlerRemoveTagFromTask(w http.ResponseWriter, r *http.Request, queries *d
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
+
 	taskWithTags, err := deleteTagRelationFromTask(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return

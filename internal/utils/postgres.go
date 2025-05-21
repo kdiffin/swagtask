@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -24,6 +26,10 @@ func StringToPgText(str string) pgtype.Text {
 	return pgs
 }
 
+func BrowserFormattedtTime(t pgtype.Timestamp) string {
+
+	return t.Time.UTC().Format(time.RFC3339)
+}
 func PgUUID(str string) pgtype.UUID {
 	var pgs pgtype.UUID
 	if str == "" {
