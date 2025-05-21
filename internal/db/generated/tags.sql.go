@@ -17,6 +17,7 @@ WITH authorized_user AS (
   FROM vault_user_relations
   WHERE user_id = $2::UUID
     AND vault_id = $3::UUID
+    AND (role = 'owner' OR role = 'collaborator')
 )
 INSERT INTO tags (name, user_id, vault_id)
 SELECT $1, $2::UUID, $3::UUID
@@ -42,6 +43,7 @@ WHERE tg.id = $1 AND tg.vault_id = $2::UUID
     SELECT 1 FROM vault_user_relations v_u_rel
       WHERE v_u_rel.user_id = $3::UUID 
       AND v_u_rel.vault_id = $2::UUID
+      AND (role = 'owner' OR role = 'collaborator')
   )
 `
 
@@ -259,6 +261,7 @@ WHERE id = $2::UUID AND vault_id = $3::UUID
     SELECT 1 FROM vault_user_relations v_u_rel
       WHERE v_u_rel.user_id = $4::UUID 
       AND v_u_rel.vault_id = $3::UUID
+      AND (role = 'owner' OR role = 'collaborator')
   )
 `
 

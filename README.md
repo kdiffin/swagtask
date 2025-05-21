@@ -35,7 +35,8 @@ chat gippity made most of my frontends styles btw
 - [x] add the actual http/1.1 response and request in the logging middleware so i know http strings are being sent and recieved over http
 - [x] host with https on local network
 
-- [ ] add barebones auth using cookies then jwt
+- [x] add barebones auth using cookies
+- [ ] then jwt
 
   - [x] finish the migration business
   - [x] implement the readme on how to add session auth
@@ -71,11 +72,11 @@ chat gippity made most of my frontends styles btw
     - [x] make all queries work with roles and vaults
     - [x] change constraints of uniqueness to include vaults
   - [x] add redirect to tasks/vault filter on tag id click
-  - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure [example](./mds/code-structure.md)
+  - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure ![example](./mds/code-structure.md)
   - [x] ALWAYS Update the updated_now fields so its actually true
   - [x] order everything by created_at
-  - [ ] add RBAC to the tag CUD operations as per [example](./mds/flow.jpeg)
-  - [ ] !!! add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
+  - [x] add RBAC to the tag CUD operations as per ![example](./mds/flow.jpeg)
+  - [x] !!! add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
   - [ ] add decent error logging
   - [ ] fix that one dumb down migration at 8
   - [ ] add vaults page, add all the owner operations on the vaults

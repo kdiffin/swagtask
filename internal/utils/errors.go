@@ -26,13 +26,16 @@ var ErrBadRequest = errors.New("bad request")
 // ErrUnprocessable is returned for semantic errors in the request (422 Unprocessable Entity)
 var ErrUnprocessable = errors.New("unprocessable entity")
 
+var ErrInternalServer = errors.New("internal Server Error")
+
 // knownErrors maps custom service errors to HTTP status codes.
 // Add or update these as your service layer grows.
 var knownErrors = map[error]int{
-	ErrNotFound:      http.StatusNotFound,            // Resource not found (404 Not Found)
-	ErrUnauthorized:  http.StatusUnauthorized,        // User not authenticated (401 Unauthorized)
-	ErrForbidden:     http.StatusForbidden,           // User lacks permission (403 Forbidden)
-	ErrConflict:      http.StatusConflict,            // Conflict with current state (409 Conflict)
-	ErrBadRequest:    http.StatusBadRequest,          // Malformed request or invalid input (400 Bad Request)
-	ErrUnprocessable: http.StatusUnprocessableEntity, // Semantic errors in request (422 Unprocessable Entity)
+	ErrNotFound:       http.StatusNotFound,            // Resource not found (404 Not Found)
+	ErrUnauthorized:   http.StatusUnauthorized,        // User not authenticated (401 Unauthorized)
+	ErrForbidden:      http.StatusForbidden,           // User lacks permission (403 Forbidden)
+	ErrConflict:       http.StatusConflict,            // Conflict with current state (409 Conflict)
+	ErrBadRequest:     http.StatusBadRequest,          // Malformed request or invalid input (400 Bad Request)
+	ErrUnprocessable:  http.StatusUnprocessableEntity, // Semantic errors in request (422 Unprocessable Entity)
+	ErrInternalServer: http.StatusInternalServerError,
 }

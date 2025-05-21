@@ -12,7 +12,16 @@ import (
 )
 
 const createTask = `-- name: CreateTask :one
-INSERT INTO tasks (name, idea, user_id, vault_id) VALUES ($1, $2, $3, $4) RETURNING id
+WITH authorized_user AS (
+  SELECT 1
+  FROM vault_user_relations
+  WHERE user_id = $3::UUID
+    AND vault_id = $4::UUID
+    AND (role = 'owner' OR role = 'collaborator')
+)
+INSERT INTO tasks (name, idea, user_id, vault_id) 
+SELECT $1, $2, $3::UUID, $4::UUID
+FROM authorized_user RETURNING id
 `
 
 type CreateTaskParams struct {
@@ -43,6 +52,7 @@ WHERE
 		SELECT 1 FROM vault_user_relations v_u_rel
 		WHERE v_u_rel.user_id = $2::UUID 
 		AND v_u_rel.vault_id = $3::UUID
+		AND (role = 'owner' OR role = 'collaborator')
 )
 `
 
@@ -378,10 +388,14 @@ func (q *Queries) GetTasksWithTagRelations(ctx context.Context, arg GetTasksWith
 }
 
 const toggleTaskCompletion = `-- name: ToggleTaskCompletion :exec
-UPDATE tasks SET completed = NOT completed WHERE tasks.id = $1 AND EXISTS(
-SELECT 1 FROM vault_user_relations v_u_rel
-WHERE v_u_rel.user_id = $2::UUID 
-	AND v_u_rel.vault_id = $3::UUID
+UPDATE tasks SET completed = NOT completed
+WHERE 
+	id = $1::UUID
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = $2::UUID 
+		AND v_u_rel.vault_id = $3::UUID
+	    AND (role = 'owner' OR role = 'collaborator')
 )
 `
 
@@ -408,6 +422,7 @@ WHERE
 		SELECT 1 FROM vault_user_relations v_u_rel
 		WHERE v_u_rel.user_id = $4::UUID 
 		AND v_u_rel.vault_id = $5::UUID
+	    AND (role = 'owner' OR role = 'collaborator')
 )
 `
 

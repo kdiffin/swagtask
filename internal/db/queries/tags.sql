@@ -15,6 +15,7 @@ WITH authorized_user AS (
   FROM vault_user_relations
   WHERE user_id = sqlc.arg('user_id')::UUID
     AND vault_id = sqlc.arg('vault_id')::UUID
+    AND (role = 'owner' OR role = 'collaborator')
 )
 INSERT INTO tags (name, user_id, vault_id)
 SELECT sqlc.arg('name'), sqlc.arg('user_id')::UUID, sqlc.arg('vault_id')::UUID
@@ -73,6 +74,7 @@ WHERE tg.id = $1 AND tg.vault_id = sqlc.arg('vault_id')::UUID
     SELECT 1 FROM vault_user_relations v_u_rel
       WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
       AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+      AND (role = 'owner' OR role = 'collaborator')
   );
 
 -- name: UpdateTag :exec
@@ -84,5 +86,6 @@ WHERE id = sqlc.arg('id')::UUID AND vault_id = sqlc.arg('vault_id')::UUID
     SELECT 1 FROM vault_user_relations v_u_rel
       WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
       AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+      AND (role = 'owner' OR role = 'collaborator')
   );
 

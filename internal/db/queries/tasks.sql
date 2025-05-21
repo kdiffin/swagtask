@@ -105,16 +105,28 @@ ORDER BY created_at ASC LIMIT 1;
 
 -- CREATE
 -- name: CreateTask :one
-INSERT INTO tasks (name, idea, user_id, vault_id) VALUES ($1, $2, $3, $4) RETURNING id;
-
+WITH authorized_user AS (
+  SELECT 1
+  FROM vault_user_relations
+  WHERE user_id = sqlc.arg('user_id')::UUID
+    AND vault_id = sqlc.arg('vault_id')::UUID
+    AND (role = 'owner' OR role = 'collaborator')
+)
+INSERT INTO tasks (name, idea, user_id, vault_id) 
+SELECT sqlc.arg('name'), sqlc.arg('idea'), sqlc.arg('user_id')::UUID, sqlc.arg('vault_id')::UUID
+FROM authorized_user RETURNING id;
 
 -- UPDATE
 -- name: ToggleTaskCompletion :exec
-UPDATE tasks SET completed = NOT completed WHERE tasks.id = $1 AND EXISTS(
-SELECT 1 FROM vault_user_relations v_u_rel
-WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
-	AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
-);
+UPDATE tasks SET completed = NOT completed
+WHERE 
+	id = sqlc.arg('id')::UUID
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
+		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+	    AND (role = 'owner' OR role = 'collaborator')
+);	
 
 -- name: UpdateTask :exec
 UPDATE tasks
@@ -127,6 +139,7 @@ WHERE
 		SELECT 1 FROM vault_user_relations v_u_rel
 		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
 		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+	    AND (role = 'owner' OR role = 'collaborator')
 );	
 
 -- DELETE 
@@ -138,4 +151,5 @@ WHERE
 		SELECT 1 FROM vault_user_relations v_u_rel
 		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
 		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
+		AND (role = 'owner' OR role = 'collaborator')
 ); 

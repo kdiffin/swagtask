@@ -85,6 +85,7 @@ func HandlerCreateTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 	name := r.FormValue("task_name")
 	idea := r.FormValue("task_idea")
 	filters := filterParams(r)
+
 	task, err := createTask(queries, name, idea, filters, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
 	if err != nil {
 		if errors.Is(err, utils.ErrUnprocessable) {
@@ -97,6 +98,7 @@ func HandlerCreateTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 			return
 		}
 	}
+
 	templates.Render(w, "form-success", nil)
 	templates.Render(w, "task", task)
 }
