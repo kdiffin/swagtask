@@ -77,11 +77,16 @@ chat gippity made most of my frontends styles btw
   - [x] order everything by created_at
   - [x] add RBAC to the tag CUD operations as per ![example](./mds/flow.jpeg)
   - [x] !!! add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
+  - [ ] add vaults page
+    - [ ] fix bug where you cant see the people connected to the vaults
+    - [ ] fix bug where i can see other peoples vaults
+    - [ ] fix bug where i can edit other peoples vaults without being owner
+    - [ ] add removing collaborators if ur owner
   - [ ] add decent error logging
   - [ ] fix that one dumb down migration at 8
-  - [ ] add vaults page, add all the owner operations on the vaults
   - **move onto phase with collaborative vaults with websockets**
 
+- [ ] fix add tag in tasks page
 - [ ] add live editing via websockets between 2 users
 - [ ] add notification system via sse
 - [ ] [add docs to api](https://www.boot.dev/lessons/109e29ef-cdfd-4d5b-ad47-6a609a638896)

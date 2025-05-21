@@ -21,6 +21,7 @@
       <span
         ><i class="fa-search fas text-[10px] mr-1"></i>"{{ .SearchQuery
 
+
         }}"</span
       >
     </div>
@@ -56,6 +57,8 @@
           evt.detail.isError = false;
         } else if (evt.detail.xhr.status === 401) {
           alert("Error: Unauthorized");
+        } else if (evt.detail.xhr.status === 400) {
+          alert("Error: Bad Request");
         } else if (evt.detail.xhr.status === 403) {
           alert("Error: Forbidden");
         } else if (evt.detail.xhr.status === 500) {

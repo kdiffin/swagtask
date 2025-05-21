@@ -186,14 +186,15 @@ const updateVault = `-- name: UpdateVault :exec
 UPDATE vaults v
 SET
   name = COALESCE($2, name),
-  description = COALESCE($3, description)
+  description = COALESCE($3, description),
+  locked = $4
 WHERE 
 	v.id = $1
 	-- authorization part, checks if person is owner
 	AND EXISTS (
 		SELECT 1 FROM vault_user_relations rel
 		WHERE 
-			rel.user_id = $4::UUID
+			rel.user_id = $5::UUID
 			AND rel.role = 'owner'
 )
 `
@@ -202,6 +203,7 @@ type UpdateVaultParams struct {
 	ID          pgtype.UUID
 	Name        pgtype.Text
 	Description pgtype.Text
+	Locked      bool
 	UserID      pgtype.UUID
 }
 
@@ -210,6 +212,7 @@ func (q *Queries) UpdateVault(ctx context.Context, arg UpdateVaultParams) error 
 		arg.ID,
 		arg.Name,
 		arg.Description,
+		arg.Locked,
 		arg.UserID,
 	)
 	return err

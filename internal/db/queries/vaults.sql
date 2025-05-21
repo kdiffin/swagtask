@@ -54,7 +54,8 @@ WHERE
 UPDATE vaults v
 SET
   name = COALESCE(sqlc.narg('name'), name),
-  description = COALESCE(sqlc.narg('description'), description)
+  description = COALESCE(sqlc.narg('description'), description),
+  locked = sqlc.arg('locked')
 WHERE 
 	v.id = $1
 	-- authorization part, checks if person is owner

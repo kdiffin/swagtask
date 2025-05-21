@@ -7,7 +7,71 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createCollaboratorVaultRelation = `-- name: CreateCollaboratorVaultRelation :exec
+WITH authorized_user AS (
+  SELECT 1
+  FROM vault_user_relations
+  WHERE user_id = $3::UUID
+    AND vault_id = $1::UUID
+    AND role = 'owner'
+),
+user_id_from_username AS (
+  SELECT id FROM users WHERE users.username = $4
+)
+INSERT INTO vault_user_relations (vault_id, user_id, role)
+SELECT $1, u.id, $2
+FROM user_id_from_username u 
+WHERE
+    EXISTS (SELECT 1 FROM authorized_user)
+`
+
+type CreateCollaboratorVaultRelationParams struct {
+	VaultID              pgtype.UUID
+	Role                 VaultRelRoleType
+	UserID               pgtype.UUID
+	CollaboratorUsername string
+}
+
+func (q *Queries) CreateCollaboratorVaultRelation(ctx context.Context, arg CreateCollaboratorVaultRelationParams) error {
+	_, err := q.db.Exec(ctx, createCollaboratorVaultRelation,
+		arg.VaultID,
+		arg.Role,
+		arg.UserID,
+		arg.CollaboratorUsername,
+	)
+	return err
+}
+
+const deleteCollaboratorVaultRelation = `-- name: DeleteCollaboratorVaultRelation :exec
+WITH user_id_from_username AS (
+  SELECT id FROM users WHERE users.username = $3
+)
+DELETE FROM vault_user_relations v
+WHERE
+  v.vault_id = $1 AND v.user_id = user_id_from_username.id
+  -- owner authorziation
+  AND EXISTS (
+		SELECT 1 FROM vault_user_relations rel
+		WHERE 
+			rel.user_id = $2::UUID
+			AND rel.role = 'owner'
+	)
+`
+
+type DeleteCollaboratorVaultRelationParams struct {
+	VaultID              pgtype.UUID
+	UserID               pgtype.UUID
+	CollaboratorUsername string
+}
+
+func (q *Queries) DeleteCollaboratorVaultRelation(ctx context.Context, arg DeleteCollaboratorVaultRelationParams) error {
+	_, err := q.db.Exec(ctx, deleteCollaboratorVaultRelation, arg.VaultID, arg.UserID, arg.CollaboratorUsername)
+	return err
+}
 
 const signUpAndCreateDefaultVault = `-- name: SignUpAndCreateDefaultVault :exec
 WITH

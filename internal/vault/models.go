@@ -57,3 +57,12 @@ func newVaultWithCollaborators(vault vaultUI, relatedCollaborators []relatedColl
 		RelatedCollaborators: relatedCollaborators,
 	}
 }
+
+// for collaborators
+type role string
+
+const (
+	roleViewer       kind = "viewer"
+	roleCollaborator kind = "collaborator"
+	roleOwner        kind = "owner"
+)

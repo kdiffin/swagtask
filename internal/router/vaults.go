@@ -21,5 +21,11 @@ func SetupVaultRoutes(mux *http.ServeMux, queries *db.Queries, templates *templa
 	mux.Handle("PUT /vaults/{vaultId}/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vault.HandlerUpdateVault(w, r, queries, templates)
 	})))
+	mux.Handle("POST /vaults/{vaultId}/collaborators/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vault.HandlerAddCollaboratorToVault(w, r, queries, templates)
+	})))
+	mux.Handle("DELETE /vaults/{vaultId}/collaborators/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vault.HandlerDeleteCollaboratorToVault(w, r, queries, templates)
+	})))
 	// mux.Handle("/ws/", websocket.Handler(handlers.WsHandler()))
 }

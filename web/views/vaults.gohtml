@@ -78,7 +78,7 @@
             {{ if eq .Name "Default" }}
             {{ template "default-vault-card-template" . }}
             {{ else }}
-            {{ template "standard-vault-card-template" . }}
+            {{ template "vault-card" . }}
             {{ end }}
             {{ end }}
           </div>
@@ -90,7 +90,7 @@
 </html>
 {{ end }}
 
-{{ define "standard-vault-card-template" }}
+{{ define "vault-card" }}
 <div
   id="vault-card-{{ .ID }}"
   class="request-container bg-zinc-900/80 space-y-4 relative border border-zinc-700/50 rounded-sm shadow-md p-5 transition-all hover:shadow-lg"
@@ -189,7 +189,7 @@
       <span>{{ .Name }}</span>
 
       <form
-        hx-post="/vaults/{{ $.ID }}/collaborators/remove"
+        hx-delete="/vaults/{{ $.ID }}/collaborators/"
         hx-vals="{&quot;user_id&quot;: &quot;{{ .Name }}&quot;}"
         hx-target="#vault-card-{{ $.ID }}"
         hx-swap="outerHTML"
@@ -207,18 +207,28 @@
 
     <!-- Add Collaborator Form -->
     <form
-      hx-post="/vaults/{{ .ID }}/collaborators/add"
+      hx-post="/vaults/{{ .ID }}/collaborators/"
       hx-target="#vault-card-{{ .ID }}"
       hx-swap="outerHTML"
+      class=""
       hx-indicator="#indicator-manage-collaborator-{{ .ID }}"
     >
       <input
         type="text"
-        name="user_identifier"
-        class="text-xs bg-zinc-800/90 border border-zinc-700/50 text-white px-2.5 py-1 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+        name="collaborator_username"
+        class="text-xs bg-zinc-800/90 border border-zinc-700/50 text-white px-2.5 py-1.5 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
         placeholder="+ add collaborator"
         required
       />
+      <select
+        name="collaborator_role"
+        class="text-xs border bg-zinc-800/90 border-zinc-700/50 text-white px-2.5 py-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+      >
+        <option value="viewer" selected>Viewer</option>
+        <option value="collaborator">Collaborator</option>
+
+        <!-- Dynamically populate tasks here -->
+      </select>
     </form>
   </div>
 
@@ -280,8 +290,6 @@
       </label>
     </div>
 
-    <input type="hidden" name="vault_kind" value="{{ .Kind }}" />
-
     <div class="flex justify-end">
       <button
         type="submit"
@@ -301,7 +309,7 @@
 {{ define "default-vault-card-template" }}
 <div
   id="vault-card-{{ .ID }}"
-  class="request-container bg-zinc-900/80 space-y-4 relative border border-blue-500/30 rounded-sm shadow-md p-5 transition-all hover:shadow-lg"
+  class="request-container bg-zinc-900/80 col-span-2 space-y-4 relative border border-blue-500/30 rounded-sm shadow-md p-5 transition-all hover:shadow-lg"
 >
   <!-- Default vault specific border -->
   <!-- Card Header: Icon, Name, Kind, Lock -->
