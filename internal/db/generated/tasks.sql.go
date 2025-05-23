@@ -85,6 +85,7 @@ WHERE
 	-- where the name is like the task filter (if the filter exists)
 	(t_with_author.name ILIKE '%' || COALESCE($1::text, t_with_author.name) || '%')
 	AND
+	 
 	-- if the tag filter exists, return the rows of the tasks who have a relation to that tag  
 	($2::text IS NULL OR 
 		EXISTS (
@@ -101,6 +102,8 @@ WHERE
 		WHERE v_u_rel.user_id = $3::UUID 
 		AND v_u_rel.vault_id = $4::UUID
 	)
+	AND
+	t_with_author.vault_id = $4::UUID
 ORDER BY t_with_author.created_at DESC
 `
 

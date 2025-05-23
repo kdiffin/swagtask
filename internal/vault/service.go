@@ -16,8 +16,8 @@ import (
 
 func getVaultWithCollaboratorsById(queries *db.Queries, userId, id pgtype.UUID, ctx context.Context) (*vaultWithCollaborators, error) {
 	vaultWithRelations, err := queries.GetVaultWithCollaborators(ctx, db.GetVaultWithCollaboratorsParams{
-		UserID: userId,
-		ID:     id,
+		UserID:  userId,
+		VaultID: id,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -30,7 +30,8 @@ func getVaultWithCollaboratorsById(queries *db.Queries, userId, id pgtype.UUID, 
 	}
 	var vault vaultUI
 	collaboratorsOfVault := []relatedCollaborator{}
-
+	var pathToPfp string
+	var username string
 	for _, vaultWithRelation := range vaultWithRelations {
 		if vaultWithRelation.CollaboratorUsername.Valid && vaultWithRelation.CollaboratorPathToPfp.Valid {
 			collaboratorsOfVault = append(collaboratorsOfVault,
@@ -40,11 +41,9 @@ func getVaultWithCollaboratorsById(queries *db.Queries, userId, id pgtype.UUID, 
 				})
 		}
 
-		var pathToPfp string
-		var username string
 		if vaultWithRelation.Role.Valid && vaultWithRelation.Role.VaultRelRoleType == "owner" {
-			pathToPfp = string(vaultWithRelation.CollaboratorPathToPfp.String)
-			username = string(vaultWithRelation.CollaboratorUsername.String)
+			pathToPfp = vaultWithRelation.CollaboratorPathToPfp.String
+			username = vaultWithRelation.CollaboratorUsername.String
 		}
 
 		vault = newUIvault(
@@ -53,6 +52,7 @@ func getVaultWithCollaboratorsById(queries *db.Queries, userId, id pgtype.UUID, 
 				Name:        vaultWithRelation.Name,
 				Description: vaultWithRelation.Description,
 				Locked:      vaultWithRelation.Locked,
+				UpdatedAt:   vaultWithRelation.UpdatedAt,
 				CreatedAt:   vaultWithRelation.CreatedAt,
 				Kind:        vaultWithRelation.Kind,
 			},
@@ -92,24 +92,28 @@ func getVaultsWithCollaborators(queries *db.Queries,
 	idTovault := make(map[pgtype.UUID]vaultUI)
 	orderedIds := []pgtype.UUID{}
 	idSeen := make(map[pgtype.UUID]bool)
+	var pathToPfp string
+	var username string
+
 	for _, vault := range vaultsWithCollaborators {
-		if vault.CollaboratorUsername.Valid && vault.CollaboratorPathToPfp.Valid {
-			vaultIdToCollaborators[vault.ID] = append(vaultIdToCollaborators[vault.ID],
-				relatedCollaborator{
-					Name:      vault.CollaboratorUsername.String,
-					PathToPfp: vault.CollaboratorPathToPfp.String,
-				})
-		}
+		vaultIdToCollaborators[vault.ID] = append(vaultIdToCollaborators[vault.ID],
+			relatedCollaborator{
+				Name:      vault.CollaboratorUsername,
+				PathToPfp: vault.CollaboratorPathToPfp,
+			})
 
 		if !idSeen[vault.ID] {
 			orderedIds = append(orderedIds, vault.ID)
 		}
 
-		var pathToPfp string
-		var username string
-		if vault.Role.Valid && vault.Role.VaultRelRoleType == "owner" {
-			pathToPfp = string(vault.CollaboratorPathToPfp.String)
-			username = string(vault.CollaboratorUsername.String)
+		if vault.Role == "owner" {
+			fmt.Println("VAULT NAME:", vault.Name)
+			fmt.Println(vault.Role)
+			fmt.Println(vault.CollaboratorPathToPfp)
+			fmt.Println(vault.CollaboratorUsername)
+
+			pathToPfp = vault.CollaboratorPathToPfp
+			username = vault.CollaboratorUsername
 		}
 		idTovault[vault.ID] = newUIvault(
 			db.Vault{
@@ -119,6 +123,7 @@ func getVaultsWithCollaborators(queries *db.Queries,
 				Locked:      vault.Locked,
 				CreatedAt:   vault.CreatedAt,
 				Kind:        vault.Kind,
+				UpdatedAt:   vault.UpdatedAt,
 			},
 			auth.Author{
 				PathToPfp: pathToPfp,

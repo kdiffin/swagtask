@@ -78,11 +78,19 @@ chat gippity made most of my frontends styles btw
   - [x] add RBAC to the tag CUD operations as per ![example](./mds/flow.jpeg)
   - [x] !!! add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
   - [ ] add vaults page
-    - [ ] fix bug where you cant see the people connected to the vaults
-    - [ ] fix bug where i can see other peoples vaults
-    - [ ] fix bug where i can edit other peoples vaults without being owner
-    - [ ] add removing collaborators if ur owner
+    - [x] fix bug where you cant see the people connected to the vaults
+    - [x] fix bug where i can see other peoples tasks at /tasks
+    - [x] fix bug where i can edit other peoples vaults without being owner
+    - [x] add removing collaborators if ur owner
+    - [x] stop 1 user from having multiple entries of a role (I already implemented that security measure, I guess im not that dumb after all.)
+    - [x] fix that one stupid bug where an owner can remove themselves as a collaborator
+  - [ ] Error handling, SQL, better authz
+    - [ ] ADD RBAC AND RLS INSTEAD OF THIS BS EXISTS SHIT!
+    - [ ] take a look at whole codebase sql and search for security issues before proceeding
+    - [ ] add some serverside error handling that gives back descriptive errors instead of sql (its secure but make it responsive to the user rn)
+    - [ ] add alphabetical sorting to everything after created_at so its uniform!
   - [ ] add decent error logging
+  - [ ] add sql query logging
   - [ ] fix that one dumb down migration at 8
   - **move onto phase with collaborative vaults with websockets**
 

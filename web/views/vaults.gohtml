@@ -190,12 +190,13 @@
 
       <form
         hx-delete="/vaults/{{ $.ID }}/collaborators/"
-        hx-vals="{&quot;user_id&quot;: &quot;{{ .Name }}&quot;}"
         hx-target="#vault-card-{{ $.ID }}"
         hx-swap="outerHTML"
         hx-indicator="#indicator-manage-collaborator-{{ $.ID }}"
       >
         <button
+          name="collaborator_username"
+          value="{{.Name}}"
           class="group-hover:flex hidden font-semibold ml-1"
           hx-confirm="Remove {{ .Name }} from this vault?"
         >
@@ -222,12 +223,14 @@
       />
       <select
         name="collaborator_role"
-        class="text-xs border bg-zinc-800/90 border-zinc-700/50 text-white px-2.5 py-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+        class="text-xs border bg-zinc-800/90 border-zinc-700/50 text-white px-2.5 py-1.5 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
       >
-        <option value="viewer" selected>Viewer</option>
-        <option value="collaborator">Collaborator</option>
+        <option selected disabled>Role</option>
 
-        <!-- Dynamically populate tasks here -->
+        <option value="viewer" class="option-trigger">Viewer</option>
+        <option value="collaborator" class="option-trigger">
+          Collaborator
+        </option>
       </select>
     </form>
   </div>

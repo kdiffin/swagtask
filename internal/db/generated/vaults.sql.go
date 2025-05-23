@@ -31,6 +31,7 @@ type CreateVaultParams struct {
 	UserID      pgtype.UUID
 }
 
+// TODO: authenticate
 // CREATE
 func (q *Queries) CreateVault(ctx context.Context, arg CreateVaultParams) (pgtype.UUID, error) {
 	row := q.db.QueryRow(ctx, createVault, arg.Name, arg.Description, arg.UserID)
@@ -43,11 +44,12 @@ const deleteVault = `-- name: DeleteVault :exec
 DELETE FROM vaults v
 WHERE 
 	v.id = $1
-	-- authorization part, checks if person is owner
+	-- authorization part, checks if person is owner of vault
 	AND EXISTS (
 		SELECT 1 FROM vault_user_relations rel
 		WHERE 
 			rel.user_id = $2::UUID
+			AND rel.vault_id = $1
 			AND rel.role = 'owner'
 	)
 `
@@ -71,14 +73,23 @@ LEFT JOIN vault_user_relations rel
 LEFT JOIN users us
 	ON us.id = rel.user_id
 WHERE
-	rel.user_id = $1::UUID
-	AND v.id = $2::UUID
+	EXISTS (
+        SELECT
+            1
+        FROM
+            vault_user_relations r_user_vault_check
+        WHERE
+            r_user_vault_check.vault_id = v.id 
+            AND r_user_vault_check.user_id = $1::UUID
+			AND r_user_vault_check.vault_id = $2::UUID
+			
+    )
 ORDER BY v.created_at DESC
 `
 
 type GetVaultWithCollaboratorsParams struct {
-	UserID pgtype.UUID
-	ID     pgtype.UUID
+	UserID  pgtype.UUID
+	VaultID pgtype.UUID
 }
 
 type GetVaultWithCollaboratorsRow struct {
@@ -95,7 +106,7 @@ type GetVaultWithCollaboratorsRow struct {
 }
 
 func (q *Queries) GetVaultWithCollaborators(ctx context.Context, arg GetVaultWithCollaboratorsParams) ([]GetVaultWithCollaboratorsRow, error) {
-	rows, err := q.db.Query(ctx, getVaultWithCollaborators, arg.UserID, arg.ID)
+	rows, err := q.db.Query(ctx, getVaultWithCollaborators, arg.UserID, arg.VaultID)
 	if err != nil {
 		return nil, err
 	}
@@ -129,13 +140,23 @@ const getVaultsWithCollaborators = `-- name: GetVaultsWithCollaborators :many
 SELECT v.name, v.description, v.ID, v.locked, v.kind, v.created_at, v.updated_at, rel.role,
 		us.username AS collaborator_username, us.path_to_pfp AS collaborator_path_to_pfp
 FROM vaults v
-LEFT JOIN vault_user_relations rel 
+JOIN vault_user_relations rel 
 	ON v.id = rel.vault_id 
-LEFT JOIN users us
+JOIN users us
 	ON us.id = rel.user_id
 WHERE
-	rel.user_id = $1::UUID
-ORDER BY v.created_at DESC
+    EXISTS (
+        SELECT
+            1
+        FROM
+            vault_user_relations r_user_vault_check
+        WHERE
+            r_user_vault_check.vault_id = v.id 
+            AND r_user_vault_check.user_id = $1::UUID
+    )
+ORDER BY
+    v.created_at DESC, 
+    us.username ASC
 `
 
 type GetVaultsWithCollaboratorsRow struct {
@@ -146,9 +167,9 @@ type GetVaultsWithCollaboratorsRow struct {
 	Kind                  VaultKindType
 	CreatedAt             pgtype.Timestamp
 	UpdatedAt             pgtype.Timestamp
-	Role                  NullVaultRelRoleType
-	CollaboratorUsername  pgtype.Text
-	CollaboratorPathToPfp pgtype.Text
+	Role                  VaultRelRoleType
+	CollaboratorUsername  string
+	CollaboratorPathToPfp string
 }
 
 func (q *Queries) GetVaultsWithCollaborators(ctx context.Context, userID pgtype.UUID) ([]GetVaultsWithCollaboratorsRow, error) {
@@ -195,6 +216,7 @@ WHERE
 		SELECT 1 FROM vault_user_relations rel
 		WHERE 
 			rel.user_id = $5::UUID
+			AND rel.vault_id = $1
 			AND rel.role = 'owner'
 )
 `

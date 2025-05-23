@@ -14,9 +14,9 @@ import (
 const createCollaboratorVaultRelation = `-- name: CreateCollaboratorVaultRelation :exec
 WITH authorized_user AS (
   SELECT 1
-  FROM vault_user_relations
-  WHERE user_id = $3::UUID
-    AND vault_id = $1::UUID
+  FROM vault_user_relations auth_rel
+  WHERE auth_rel.user_id = $3::UUID
+    AND auth_rel.vault_id = $1::UUID
     AND role = 'owner'
 ),
 user_id_from_username AS (
@@ -48,17 +48,18 @@ func (q *Queries) CreateCollaboratorVaultRelation(ctx context.Context, arg Creat
 
 const deleteCollaboratorVaultRelation = `-- name: DeleteCollaboratorVaultRelation :exec
 WITH user_id_from_username AS (
-  SELECT id FROM users WHERE users.username = $3
+  SELECT id FROM users WHERE username = $3
 )
 DELETE FROM vault_user_relations v
 WHERE
-  v.vault_id = $1 AND v.user_id = user_id_from_username.id
+  v.vault_id = $1::UUID AND v.user_id = (SELECT id FROM user_id_from_username)
   -- owner authorziation
   AND EXISTS (
-		SELECT 1 FROM vault_user_relations rel
+		SELECT 1 FROM vault_user_relations auth_rel
 		WHERE 
-			rel.user_id = $2::UUID
-			AND rel.role = 'owner'
+			auth_rel.user_id = $2::UUID
+      AND auth_rel.vault_id = $1::UUID
+			AND auth_rel.role = 'owner'
 	)
 `
 

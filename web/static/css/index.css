@@ -1,3 +1,6 @@
+select {
+  width: 120px;
+}
 .container {
   width: 100%;
   max-width: 80rem; /* Equivalent to Tailwind's max-w-6xl */

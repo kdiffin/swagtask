@@ -22,6 +22,13 @@
         ><i class="fa-search fas text-[10px] mr-1"></i>"{{ .SearchQuery
 
 
+
+
+
+
+
+
+
         }}"</span
       >
     </div>
@@ -56,15 +63,20 @@
           evt.detail.shouldSwap = true;
           evt.detail.isError = false;
         } else if (evt.detail.xhr.status === 401) {
-          alert("Error: Unauthorized");
+          alert(
+            "Error: Unauthorized \nMessage: " + evt.detail.xhr.responseText
+          );
         } else if (evt.detail.xhr.status === 400) {
-          alert("Error: Bad Request");
+          alert("Error: Bad Request \nMessage: " + evt.detail.xhr.responseText);
         } else if (evt.detail.xhr.status === 403) {
-          alert("Error: Forbidden");
+          alert("Error: Forbidden \nMessage: " + evt.detail.xhr.responseText);
         } else if (evt.detail.xhr.status === 500) {
-          alert("Error: Internal Server Error");
+          alert(
+            "Error: Internal Server Error \nMessage: " +
+              evt.detail.xhr.responseText
+          );
         } else if (evt.detail.xhr.status === 401) {
-          alert("Error: Bad Request");
+          alert("Error: Bad Request \nMessage: " + evt.detail.xhr.responseText);
         }
       });
       document.body.addEventListener("htmx:sendError", (evt) => {

@@ -101,10 +101,15 @@ func HandlerDeleteCollaboratorToVault(w http.ResponseWriter, r *http.Request, qu
 		return
 	}
 
+	collaboratorUsername := r.FormValue("collaborator_username")
+	if collaboratorUsername == user.Username {
+		http.Error(w, "You cant remove the owner as a collaborator, consider deleting the vault if needed.", http.StatusBadRequest)
+		return
+	}
 	vault, errUpdate := removeCollaboratorFromVault(queries,
 		utils.PgUUID(user.ID),
 		utils.PgUUID(r.PathValue("vaultId")),
-		r.FormValue("collaborator_username"),
+		collaboratorUsername,
 		r.Context())
 	if utils.CheckError(w, r, errUpdate) {
 		fmt.Println("yea error here")

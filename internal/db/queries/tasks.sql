@@ -64,6 +64,7 @@ WHERE
 	-- where the name is like the task filter (if the filter exists)
 	(t_with_author.name ILIKE '%' || COALESCE(sqlc.narg('task_name')::text, t_with_author.name) || '%')
 	AND
+	 
 	-- if the tag filter exists, return the rows of the tasks who have a relation to that tag  
 	(sqlc.narg('tag_name')::text IS NULL OR 
 		EXISTS (
@@ -80,6 +81,8 @@ WHERE
 		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
 		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
 	)
+	AND
+	t_with_author.vault_id = sqlc.arg('vault_id')::UUID
 ORDER BY t_with_author.created_at DESC; 
 
 -- TODO: reimplement
