@@ -14,7 +14,7 @@ import (
 
 // ---- READ ----
 
-func getTaskWithTagsById(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*taskWithTags, error) {
+func getTaskWithTagsById(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
 	taskWithRelations, err := queries.GetTaskWithTagRelations(ctx, db.GetTaskWithTagRelationsParams{
 		ID:      id,
 		UserID:  userId,
@@ -62,8 +62,8 @@ func getTaskWithTagsById(queries *db.Queries, userId, vaultId, id pgtype.UUID, c
 	return &taskWithTags, nil
 }
 
-func getFilteredTasksWithTags(queries *db.Queries, filters tasksPageFilters,
-	userId, vaultId pgtype.UUID, ctx context.Context) ([]taskWithTags, error) {
+func getFilteredTasksWithTags(queries *db.Queries, filters TasksPageFilters,
+	userId, vaultId pgtype.UUID, ctx context.Context) ([]TaskWithTags, error) {
 	taskswithTagRelations, err := queries.GetFilteredTasks(ctx, db.GetFilteredTasksParams{
 		TaskName: utils.StringToPgText(filters.SearchQuery),
 		TagName:  utils.StringToPgText(filters.ActiveTag),
@@ -84,7 +84,7 @@ func getFilteredTasksWithTags(queries *db.Queries, filters tasksPageFilters,
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, errAllTags)
 	}
 
-	tasksWithTags := []taskWithTags{}
+	tasksWithTags := []TaskWithTags{}
 	taskIdToTags := make(map[pgtype.UUID][]relatedTag)
 	idToTask := make(map[pgtype.UUID]taskUI)
 	orderedIds := []pgtype.UUID{}
@@ -149,8 +149,8 @@ func getTaskNavigationButtons(ctx context.Context, queries *db.Queries, createdA
 }
 
 // ---- CREATE ----
-func createTask(queries *db.Queries, name, idea string, filters tasksPageFilters,
-	userId, vaultId pgtype.UUID, ctx context.Context) (*taskWithTags, error) {
+func createTask(queries *db.Queries, name, idea string, filters TasksPageFilters,
+	userId, vaultId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
 	id, errCreate := queries.CreateTask(ctx, db.CreateTaskParams{
 		Name:    name,
 		Idea:    idea,
@@ -173,7 +173,7 @@ func createTask(queries *db.Queries, name, idea string, filters tasksPageFilters
 }
 
 // ---- UPDATE ----
-func updateTaskCompletion(queries *db.Queries, userId, vaultId pgtype.UUID, taskId pgtype.UUID, ctx context.Context) (*taskWithTags, error) {
+func updateTaskCompletion(queries *db.Queries, userId, vaultId pgtype.UUID, taskId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
 	errCompletion := queries.ToggleTaskCompletion(ctx, db.ToggleTaskCompletionParams{
 		ID:      taskId,
 		UserID:  userId,
@@ -195,7 +195,7 @@ func updateTaskCompletion(queries *db.Queries, userId, vaultId pgtype.UUID, task
 }
 
 func updateTask(queries *db.Queries, vaultId, taskId pgtype.UUID, userId pgtype.UUID,
-	name string, idea string, ctx context.Context) (*taskWithTags, error) {
+	name string, idea string, ctx context.Context) (*TaskWithTags, error) {
 	namePg := utils.StringToPgText(name)
 	ideaPg := utils.StringToPgText(idea)
 	if !namePg.Valid && !ideaPg.Valid {
@@ -222,7 +222,7 @@ func updateTask(queries *db.Queries, vaultId, taskId pgtype.UUID, userId pgtype.
 }
 
 func addTagToTask(queries *db.Queries,
-	tagId, userId, taskId, vaultId pgtype.UUID, ctx context.Context) (*taskWithTags, error) {
+	tagId, userId, taskId, vaultId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
 	err := queries.CreateTagTaskRelation(ctx, db.CreateTagTaskRelationParams{
 		TaskID: taskId,
 		TagID:  tagId,
@@ -257,7 +257,7 @@ func deleteTask(queries *db.Queries, taskId, vaultId, userId pgtype.UUID, ctx co
 	return nil
 }
 
-func deleteTagRelationFromTask(queries *db.Queries, tagId, userId, vaultId, taskId pgtype.UUID, ctx context.Context) (*taskWithTags, error) {
+func deleteTagRelationFromTask(queries *db.Queries, tagId, userId, vaultId, taskId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
 	errRelations := queries.DeleteTagTaskRelation(ctx, db.DeleteTagTaskRelationParams{
 		TaskID: taskId,
 		TagID:  tagId})
@@ -278,7 +278,7 @@ func deleteTagRelationFromTask(queries *db.Queries, tagId, userId, vaultId, task
 }
 
 // this is a one off for the task page
-func getTaskPage(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*taskWithTags, pgtype.Timestamp, error) {
+func getTaskPage(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*TaskWithTags, pgtype.Timestamp, error) {
 	taskWithRelations, err := queries.GetTaskWithTagRelations(ctx, db.GetTaskWithTagRelationsParams{
 		ID:      id,
 		UserID:  userId,

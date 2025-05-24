@@ -13,7 +13,7 @@ const (
 	kindCollaborative kind = "collaborative"
 )
 
-type vaultUI struct {
+type VaultUI struct {
 	ID          string
 	Name        string
 	Description string
@@ -23,9 +23,9 @@ type vaultUI struct {
 	Kind        kind
 }
 
-func newUIvault(vault db.Vault, author auth.Author) vaultUI {
+func newUIvault(vault db.Vault, author auth.Author) VaultUI {
 
-	return vaultUI{
+	return VaultUI{
 		ID:          vault.ID.String(),
 		Author:      author,
 		Name:        vault.Name,
@@ -41,19 +41,20 @@ func newUIvault(vault db.Vault, author auth.Author) vaultUI {
 type collaboratorOption struct {
 	Name      string
 	PathToPfp string
+	Role      string
 }
 
 // type availableCollaborator = collaboratorOption
 type relatedCollaborator collaboratorOption
 type vaultWithCollaborators struct {
-	vaultUI
+	VaultUI
 	RelatedCollaborators []relatedCollaborator
 	// AvailableCollaborators []availableCollaborator
 }
 
-func newVaultWithCollaborators(vault vaultUI, relatedCollaborators []relatedCollaborator) vaultWithCollaborators {
+func newVaultWithCollaborators(vault VaultUI, relatedCollaborators []relatedCollaborator) vaultWithCollaborators {
 	return vaultWithCollaborators{
-		vaultUI:              vault,
+		VaultUI:              vault,
 		RelatedCollaborators: relatedCollaborators,
 	}
 }

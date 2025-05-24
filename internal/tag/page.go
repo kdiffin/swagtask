@@ -2,13 +2,13 @@ package tag
 
 import "swagtask/internal/auth"
 
-type tagsPage struct {
-	TagsWithTasks []tagWithTasks
+type TagsPage struct {
+	TagsWithTasks []TagWithTasks
 	Auth          auth.AuthenticatedPage
 }
 
-func newTagsPage(tagsWithTasks []tagWithTasks, authorized bool, pathToPfp string, username string) tagsPage {
-	return tagsPage{
+func newTagsPage(tagsWithTasks []TagWithTasks, authorized bool, pathToPfp string, username string) TagsPage {
+	return TagsPage{
 		TagsWithTasks: tagsWithTasks,
 		Auth: auth.AuthenticatedPage{
 			Authorized: authorized,

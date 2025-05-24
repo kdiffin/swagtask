@@ -28,7 +28,7 @@ func getVaultWithCollaboratorsById(queries *db.Queries, userId, id pgtype.UUID, 
 	if len(vaultWithRelations) == 0 {
 		return nil, utils.ErrNotFound
 	}
-	var vault vaultUI
+	var vault VaultUI
 	collaboratorsOfVault := []relatedCollaborator{}
 	var pathToPfp string
 	var username string
@@ -89,7 +89,7 @@ func getVaultsWithCollaborators(queries *db.Queries,
 
 	vaultsWithCollaboratorsUI := []vaultWithCollaborators{}
 	vaultIdToCollaborators := make(map[pgtype.UUID][]relatedCollaborator)
-	idTovault := make(map[pgtype.UUID]vaultUI)
+	idTovault := make(map[pgtype.UUID]VaultUI)
 	orderedIds := []pgtype.UUID{}
 	idSeen := make(map[pgtype.UUID]bool)
 	var pathToPfp string

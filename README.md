@@ -69,21 +69,27 @@ chat gippity made most of my frontends styles btw
     - [x] fix the n+1 problem with author info
 
   - [x] fix the workflow
+
     - [x] make all queries work with roles and vaults
     - [x] change constraints of uniqueness to include vaults
+
   - [x] add redirect to tasks/vault filter on tag id click
   - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure ![example](./mds/code-structure.md)
   - [x] ALWAYS Update the updated_now fields so its actually true
   - [x] order everything by created_at
   - [x] add RBAC to the tag CUD operations as per ![example](./mds/flow.jpeg)
   - [x] !!! add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
+
   - [ ] add vaults page
+
     - [x] fix bug where you cant see the people connected to the vaults
     - [x] fix bug where i can see other peoples tasks at /tasks
     - [x] fix bug where i can edit other peoples vaults without being owner
     - [x] add removing collaborators if ur owner
     - [x] stop 1 user from having multiple entries of a role (I already implemented that security measure, I guess im not that dumb after all.)
     - [x] fix that one stupid bug where an owner can remove themselves as a collaborator
+
+  - **I'm gonna do this boring shit later, going a bit forward so i can do websockets**
   - [ ] Error handling, SQL, better authz
     - [ ] ADD RBAC AND RLS INSTEAD OF THIS BS EXISTS SHIT!
     - [ ] take a look at whole codebase sql and search for security issues before proceeding
@@ -92,9 +98,9 @@ chat gippity made most of my frontends styles btw
   - [ ] add decent error logging
   - [ ] add sql query logging
   - [ ] fix that one dumb down migration at 8
+  - [ ] fix add tag in tasks page
   - **move onto phase with collaborative vaults with websockets**
 
-- [ ] fix add tag in tasks page
 - [ ] add live editing via websockets between 2 users
 - [ ] add notification system via sse
 - [ ] [add docs to api](https://www.boot.dev/lessons/109e29ef-cdfd-4d5b-ad47-6a609a638896)
@@ -102,7 +108,7 @@ chat gippity made most of my frontends styles btw
 
 ### long term
 
-- [ ] add openapi specs
+- [ ] add JSON endpoint for mobile app, openapi specs
 
 ---
 

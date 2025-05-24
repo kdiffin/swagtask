@@ -1,0 +1,39 @@
+{{ block "vault-page" . }}
+<html class="bg-zinc-900">
+  {{ template "head" .Vault.Name}}
+
+  <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
+    {{ template "navbar" .Auth }}
+
+    <main class="container mx-auto px-4 py-4 max-w-5xl space-y-6">
+      <div class="flex justify-between items-center gap-2">
+        <div>
+          <h1 class="text-4xl font-semibold">
+            Welcome to <span class="text-yellow-400">{{.Vault.Name}}</span
+            >,
+            <span class="text-blue-400">{{.User.Username}}</span>
+          </h1>
+          <div class="px-4 py-2">
+            <p class="">
+              You are a <span class="text-purple-400">{{.User.Role}}</span>
+            </p>
+            <div class="flex items-center gap-2">
+              This vault is owned by:
+              <div class="flex items-center gap-1">
+                <img
+                  src="https://ih1.redbubble.net/image.1654036011.2892/flat,750x,075,f-pad,750x1000,f8f8f8.jpg"
+                  alt=""
+                  class="w-6 h-6 rounded-full"
+                />
+
+                <span class="text-pink-400">{{.Vault.Author.Username}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <img src="{{.User.PathToPfp}}" alt="" class="w-14 h-14 rounded-full" />
+      </div>
+    </main>
+  </body>
+</html>
+{{ end }}

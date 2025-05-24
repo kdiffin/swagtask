@@ -6,14 +6,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type tasksPageFilters struct {
+type TasksPageFilters struct {
 	SearchQuery string
 	ActiveTag   string
 }
 
-func newTasksPageFilters(tagName string, taskName string) tasksPageFilters {
+func newTasksPageFilters(tagName string, taskName string) TasksPageFilters {
 
-	return tasksPageFilters{
+	return TasksPageFilters{
 		ActiveTag:   tagName,
 		SearchQuery: taskName,
 	}
@@ -30,14 +30,14 @@ type taskPageButtons struct {
 	NextButton taskButton
 }
 type taskPage struct {
-	taskWithTags
+	TaskWithTags
 	Buttons taskPageButtons
 	Auth    auth.AuthenticatedPage
 }
 
-func newTaskPage(task taskWithTags, prevButton, nextButton taskButton, authorized bool, pathToPfp string, username string) taskPage {
+func newTaskPage(task TaskWithTags, prevButton, nextButton taskButton, authorized bool, pathToPfp string, username string) taskPage {
 	return taskPage{
-		taskWithTags: task,
+		TaskWithTags: task,
 		Buttons: taskPageButtons{
 			PrevButton: prevButton,
 			NextButton: nextButton,
@@ -53,15 +53,15 @@ func newTaskPage(task taskWithTags, prevButton, nextButton taskButton, authorize
 }
 
 // tasks.gohtml
-type tasksPage struct {
-	Tasks   []taskWithTags
-	Filters tasksPageFilters
+type TasksPage struct {
+	Tasks   []TaskWithTags
+	Filters TasksPageFilters
 	Auth    auth.AuthenticatedPage
 }
 
-func newTasksPage(tasks []taskWithTags, filters tasksPageFilters,
-	authorized bool, pathToPfp string, username string) tasksPage {
-	return tasksPage{
+func newTasksPage(tasks []TaskWithTags, filters TasksPageFilters,
+	authorized bool, pathToPfp string, username string) TasksPage {
+	return TasksPage{
 		Tasks:   tasks,
 		Filters: filters,
 		Auth: auth.AuthenticatedPage{

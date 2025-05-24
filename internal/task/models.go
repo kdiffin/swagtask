@@ -32,14 +32,14 @@ type tagOption struct {
 }
 type availableTag = tagOption
 type relatedTag tagOption
-type taskWithTags struct {
+type TaskWithTags struct {
 	taskUI
 	RelatedTags   []relatedTag
 	AvailableTags []availableTag
 }
 
-func newTaskWithTags(task taskUI, relatedTags []relatedTag, availableTags []availableTag) taskWithTags {
-	return taskWithTags{
+func newTaskWithTags(task taskUI, relatedTags []relatedTag, availableTags []availableTag) TaskWithTags {
+	return TaskWithTags{
 		taskUI:        task,
 		RelatedTags:   relatedTags,
 		AvailableTags: availableTags,
