@@ -1,6 +1,6 @@
 -- name: GetVaultsWithCollaborators :many
-SELECT v.name, v.description, v.ID, v.locked, v.kind, v.created_at, v.updated_at, rel.role,
-		us.username AS collaborator_username, us.path_to_pfp AS collaborator_path_to_pfp
+SELECT v.name, v.description, v.ID, v.locked, v.kind, v.created_at, v.updated_at, 
+	rel.role AS collaborator_role, us.username AS collaborator_username, us.path_to_pfp AS collaborator_path_to_pfp
 FROM vaults v
 JOIN vault_user_relations rel 
 	ON v.id = rel.vault_id 
@@ -21,8 +21,8 @@ ORDER BY
     us.username ASC;  
 
 -- name: GetVaultWithCollaborators :many
-SELECT v.name, v.description, v.ID, v.locked, v.kind, v.created_at, v.updated_at, rel.role,
-		us.username AS collaborator_username, us.path_to_pfp AS collaborator_path_to_pfp
+SELECT v.name, v.description, v.ID, v.locked, v.kind, v.created_at, v.updated_at, 
+	rel.role AS collaborator_role, us.username AS collaborator_username, us.path_to_pfp AS collaborator_path_to_pfp
 FROM vaults v
 LEFT JOIN vault_user_relations rel 
 	ON v.id = rel.vault_id 

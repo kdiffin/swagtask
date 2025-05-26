@@ -62,7 +62,7 @@ func getTaskWithTagsById(queries *db.Queries, userId, vaultId, id pgtype.UUID, c
 	return &taskWithTags, nil
 }
 
-func getFilteredTasksWithTags(queries *db.Queries, filters TasksPageFilters,
+func GetFilteredTasksWithTags(queries *db.Queries, filters TasksPageFilters,
 	userId, vaultId pgtype.UUID, ctx context.Context) ([]TaskWithTags, error) {
 	taskswithTagRelations, err := queries.GetFilteredTasks(ctx, db.GetFilteredTasksParams{
 		TaskName: utils.StringToPgText(filters.SearchQuery),

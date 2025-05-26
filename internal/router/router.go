@@ -3,18 +3,22 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"os"
 	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
 	"swagtask/internal/tag"
 	"swagtask/internal/template"
 	"swagtask/internal/utils"
-	"swagtask/web/static"
 )
 
 func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.Handle("/", http.StripPrefix("/", http.FileServer(http.FS(static.StaticFiles))))
+	uploadsFS := http.FS(os.DirFS("./web/pfps/"))
+	staticFS := http.FS(os.DirFS("./web/static/"))
+
+	mux.Handle("/pfps/", http.StripPrefix("/pfps/", http.FileServer(uploadsFS)))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(staticFS)))
 	mux.HandleFunc("/{$}", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("hellow orld"))
 	})

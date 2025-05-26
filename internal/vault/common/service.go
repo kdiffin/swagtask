@@ -14,7 +14,7 @@ import (
 
 // ---- READ ----
 
-func getVaultWithCollaboratorsById(queries *db.Queries, userId, id pgtype.UUID, ctx context.Context) (*vaultWithCollaborators, error) {
+func GetVaultWithCollaboratorsById(queries *db.Queries, userId, id pgtype.UUID, ctx context.Context) (*VaultWithCollaborators, error) {
 	vaultWithRelations, err := queries.GetVaultWithCollaborators(ctx, db.GetVaultWithCollaboratorsParams{
 		UserID:  userId,
 		VaultID: id,
@@ -29,24 +29,25 @@ func getVaultWithCollaboratorsById(queries *db.Queries, userId, id pgtype.UUID, 
 		return nil, utils.ErrNotFound
 	}
 	var vault VaultUI
-	collaboratorsOfVault := []relatedCollaborator{}
+	collaboratorsOfVault := []RelatedCollaborator{}
 	var pathToPfp string
 	var username string
 	for _, vaultWithRelation := range vaultWithRelations {
 		if vaultWithRelation.CollaboratorUsername.Valid && vaultWithRelation.CollaboratorPathToPfp.Valid {
 			collaboratorsOfVault = append(collaboratorsOfVault,
-				relatedCollaborator{
+				RelatedCollaborator{
 					Name:      vaultWithRelation.CollaboratorUsername.String,
 					PathToPfp: vaultWithRelation.CollaboratorPathToPfp.String,
+					Role:      string(vaultWithRelation.CollaboratorRole.VaultRelRoleType),
 				})
 		}
 
-		if vaultWithRelation.Role.Valid && vaultWithRelation.Role.VaultRelRoleType == "owner" {
+		if vaultWithRelation.CollaboratorRole.Valid && vaultWithRelation.CollaboratorRole.VaultRelRoleType == "owner" {
 			pathToPfp = vaultWithRelation.CollaboratorPathToPfp.String
 			username = vaultWithRelation.CollaboratorUsername.String
 		}
 
-		vault = newUIvault(
+		vault = NewUIvault(
 			db.Vault{
 				ID:          vaultWithRelation.ID,
 				Name:        vaultWithRelation.Name,
@@ -68,8 +69,8 @@ func getVaultWithCollaboratorsById(queries *db.Queries, userId, id pgtype.UUID, 
 	return &vaultWithCollaborators, nil
 }
 
-func getVaultsWithCollaborators(queries *db.Queries,
-	userId pgtype.UUID, ctx context.Context) ([]vaultWithCollaborators, error) {
+func GetVaultsWithCollaborators(queries *db.Queries,
+	userId pgtype.UUID, ctx context.Context) ([]VaultWithCollaborators, error) {
 
 	vaultsWithCollaborators, err := queries.GetVaultsWithCollaborators(ctx, userId)
 	if err != nil {
@@ -87,8 +88,8 @@ func getVaultsWithCollaborators(queries *db.Queries,
 	// 	return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, errAllCollaborators)
 	// }
 
-	vaultsWithCollaboratorsUI := []vaultWithCollaborators{}
-	vaultIdToCollaborators := make(map[pgtype.UUID][]relatedCollaborator)
+	vaultsWithCollaboratorsUI := []VaultWithCollaborators{}
+	vaultIdToCollaborators := make(map[pgtype.UUID][]RelatedCollaborator)
 	idTovault := make(map[pgtype.UUID]VaultUI)
 	orderedIds := []pgtype.UUID{}
 	idSeen := make(map[pgtype.UUID]bool)
@@ -97,8 +98,9 @@ func getVaultsWithCollaborators(queries *db.Queries,
 
 	for _, vault := range vaultsWithCollaborators {
 		vaultIdToCollaborators[vault.ID] = append(vaultIdToCollaborators[vault.ID],
-			relatedCollaborator{
+			RelatedCollaborator{
 				Name:      vault.CollaboratorUsername,
+				Role:      string(vault.CollaboratorRole),
 				PathToPfp: vault.CollaboratorPathToPfp,
 			})
 
@@ -106,16 +108,16 @@ func getVaultsWithCollaborators(queries *db.Queries,
 			orderedIds = append(orderedIds, vault.ID)
 		}
 
-		if vault.Role == "owner" {
+		if vault.CollaboratorRole == "owner" {
 			fmt.Println("VAULT NAME:", vault.Name)
-			fmt.Println(vault.Role)
+			fmt.Println(vault.CollaboratorRole)
 			fmt.Println(vault.CollaboratorPathToPfp)
 			fmt.Println(vault.CollaboratorUsername)
 
 			pathToPfp = vault.CollaboratorPathToPfp
 			username = vault.CollaboratorUsername
 		}
-		idTovault[vault.ID] = newUIvault(
+		idTovault[vault.ID] = NewUIvault(
 			db.Vault{
 				ID:          vault.ID,
 				Name:        vault.Name,
@@ -146,8 +148,8 @@ func getVaultsWithCollaborators(queries *db.Queries,
 }
 
 // // ---- CREATE ----
-func createvault(queries *db.Queries, name, description string,
-	userId pgtype.UUID, ctx context.Context) (*vaultWithCollaborators, error) {
+func CreateVault(queries *db.Queries, name, description string,
+	userId pgtype.UUID, ctx context.Context) (*VaultWithCollaborators, error) {
 	id, errCreate := queries.CreateVault(ctx, db.CreateVaultParams{
 		Name:        name,
 		Description: description,
@@ -160,7 +162,7 @@ func createvault(queries *db.Queries, name, description string,
 		return nil, fmt.Errorf("%w: %v", utils.ErrUnprocessable, errCreate)
 	}
 
-	vaultWithCollaborators, errGetvault := getVaultWithCollaboratorsById(queries, userId, id, ctx)
+	vaultWithCollaborators, errGetvault := GetVaultWithCollaboratorsById(queries, userId, id, ctx)
 	if errGetvault != nil {
 		return nil, errGetvault
 	}
@@ -170,8 +172,8 @@ func createvault(queries *db.Queries, name, description string,
 
 // // ---- UPDATE ----
 
-func updateVault(queries *db.Queries, vaultId, userId pgtype.UUID,
-	name string, description string, locked bool, ctx context.Context) (*vaultWithCollaborators, error) {
+func UpdateVault(queries *db.Queries, vaultId, userId pgtype.UUID,
+	name string, description string, locked bool, ctx context.Context) (*VaultWithCollaborators, error) {
 	namePg := utils.StringToPgText(name)
 	descriptionPg := utils.StringToPgText(description)
 	if !namePg.Valid && !descriptionPg.Valid {
@@ -192,7 +194,7 @@ func updateVault(queries *db.Queries, vaultId, userId pgtype.UUID,
 	fmt.Println(vaultId.String())
 	fmt.Println(userId.String())
 
-	vaultWithCollaborators, errGetvault := getVaultWithCollaboratorsById(queries, userId, vaultId, ctx)
+	vaultWithCollaborators, errGetvault := GetVaultWithCollaboratorsById(queries, userId, vaultId, ctx)
 	if errGetvault != nil {
 		return nil, fmt.Errorf("%w: %v", utils.ErrInternalServer, errGetvault)
 	}
@@ -200,8 +202,8 @@ func updateVault(queries *db.Queries, vaultId, userId pgtype.UUID,
 	return vaultWithCollaborators, nil
 }
 
-func addCollaboratorToVault(queries *db.Queries, collaboratorUsername string,
-	userId, vaultId pgtype.UUID, role role, ctx context.Context) (*vaultWithCollaborators, error) {
+func AddCollaboratorToVault(queries *db.Queries, collaboratorUsername string,
+	userId, vaultId pgtype.UUID, role string, ctx context.Context) (*VaultWithCollaborators, error) {
 	err := queries.CreateCollaboratorVaultRelation(ctx, db.CreateCollaboratorVaultRelationParams{
 		VaultID:              vaultId,
 		CollaboratorUsername: collaboratorUsername,
@@ -216,7 +218,7 @@ func addCollaboratorToVault(queries *db.Queries, collaboratorUsername string,
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, err)
 	}
 
-	vaultWithCollaborators, errvaults := getVaultWithCollaboratorsById(queries, userId, vaultId, ctx)
+	vaultWithCollaborators, errvaults := GetVaultWithCollaboratorsById(queries, userId, vaultId, ctx)
 	if errvaults != nil {
 		return nil, errvaults
 	}
@@ -225,7 +227,7 @@ func addCollaboratorToVault(queries *db.Queries, collaboratorUsername string,
 }
 
 // // ---- DELETE ----
-func deletevault(queries *db.Queries, vaultId, userId pgtype.UUID, ctx context.Context) error {
+func DeleteVault(queries *db.Queries, vaultId, userId pgtype.UUID, ctx context.Context) error {
 	err := queries.DeleteVault(ctx, db.DeleteVaultParams{
 		ID:     vaultId,
 		UserID: userId,
@@ -237,10 +239,10 @@ func deletevault(queries *db.Queries, vaultId, userId pgtype.UUID, ctx context.C
 	return nil
 }
 
-func removeCollaboratorFromVault(queries *db.Queries,
+func RemoveCollaboratorFromVault(queries *db.Queries,
 	userId, vaultId pgtype.UUID,
 	collaboratorUsername string,
-	ctx context.Context) (*vaultWithCollaborators, error) {
+	ctx context.Context) (*VaultWithCollaborators, error) {
 	errRelations := queries.DeleteCollaboratorVaultRelation(ctx, db.DeleteCollaboratorVaultRelationParams{
 		VaultID:              vaultId,
 		UserID:               userId,
@@ -254,7 +256,7 @@ func removeCollaboratorFromVault(queries *db.Queries,
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, errRelations)
 	}
 
-	vaultWithCollaborators, err := getVaultWithCollaboratorsById(queries, userId, vaultId, ctx)
+	vaultWithCollaborators, err := GetVaultWithCollaboratorsById(queries, userId, vaultId, ctx)
 	if err != nil {
 		return nil, utils.ErrBadRequest
 	}
@@ -263,7 +265,7 @@ func removeCollaboratorFromVault(queries *db.Queries,
 }
 
 // // this is a one off for the vault page
-// func getvaultPage(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*vaultWithCollaborators, pgtype.Timestamp, error) {
+// func getvaultPage(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*VaultWithCollaborators, pgtype.Timestamp, error) {
 // 	vaultWithRelations, err := queries.GetvaultWithTagRelations(ctx, db.GetvaultWithTagRelationsParams{
 // 		ID:      id,
 // 		UserID:  userId,
@@ -279,7 +281,7 @@ func removeCollaboratorFromVault(queries *db.Queries,
 // 		return nil, pgtype.Timestamp{}, utils.ErrNotFound
 // 	}
 // 	var vault vaultUI
-// 	collaboratorsOfVault := []relatedCollaborator{}
+// 	collaboratorsOfVault := []RelatedCollaborator{}
 
 // 	allCollaborators, errCollaborators := queries.GetAllCollaboratorsDesc(ctx, db.GetAllCollaboratorsDescParams{
 // 		VaultID: vaultId,
@@ -304,7 +306,7 @@ func removeCollaboratorFromVault(queries *db.Queries,
 // 		createdAt = vaultWithRelation.CreatedAt
 
 // 		if vaultWithRelation.TagID.Valid && vaultWithRelation.TagName.Valid {
-// 			collaboratorsOfVault = append(collaboratorsOfVault, relatedCollaborator{ID: vaultWithRelation.TagID.String(), Name: vaultWithRelation.TagName.String})
+// 			collaboratorsOfVault = append(collaboratorsOfVault, RelatedCollaborator{ID: vaultWithRelation.TagID.String(), Name: vaultWithRelation.TagName.String})
 // 		}
 // 	}
 

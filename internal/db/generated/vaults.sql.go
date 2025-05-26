@@ -65,8 +65,8 @@ func (q *Queries) DeleteVault(ctx context.Context, arg DeleteVaultParams) error 
 }
 
 const getVaultWithCollaborators = `-- name: GetVaultWithCollaborators :many
-SELECT v.name, v.description, v.ID, v.locked, v.kind, v.created_at, v.updated_at, rel.role,
-		us.username AS collaborator_username, us.path_to_pfp AS collaborator_path_to_pfp
+SELECT v.name, v.description, v.ID, v.locked, v.kind, v.created_at, v.updated_at, 
+	rel.role AS collaborator_role, us.username AS collaborator_username, us.path_to_pfp AS collaborator_path_to_pfp
 FROM vaults v
 LEFT JOIN vault_user_relations rel 
 	ON v.id = rel.vault_id 
@@ -100,7 +100,7 @@ type GetVaultWithCollaboratorsRow struct {
 	Kind                  VaultKindType
 	CreatedAt             pgtype.Timestamp
 	UpdatedAt             pgtype.Timestamp
-	Role                  NullVaultRelRoleType
+	CollaboratorRole      NullVaultRelRoleType
 	CollaboratorUsername  pgtype.Text
 	CollaboratorPathToPfp pgtype.Text
 }
@@ -122,7 +122,7 @@ func (q *Queries) GetVaultWithCollaborators(ctx context.Context, arg GetVaultWit
 			&i.Kind,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Role,
+			&i.CollaboratorRole,
 			&i.CollaboratorUsername,
 			&i.CollaboratorPathToPfp,
 		); err != nil {
@@ -137,8 +137,8 @@ func (q *Queries) GetVaultWithCollaborators(ctx context.Context, arg GetVaultWit
 }
 
 const getVaultsWithCollaborators = `-- name: GetVaultsWithCollaborators :many
-SELECT v.name, v.description, v.ID, v.locked, v.kind, v.created_at, v.updated_at, rel.role,
-		us.username AS collaborator_username, us.path_to_pfp AS collaborator_path_to_pfp
+SELECT v.name, v.description, v.ID, v.locked, v.kind, v.created_at, v.updated_at, 
+	rel.role AS collaborator_role, us.username AS collaborator_username, us.path_to_pfp AS collaborator_path_to_pfp
 FROM vaults v
 JOIN vault_user_relations rel 
 	ON v.id = rel.vault_id 
@@ -167,7 +167,7 @@ type GetVaultsWithCollaboratorsRow struct {
 	Kind                  VaultKindType
 	CreatedAt             pgtype.Timestamp
 	UpdatedAt             pgtype.Timestamp
-	Role                  VaultRelRoleType
+	CollaboratorRole      VaultRelRoleType
 	CollaboratorUsername  string
 	CollaboratorPathToPfp string
 }
@@ -189,7 +189,7 @@ func (q *Queries) GetVaultsWithCollaborators(ctx context.Context, userID pgtype.
 			&i.Kind,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Role,
+			&i.CollaboratorRole,
 			&i.CollaboratorUsername,
 			&i.CollaboratorPathToPfp,
 		); err != nil {

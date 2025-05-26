@@ -123,19 +123,19 @@
         <div class="relative w-6 h-6">
           <img
             id="indicator-edit-vault-{{ .ID }}"
-            src="/images/bars.svg"
+            src="/static/images/bars.svg"
             class="w-full htmx-indicator absolute top-0 left-0"
             alt="loading"
           />
           <img
             id="indicator-delete-vault-{{ .ID }}"
-            src="/images/bars.svg"
+            src="/static/images/bars.svg"
             class="w-full htmx-indicator absolute top-0 left-0"
             alt="loading"
           />
           <img
             id="indicator-manage-collaborator-{{ .ID }}"
-            src="/images/bars.svg"
+            src="/static/images/bars.svg"
             class="w-full htmx-indicator absolute top-0 left-0"
             alt="loading"
           />
@@ -186,7 +186,7 @@
     <div
       class="text-xs group bg-blue-600/90 flex items-center gap-1 hover:bg-blue-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
     >
-      <span>{{ .Name }}</span>
+      <span>{{ .Name }} ({{ .Role }})</span>
 
       <form
         hx-delete="/vaults/{{ $.ID }}/collaborators/"

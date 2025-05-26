@@ -1,16 +1,13 @@
 package vault
 
-import (
-	"swagtask/internal/auth"
-)
+import "swagtask/internal/auth"
 
-// tasks.gohtml
 type vaultsPage struct {
-	Vaults []vaultWithCollaborators
+	Vaults []VaultWithCollaborators
 	Auth   auth.AuthenticatedPage
 }
 
-func newVaultsPage(vaults []vaultWithCollaborators,
+func NewVaultsPage(vaults []VaultWithCollaborators,
 	authorized bool, pathToPfp string, username string) vaultsPage {
 	return vaultsPage{
 		Vaults: vaults,

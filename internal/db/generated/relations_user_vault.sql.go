@@ -73,33 +73,3 @@ func (q *Queries) DeleteCollaboratorVaultRelation(ctx context.Context, arg Delet
 	_, err := q.db.Exec(ctx, deleteCollaboratorVaultRelation, arg.VaultID, arg.UserID, arg.CollaboratorUsername)
 	return err
 }
-
-const signUpAndCreateDefaultVault = `-- name: SignUpAndCreateDefaultVault :exec
-WITH
-  new_vault AS (
-    INSERT INTO vaults (name, description, kind)
-    VALUES ('Default', 'This is your default vault. Only you can access this.', 'default')
-    RETURNING id
-  ),
-  new_user AS (
-    INSERT INTO users (username, password_hash, default_vault_id)
-    VALUES ($1, $2, (SELECT id FROM new_vault))
-    RETURNING id
-  )
-    INSERT INTO vault_user_relations (vault_id, role, user_id)
-    VALUES (
-      (SELECT id FROM new_vault),
-      'owner',
-      (SELECT id FROM new_user)
-    )
-`
-
-type SignUpAndCreateDefaultVaultParams struct {
-	Username     string
-	PasswordHash string
-}
-
-func (q *Queries) SignUpAndCreateDefaultVault(ctx context.Context, arg SignUpAndCreateDefaultVaultParams) error {
-	_, err := q.db.Exec(ctx, signUpAndCreateDefaultVault, arg.Username, arg.PasswordHash)
-	return err
-}

@@ -27,7 +27,7 @@ func getTaskAvailableTags(allTags []db.Tag, relatedTags []relatedTag) []availabl
 	return availableTags
 }
 
-func filterParams(r *http.Request) TasksPageFilters {
+func FilterParams(r *http.Request) TasksPageFilters {
 	tag := strings.TrimSuffix(r.URL.Query().Get("tags"), "/")
 	task := strings.TrimSuffix(r.URL.Query().Get("taskName"), "/")
 	filters := newTasksPageFilters(tag, task)

@@ -6,6 +6,7 @@ import (
 	"swagtask/internal/utils"
 )
 
+// owner
 type kind string
 
 const (
@@ -23,7 +24,7 @@ type VaultUI struct {
 	Kind        kind
 }
 
-func newUIvault(vault db.Vault, author auth.Author) VaultUI {
+func NewUIvault(vault db.Vault, author auth.Author) VaultUI {
 
 	return VaultUI{
 		ID:          vault.ID.String(),
@@ -42,18 +43,19 @@ type collaboratorOption struct {
 	Name      string
 	PathToPfp string
 	Role      string
+	Active    bool
 }
 
 // type availableCollaborator = collaboratorOption
-type relatedCollaborator collaboratorOption
-type vaultWithCollaborators struct {
+type RelatedCollaborator collaboratorOption
+type VaultWithCollaborators struct {
 	VaultUI
-	RelatedCollaborators []relatedCollaborator
+	RelatedCollaborators []RelatedCollaborator
 	// AvailableCollaborators []availableCollaborator
 }
 
-func newVaultWithCollaborators(vault VaultUI, relatedCollaborators []relatedCollaborator) vaultWithCollaborators {
-	return vaultWithCollaborators{
+func newVaultWithCollaborators(vault VaultUI, relatedCollaborators []RelatedCollaborator) VaultWithCollaborators {
+	return VaultWithCollaborators{
 		VaultUI:              vault,
 		RelatedCollaborators: relatedCollaborators,
 	}

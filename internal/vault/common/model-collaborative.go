@@ -4,29 +4,31 @@ import (
 	"swagtask/internal/auth"
 	"swagtask/internal/tag"
 	"swagtask/internal/task"
-	vault "swagtask/internal/vault/owner-dashboard"
 )
 
-type userVaultUI struct {
+// collaborative
+
+type CollaboratorUI = collaboratorOption
+type UserVaultUI struct {
 	PathToPfp string
 	Username  string
 	Role      string
 }
 
 type vaultTasksPage struct {
-	User          userVaultUI
-	Collaborators []collaboratorUI
+	User          UserVaultUI
+	Collaborators []CollaboratorUI
 
 	task.TasksPage
 }
 
-func newVaultTasksPage(
+func NewVaultTasksPage(
 	tasks []task.TaskWithTags,
 	filters task.TasksPageFilters,
 	authorized bool,
 	pathToPfp string,
-	User userVaultUI,
-	collaborators []collaboratorUI,
+	User UserVaultUI,
+	collaborators []CollaboratorUI,
 	username string) vaultTasksPage {
 
 	return vaultTasksPage{
@@ -48,16 +50,16 @@ func newVaultTasksPage(
 
 type vaultTagsPage struct {
 	tag.TagsPage
-	User          userVaultUI
-	Collaborators []collaboratorUI
+	User          UserVaultUI
+	Collaborators []CollaboratorUI
 }
 
 func newVaultTagsPage(
 	tags []tag.TagWithTasks,
 	authorized bool,
 	pathToPfp string,
-	User userVaultUI,
-	collaborators []collaboratorUI,
+	User UserVaultUI,
+	collaborators []CollaboratorUI,
 	username string) vaultTagsPage {
 
 	return vaultTagsPage{
@@ -77,19 +79,19 @@ func newVaultTagsPage(
 }
 
 type vaultHomePage struct {
-	User          userVaultUI
-	Vault         vault.VaultUI
-	Collaborators []collaboratorUI
+	User          UserVaultUI
+	Vault         VaultUI
+	Collaborators []CollaboratorUI
 	Auth          auth.AuthenticatedPage
 }
 
-func newVaultPage(
+func NewVaultPage(
 	authorized bool,
-	User userVaultUI,
+	User UserVaultUI,
 	pathToPfp string,
 	username string,
-	vault vault.VaultUI,
-	collaborators []collaboratorUI,
+	vault VaultUI,
+	collaborators []CollaboratorUI,
 ) vaultHomePage {
 
 	return vaultHomePage{

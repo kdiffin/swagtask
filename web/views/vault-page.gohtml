@@ -13,7 +13,7 @@
             >,
             <span class="text-blue-400">{{.User.Username}}</span>
           </h1>
-          <div class="px-4 py-2">
+          <div class="py-2">
             <p class="">
               You are a <span class="text-purple-400">{{.User.Role}}</span>
             </p>
@@ -21,7 +21,7 @@
               This vault is owned by:
               <div class="flex items-center gap-1">
                 <img
-                  src="https://ih1.redbubble.net/image.1654036011.2892/flat,750x,075,f-pad,750x1000,f8f8f8.jpg"
+                  src="{{.Vault.Author.PathToPfp}}"
                   alt=""
                   class="w-6 h-6 rounded-full"
                 />
@@ -32,6 +32,135 @@
           </div>
         </div>
         <img src="{{.User.PathToPfp}}" alt="" class="w-14 h-14 rounded-full" />
+      </div>
+
+      <!-- Cards Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+        <!-- Card 1: Edit Tasks -->
+        <div class="bg-zinc-800 p-6 rounded-sm">
+          <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-list-checks"
+            >
+              <path d="m3 17 2 2 4-4" />
+              <path d="m3 7 2 2 4-4" />
+              <path d="M13 6h8" />
+              <path d="M13 12h8" />
+              <path d="M13 18h8" />
+            </svg>
+            grug todo
+          </h3>
+          <p class="text-gray-400 mb-6">
+            grug like managing tasks and tags, grug can do it with a lot of
+            people thanks to websockets and in memory pub/sub, <br />
+            grug happy
+          </p>
+          <div class="flex flex-col gap-4">
+            <a
+              href="tasks"
+              class="w-full text-center inline-block bg-zinc-900 text-white font-semibold py-3 px-4 rounded-sm"
+            >
+              Manage Tasks
+            </a>
+            <a
+              href="tags"
+              class="w-full text-center inline-block bg-zinc-900 text-white font-semibold py-3 px-4 rounded-sm"
+            >
+              Organize Tags
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-zinc-800 p-6 rounded-sm shadow-xl">
+          <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-users"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            grug collaborators (friends)
+          </h3>
+          <p class="text-gray-400 mb-4">
+            all virtual dom and nextjs lovers are banned
+          </p>
+          <div class="space-y-3 max-h-48 overflow-y-auto pr-2">
+            {{ if .Collaborators }}
+            {{ range.Collaborators }}
+            <div class="flex items-center gap-3 p-3 bg-zinc-900 rounded-sm">
+              <img
+                src="{{.PathToPfp}}"
+                alt="{{.Name}}'s pfp"
+                class="w-10 h-10 rounded-full object-cover border-2 border-zinc-600"
+              />
+              <div>
+                <p class="font-semibold text-gray-100">{{.Name}}</p>
+                <p class="text-sm text-purple-300">{{.Role}}</p>
+              </div>
+            </div>
+            {{ end }}
+            {{ else }}
+
+            <p class="text-gray-500 italic py-2 text-center">
+              No friends... here are some examples.
+            </p>
+
+            <div class="flex items-center gap-3 p-3 bg-zinc-900 rounded-sm">
+              <img
+                src="/static/images/stupid-wojak.jpg"
+                alt="Example User PFP"
+                class="w-10 h-10 rounded-full object-cover border-2 border-zinc-600"
+              />
+              <div>
+                <p class="font-semibold text-gray-100">grug brained dev</p>
+                <p class="text-sm text-pink-400">grug</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-zinc-900 rounded-sm">
+              <img
+                src="/static/images/cerealguy.jpg"
+                alt="Example User PFP"
+                class="w-10 h-10 rounded-full object-cover border-2 border-zinc-600"
+              />
+              <div>
+                <p class="font-semibold text-gray-100">cereal guy</p>
+                <p class="text-sm text-pink-400">goat</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-zinc-900 rounded-sm">
+              <img
+                src="/static/images/chudjak.jpg"
+                alt="Example User PFP"
+                class="w-10 h-10 rounded-full object-cover border-2 border-zinc-600"
+              />
+              <div>
+                <p class="font-semibold text-gray-100">chud</p>
+                <p class="text-sm text-pink-400">billions</p>
+              </div>
+            </div>
+            {{ end }}
+          </div>
+        </div>
       </div>
     </main>
   </body>

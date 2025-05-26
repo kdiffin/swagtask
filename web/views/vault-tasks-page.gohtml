@@ -1,0 +1,343 @@
+{{ block "collaborative-tasks-page" . }}
+<html class="bg-zinc-900">
+  {{ template "head" "Collaborative Tasks" }}
+
+  <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
+    {{ template "navbar" .Auth }}
+
+    <main class="container mx-auto px-4 py-4 max-w-6xl space-y-6">
+      <!-- Collaborative Header -->
+      <div class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700 p-6">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+              <i class="fas fa-users text-blue-400"></i>
+              Collaborative Tasks
+            </h1>
+            <p class="text-zinc-400 mt-2">Working together with your team</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <img
+              src="{{.User.PathToPfp}}"
+              alt=""
+              class="w-12 h-12 rounded-full border-2 border-zinc-600"
+            />
+            <div>
+              <p class="text-white font-medium">{{.User.Username}}</p>
+              <p class="text-sm text-purple-400">{{.User.Role}}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Collaborators -->
+        <div class="border-t border-zinc-700 pt-4">
+          <h3 class="text-sm font-medium text-zinc-300 mb-3 flex items-center">
+            <i class="fas fa-user-friends mr-2"></i>
+            Collaborators
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            {{ range.Collaborators }}
+            <div
+              class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-sm border border-zinc-700"
+            >
+              <img
+                src="{{.PathToPfp}}"
+                alt="{{.Name}}"
+                class="w-6 h-6 rounded-full"
+              />
+              <span class="text-sm text-white">{{.Name}}</span>
+              <span
+                class="text-xs bg-purple-400/20 rounded-full px-2 text-purple-300"
+                >{{.Role}}</span
+              >
+              {{if .Active}}
+              <div class="group relative">
+                <div class="bg-green-600 rounded-full w-3 h-3"></div>
+                <div
+                  class="group-hover:opacity-100 p-2 rounded-sm opacity-0 min-w-max absolute text-sm font-semibold bg-zinc-900/80 top-4 left-0"
+                >
+                  online
+                </div>
+              </div>
+              {{else}}
+              <div class="group relative">
+                <div class="bg-red-600 rounded-full w-3 h-3"></div>
+                <div
+                  class="group-hover:opacity-100 p-2 rounded-sm opacity-0 min-w-max absolute text-sm font-semibold bg-zinc-900/80 top-4 left-0"
+                >
+                  not-online
+                </div>
+              </div>
+              {{ end }}
+            </div>
+            {{ end }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Creation Forms -->
+      {{ template "task-form-card" . }}
+
+      <!-- Collaborative Tasks Container -->
+      {{ template "collaborative-tasks-container" .Tasks }}
+
+      {{ template "footer" . }}
+    </main>
+  </body>
+</html>
+{{ end }}
+
+{{ block "collaborative-filters-section" . }}
+<div class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700 p-4">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-sm font-medium text-zinc-300 flex items-center">
+      <i class="fas fa-filter text-blue-400 mr-2"></i>
+      Filters & Search
+    </h3>
+    <button
+      hx-get="/tasks/collaborative"
+      hx-target="#collaborative-tasks-container"
+      hx-swap="outerHTML"
+      class="text-xs text-zinc-400 hover:text-white transition-colors"
+    >
+      <i class="fas fa-refresh mr-1"></i>Reset
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Search -->
+    <div class="relative">
+      <span
+        class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+      >
+        <i class="fas fa-search text-xs"></i>
+      </span>
+      <input
+        type="text"
+        name="search"
+        value="{{.SearchQuery}}"
+        placeholder="Search tasks..."
+        hx-get="/tasks/collaborative"
+        hx-target="#collaborative-tasks-container"
+        hx-trigger="keyup changed delay:300ms"
+        hx-include="[name='tag_filter'], [name='author_filter'], [name='status_filter']"
+        class="w-full pl-10 pr-3 py-2 bg-zinc-900 border border-zinc-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm"
+      />
+    </div>
+
+    <!-- Tag Filter -->
+    <select
+      name="tag_filter"
+      hx-get="/tasks/collaborative"
+      hx-target="#collaborative-tasks-container"
+      hx-trigger="change"
+      hx-include="[name='search'], [name='author_filter'], [name='status_filter']"
+      class="bg-zinc-900 border border-zinc-700 text-white px-3 py-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-sm"
+    >
+      <option value="">All Tags</option>
+      <option value="{{.ActiveTag}}" {{if .ActiveTag}}selected{{end}}>
+        {{.ActiveTag}}
+      </option>
+    </select>
+  </div>
+
+  <!-- Additional Filters Row -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+    <!-- Author Filter -->
+    <select
+      name="author_filter"
+      hx-get="/tasks/collaborative"
+      hx-target="#collaborative-tasks-container"
+      hx-trigger="change"
+      hx-include="[name='search'], [name='tag_filter'], [name='status_filter']"
+      class="bg-zinc-900 border border-zinc-700 text-white px-3 py-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-green-500/50 text-sm"
+    >
+      <option value="">All Authors</option>
+    </select>
+
+    <!-- Status Filter -->
+    <select
+      name="status_filter"
+      hx-get="/tasks/collaborative"
+      hx-target="#collaborative-tasks-container"
+      hx-trigger="change"
+      hx-include="[name='search'], [name='tag_filter'], [name='author_filter']"
+      class="bg-zinc-900 border border-zinc-700 text-white px-3 py-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 text-sm"
+    >
+      <option value="">All Status</option>
+      <option value="completed">Completed</option>
+      <option value="incomplete">In Progress</option>
+    </select>
+  </div>
+</div>
+{{ end }}
+
+{{ block "collaborative-tasks-container" . }}
+<div
+  id="collaborative-tasks-container"
+  class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700"
+>
+  <div class="p-4 border-b border-zinc-700">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center">
+        <i class="fas fa-list-check text-blue-500 mr-2"></i>
+        <h2 class="text-lg font-semibold text-white">Team Tasks</h2>
+        <span class="ml-3 text-sm text-zinc-400">({{len .}} total)</span>
+      </div>
+
+      <div id="tasks-container-error"></div>
+    </div>
+
+    <!-- Tasks Grid/List -->
+    <div id="collaborative-tasks" class="space-y-4">
+      {{ if . }}
+      {{ range . }}
+      {{ template "collaborative-task" . }}
+      {{ end }}
+      {{ else }}
+      <div class="text-center py-12">
+        <i class="fas fa-tasks text-4xl text-zinc-600 mb-4"></i>
+        <p class="text-zinc-400 text-lg">No tasks found</p>
+        <p class="text-zinc-500 text-sm">
+          Create a new task or adjust your filters
+        </p>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+</div>
+{{ end }}
+
+{{ block "collaborative-task" . }}
+<div
+  id="task-{{ .ID }}"
+  class="bg-zinc-900/80 space-y-3 relative border border-zinc-700/50 rounded-sm shadow-md p-5 transition-all hover:shadow-lg hover:border-zinc-600/50"
+>
+  <!-- Enhanced Task Header with Collaboration Info -->
+  <div class="flex justify-between items-start">
+    <div class="flex-1">
+      <div class="flex items-center gap-3 mb-2">
+        <h3 class="text-xl font-semibold text-white">{{ .Name }}</h3>
+        {{ if .Completed }}
+        <span
+          class="text-xs bg-green-600 text-white px-2 py-1 rounded-full font-medium"
+        >
+          <i class="fas fa-check mr-1"></i>Complete
+        </span>
+        {{ else }}
+        <span
+          class="text-xs bg-yellow-600 text-white px-2 py-1 rounded-full font-medium"
+        >
+          <i class="fas fa-clock mr-1"></i>In Progress
+        </span>
+        {{ end }}
+      </div>
+      <p class="text-sm text-zinc-400 mt-1.5 mb-3">{{ .Idea }}</p>
+
+      <!-- Author Info with Enhanced Styling -->
+      <div class="flex items-center gap-2 mb-3">
+        <img
+          src="{{.Author.PathToPfp}}"
+          alt="{{.Author.Username}}"
+          class="w-7 h-7 rounded-full object-cover border-2 border-zinc-600"
+        />
+        <span
+          class="text-sm text-zinc-300 font-medium"
+          >{{.Author.Username}}</span
+        >
+        <span class="text-xs text-zinc-500">•</span>
+        <span class="text-xs text-zinc-500">Task #{{.ID}}</span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-2">
+      <div class="relative w-6 h-6">
+        <img
+          id="completion-indicator-task-{{ .ID }}"
+          src="/static/images/bars.svg"
+          class="w-full htmx-indicator absolute top-0 left-0"
+          alt="loading"
+        />
+        <img
+          id="delete-indicator-task-{{ .ID }}"
+          src="/static/images/bars.svg"
+          class="w-full htmx-indicator absolute top-0 left-0"
+          alt="loading"
+        />
+      </div>
+
+      {{ if .Completed }}
+      <button
+        hx-post="/tasks/{{ .ID }}/toggle-complete/"
+        hx-swap="outerHTML swap:200ms transition:true"
+        hx-target="#task-{{ .ID }}"
+        hx-indicator="#completion-indicator-task-{{ .ID }}"
+        class="text-xs bg-green-600 px-3 py-1.5 hover:bg-green-500 text-white rounded-sm transition-colors font-medium"
+      >
+        <i class="fas fa-check text-xs mr-1"></i> Complete
+      </button>
+      {{ else }}
+      <button
+        hx-post="/tasks/{{ .ID }}/toggle-complete/"
+        hx-swap="outerHTML swap:200ms transition:true"
+        hx-target="#task-{{ .ID }}"
+        hx-indicator="#completion-indicator-task-{{ .ID }}"
+        class="text-xs bg-zinc-700 px-3 py-1.5 hover:bg-zinc-600 text-white rounded-sm transition-colors font-medium"
+      >
+        <i class="fas fa-times text-xs mr-1"></i> Mark Complete
+      </button>
+      {{ end }}
+
+      <button
+        hx-delete="/tasks/{{ .ID }}/"
+        hx-confirm="Are you sure you want to delete this task?"
+        hx-swap="outerHTML swap:200ms transition:true"
+        hx-indicator="#delete-indicator-task-{{ .ID }}"
+        hx-target="#task-{{ .ID }}"
+        class="text-red-400 hover:text-red-300 p-2 rounded-sm hover:bg-zinc-800 transition-colors"
+      >
+        <i class="fas fa-trash text-sm"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tags Section -->
+  {{ template "task-tags" . }}
+
+  <!-- Collaboration Actions -->
+  <div
+    class="flex items-center justify-between pt-3 border-t border-zinc-700/50"
+  >
+    <div class="flex items-center gap-3">
+      <button
+        hx-get="/tasks/{{ .ID }}/comments"
+        hx-target="#task-{{ .ID }}-comments"
+        hx-swap="innerHTML"
+        class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1"
+      >
+        <i class="fas fa-comment text-xs"></i>
+        <span>Comments</span>
+      </button>
+      <button
+        hx-get="/tasks/{{ .ID }}/activity"
+        hx-target="#task-{{ .ID }}-activity"
+        hx-swap="innerHTML"
+        class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1"
+      >
+        <i class="fas fa-history text-xs"></i>
+        <span>Activity</span>
+      </button>
+    </div>
+
+    <div class="text-xs text-zinc-500">
+      <i class="fas fa-clock text-[10px] mr-1"></i>
+      <span>Updated recently</span>
+    </div>
+  </div>
+
+  <!-- Expandable Comments/Activity Section -->
+  <div id="task-{{ .ID }}-comments" class="hidden"></div>
+  <div id="task-{{ .ID }}-activity" class="hidden"></div>
+</div>
+{{ end }}
