@@ -1,0 +1,91 @@
+<!-- Collaborative Header -->
+<div class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700 p-6">
+  <div class="flex justify-between items-start mb-4">
+    <div>
+      <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+        <i class="fas fa-users text-blue-400"></i>
+        {{.Vault.Name}}
+      </h1>
+      <p class="text-zinc-400 mt-2">{{.Vault.Description}}</p>
+      <!-- Adding the new fields -->
+      <div class="text-sm text-zinc-500 mt-2 flex items-center gap-4">
+        <span
+          >Kind:
+          <span class="text-purple-400 font-medium">{{.Vault.Kind}}</span>
+        </span>
+        <span
+          >Created:
+          <span class="text-blue-400 font-medium">{{.Vault.CreatedAt}}</span>
+        </span>
+        <span>
+          Status: {{if .Vault.Locked}}
+          <span class="text-red-400 font-medium">Locked</span>
+          {{else}}
+          <span class="text-green-400 font-medium">Unlocked</span>
+          {{ end }}
+        </span>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <img
+        src="{{.User.PathToPfp}}"
+        alt=""
+        class="w-12 h-12 rounded-full border-2 border-zinc-600"
+      />
+      <div>
+        <p class="text-white font-medium">{{.User.Username}}</p>
+        <p class="text-sm text-purple-400">{{.User.Role}}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Collaborators -->
+  <div class="border-t border-zinc-700 pt-4">
+    <h3 class="text-sm font-medium text-zinc-300 mb-3 flex items-center">
+      <i class="fas fa-user-friends mr-2"></i>
+      Collaborators
+    </h3>
+    <div class="flex flex-wrap gap-2">
+      {{ range.Collaborators }}
+      <div
+        class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-sm border border-zinc-700"
+      >
+        <img
+          src="{{.PathToPfp}}"
+          alt="{{.Name}}"
+          class="w-6 h-6 rounded-full"
+        />
+        <span class="text-sm text-white">{{.Name}}</span>
+        <span class="text-xs bg-purple-400/20 rounded-full px-2 text-purple-300"
+          >{{.Role}}</span
+        >
+        {{if .Active}}
+        <div class="group relative">
+          <div class="bg-green-600 rounded-full w-3 h-3"></div>
+          <div
+            class="group-hover:opacity-100 p-2 rounded-sm opacity-0 min-w-max absolute text-sm font-semibold bg-zinc-900/80 top-4 left-0"
+          >
+            online
+          </div>
+        </div>
+        {{else}}
+        <div class="group relative">
+          <div class="bg-red-600 rounded-full w-3 h-3"></div>
+          <div
+            class="group-hover:opacity-100 p-2 rounded-sm opacity-0 min-w-max absolute text-sm font-semibold bg-zinc-900/80 top-4 left-0"
+          >
+            not-online
+          </div>
+        </div>
+        {{ end }}
+      </div>
+      {{ end }}
+    </div>
+  </div>
+</div>
+
+<!-- Task Creation Forms -->
+{{ template "vault-task-form-card" . }}
+
+<!-- Collaborative Tasks Container -->
+{{ template "collaborative-tasks-container" .Tasks }}

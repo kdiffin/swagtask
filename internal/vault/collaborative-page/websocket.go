@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,27 +10,27 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-type HubManager struct {
-	hubs map[string]*Hub
-	mu   sync.RWMutex
-}
+// type HubManager struct {
+// 	hubs map[string]*Hub
+// 	mu   sync.RWMutex
+// }
 
-var vaultHubManager = &HubManager{
-	hubs: make(map[string]*Hub),
-}
+// var vaultHubManager = &HubManager{
+// 	hubs: make(map[string]*Hub),
+// }
 
-func (hm *HubManager) GetOrCreateHub(vaultID string) *Hub {
-	hm.mu.Lock()
-	defer hm.mu.Unlock()
+// func (hm *HubManager) GetOrCreateHub(vaultID string) *Hub {
+// 	hm.mu.Lock()
+// 	defer hm.mu.Unlock()
 
-	hub, exists := hm.hubs[vaultID]
-	if !exists {
-		hub = newHub()
-		hm.hubs[vaultID] = hub
-		go hub.run() // start the goroutine
-	}
-	return hub
-}
+// 	hub, exists := hm.hubs[vaultID]
+// 	if !exists {
+// 		hub = NewHub()
+// 		hm.hubs[vaultID] = hub
+// 		go hub.run() // start the goroutine
+// 	}
+// 	return hub
+// }
 
 // === Hub struct ===
 type Hub struct {
@@ -40,7 +41,7 @@ type Hub struct {
 	mu         sync.Mutex
 }
 
-func newHub() *Hub {
+func NewHub() *Hub {
 	return &Hub{
 		clients:    make(map[*websocket.Conn]bool),
 		broadcast:  make(chan string),
@@ -49,7 +50,7 @@ func newHub() *Hub {
 	}
 }
 
-func (h *Hub) run() {
+func (h *Hub) Run() {
 	for {
 		select {
 		case conn := <-h.register:
@@ -80,20 +81,34 @@ func (h *Hub) run() {
 
 // === WebSocket connection handler ===
 func WsHandler(hub *Hub) func(*websocket.Conn) {
-	return func(ws *websocket.Conn) {
-		hub.register <- ws
+	return func(wsConn *websocket.Conn) {
+		hub.register <- wsConn
 		defer func() {
-			hub.unregister <- ws
+			hub.unregister <- wsConn
 		}()
 
 		for {
 			var msg string
-			err := websocket.Message.Receive(ws, &msg)
+			err := websocket.Message.Receive(wsConn, &msg)
 			if err != nil {
 				log.Println("Receive error:", err)
 				break
 			}
-			hub.broadcast <- msg
+
+			var jsonMap map[string]interface{}
+			json.Unmarshal([]byte(msg), &jsonMap)
+
+			html := fmt.Sprintf(`
+			<div id="messages" 
+			  hx-swap-oob="afterbegin"
+			  >	
+			  <div class="bg-red-900 text-4xl">
+			  %v
+
+			  </div>
+			</div>
+			`, jsonMap["message"])
+			hub.broadcast <- html
 		}
 	}
 }
@@ -110,15 +125,4 @@ func DebugHandler(hub *Hub) http.HandlerFunc {
 			fmt.Fprintf(w, "- Client: %p\n", conn)
 		}
 	}
-}
-
-func ws() {
-	hub := newHub()
-	go hub.run()
-
-	http.Handle("/ws", websocket.Handler(WsHandler(hub)))
-	http.HandleFunc("/debug", DebugHandler(hub)) // <<== here
-
-	fmt.Println("🔥 Running on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
 }

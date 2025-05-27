@@ -7,6 +7,8 @@ import (
 	"swagtask/internal/template"
 	collaborative_vault "swagtask/internal/vault/collaborative-page"
 	owner_dashboard "swagtask/internal/vault/owner-dashboard"
+
+	"golang.org/x/net/websocket"
 )
 
 func SetupVaultRoutes(mux *http.ServeMux, queries *db.Queries, templates *template.Template) {
@@ -41,8 +43,11 @@ func SetupVaultRoutes(mux *http.ServeMux, queries *db.Queries, templates *templa
 	mux.Handle("GET /vaults/{vaultId}/tasks/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		collaborative_vault.HandlerGetTasks(w, r, queries, templates)
 	}))))
-	// mux.Handle("GET /vaults/{vaultId}/tags/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// 	// collaborative_vault.HandlerGetTags(w, r, queries, templates)
-	// }))))
-	// mux.Handle("/ws/", websocket.Handler(handlers.WsHandler()))
+
+	hub := collaborative_vault.NewHub()
+	go hub.Run()
+
+	mux.Handle("/ws", websocket.Handler(collaborative_vault.WsHandler(hub)))
+	mux.HandleFunc("/debug", collaborative_vault.DebugHandler(hub)) // <<== here
+
 }
