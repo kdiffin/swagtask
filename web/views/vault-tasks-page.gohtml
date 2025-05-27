@@ -6,6 +6,30 @@
     {{ template "navbar" .Auth }}
 
     <main class="container mx-auto px-4 py-4 max-w-6xl space-y-6">
+      <div
+        class="elastic container py-10 border"
+        hx-ext="ws"
+        ws-connect="/echo"
+      >
+        <form ws-send="">
+          <h3 class="text-2xl text-purple-500">Send a Message</h3>
+          <div>
+            <input
+              type="text"
+              name="message"
+              class="border p-2"
+              style="width: 500px"
+              value="This Is The Message"
+            />
+            <input type="submit" value="Send" class="btn primary" />
+          </div>
+        </form>
+
+        <br />
+        <h3 class="text-2xl text-purple-500">Recieve a Message</h3>
+        <div id="idMessage"></div>
+      </div>
+
       <!-- Collaborative Header -->
       <div class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700 p-6">
         <div class="flex justify-between items-start mb-4">
@@ -76,7 +100,7 @@
       </div>
 
       <!-- Task Creation Forms -->
-      {{ template "task-form-card" . }}
+      {{ template "vault-task-form-card" . }}
 
       <!-- Collaborative Tasks Container -->
       {{ template "collaborative-tasks-container" .Tasks }}
@@ -85,91 +109,6 @@
     </main>
   </body>
 </html>
-{{ end }}
-
-{{ block "collaborative-filters-section" . }}
-<div class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700 p-4">
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="text-sm font-medium text-zinc-300 flex items-center">
-      <i class="fas fa-filter text-blue-400 mr-2"></i>
-      Filters & Search
-    </h3>
-    <button
-      hx-get="/tasks/collaborative"
-      hx-target="#collaborative-tasks-container"
-      hx-swap="outerHTML"
-      class="text-xs text-zinc-400 hover:text-white transition-colors"
-    >
-      <i class="fas fa-refresh mr-1"></i>Reset
-    </button>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <!-- Search -->
-    <div class="relative">
-      <span
-        class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
-      >
-        <i class="fas fa-search text-xs"></i>
-      </span>
-      <input
-        type="text"
-        name="search"
-        value="{{.SearchQuery}}"
-        placeholder="Search tasks..."
-        hx-get="/tasks/collaborative"
-        hx-target="#collaborative-tasks-container"
-        hx-trigger="keyup changed delay:300ms"
-        hx-include="[name='tag_filter'], [name='author_filter'], [name='status_filter']"
-        class="w-full pl-10 pr-3 py-2 bg-zinc-900 border border-zinc-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm"
-      />
-    </div>
-
-    <!-- Tag Filter -->
-    <select
-      name="tag_filter"
-      hx-get="/tasks/collaborative"
-      hx-target="#collaborative-tasks-container"
-      hx-trigger="change"
-      hx-include="[name='search'], [name='author_filter'], [name='status_filter']"
-      class="bg-zinc-900 border border-zinc-700 text-white px-3 py-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-sm"
-    >
-      <option value="">All Tags</option>
-      <option value="{{.ActiveTag}}" {{if .ActiveTag}}selected{{end}}>
-        {{.ActiveTag}}
-      </option>
-    </select>
-  </div>
-
-  <!-- Additional Filters Row -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-    <!-- Author Filter -->
-    <select
-      name="author_filter"
-      hx-get="/tasks/collaborative"
-      hx-target="#collaborative-tasks-container"
-      hx-trigger="change"
-      hx-include="[name='search'], [name='tag_filter'], [name='status_filter']"
-      class="bg-zinc-900 border border-zinc-700 text-white px-3 py-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-green-500/50 text-sm"
-    >
-      <option value="">All Authors</option>
-    </select>
-
-    <!-- Status Filter -->
-    <select
-      name="status_filter"
-      hx-get="/tasks/collaborative"
-      hx-target="#collaborative-tasks-container"
-      hx-trigger="change"
-      hx-include="[name='search'], [name='tag_filter'], [name='author_filter']"
-      class="bg-zinc-900 border border-zinc-700 text-white px-3 py-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 text-sm"
-    >
-      <option value="">All Status</option>
-      <option value="completed">Completed</option>
-      <option value="incomplete">In Progress</option>
-    </select>
-  </div>
-</div>
 {{ end }}
 
 {{ block "collaborative-tasks-container" . }}

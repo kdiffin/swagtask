@@ -17,6 +17,7 @@ type UserVaultUI struct {
 
 type vaultTasksPage struct {
 	User          UserVaultUI
+	Vault         VaultUI
 	Collaborators []CollaboratorUI
 
 	task.TasksPage
@@ -27,6 +28,7 @@ func NewVaultTasksPage(
 	filters task.TasksPageFilters,
 	authorized bool,
 	pathToPfp string,
+	vault VaultUI,
 	User UserVaultUI,
 	collaborators []CollaboratorUI,
 	username string) vaultTasksPage {
@@ -43,6 +45,7 @@ func NewVaultTasksPage(
 				},
 			},
 		},
+		Vault:         vault,
 		User:          User,
 		Collaborators: collaborators,
 	}

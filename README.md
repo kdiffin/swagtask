@@ -23,7 +23,7 @@ chat gippity made most of my frontends styles btw
   - [ ] implement filtering by completed (cba)
 
 - [x] read the other md files rq
-- [x] refactor v2
+- [x] refactor v1.5
 
   - [x] add net/http and remove echo
   - [x] add decent logging on errors
@@ -46,7 +46,7 @@ chat gippity made most of my frontends styles btw
   - [x] change the hx-redirects to just forms with actions
   - [ ] block csrf, add session expirations, add jwt
 
-- [x] refactor v3 (vaults)
+- [x] refactor v2 (vaults)
 
   - **notes**
   - note to self: every tag action based on its vault should be validated with the user id
@@ -77,7 +77,7 @@ chat gippity made most of my frontends styles btw
   - [x] [golang standards project layout](https://github.com/golang-standards/project-layout) conform to this structure ![example](./mds/code-structure.md)
   - [x] ALWAYS Update the updated_now fields so its actually true
   - [x] order everything by created_at
-  - [x] add RBAC to the tag CUD operations as per ![example](./mds/flow.jpeg)
+  - [x] add ROLE CHECKING to the tag CUD operations as per ![example](./mds/flow.jpeg)
   - [x] !!! add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
 
   - [x] add vaults page
@@ -94,9 +94,9 @@ chat gippity made most of my frontends styles btw
   - **I'm gonna do this boring shit later, going a bit forward so i can do websockets**
   - [ ] Error handling, SQL, better authz
 
-    - [ ] ADD RBAC AND RLS INSTEAD OF THIS BS EXISTS SHIT!
+    - [ ] ADD ACTUAL RBAC AND RLS INSTEAD OF THIS BS EXISTS SHIT!
     - [ ] take a look at whole codebase sql and search for security issues before proceeding
-    - [ ] add some serverside error handling that gives back descriptive errors instead of sql (its secure but make it responsive to the user rn)
+    - [ ] add some serverside error handling that gives back descriptive errors instead of sql (its secured rn but make it responsive to the user)
     - [ ] add alphabetical sorting to everything after created_at so its uniform!
 
   - [ ] add decent error logging
@@ -109,7 +109,10 @@ chat gippity made most of my frontends styles btw
 
   - [x] finish vault introduction page
   - [x] add "upload profile picture" to sign up
-  - [ ] make multi user task and tags stuff
+  - [ ] learn about websocket pub/sub architecture
+  - [ ] create my own http verb system in websockets
+  - [ ] create the "endpoints" in websockets
+  - [ ] make the http routing
 
 ### maybe later if i revisit
 

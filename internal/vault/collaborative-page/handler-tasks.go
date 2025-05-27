@@ -47,7 +47,9 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request, queries *db.Queries
 		tasks,
 		filters,
 		true,
-		user.PathToPfp, common.UserVaultUI{
+		user.PathToPfp,
+		vaultWithCollaborators.VaultUI,
+		common.UserVaultUI{
 			PathToPfp: user.PathToPfp,
 			Username:  user.Username,
 			Role:      role,
