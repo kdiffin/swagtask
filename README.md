@@ -92,6 +92,8 @@ chat gippity made most of my frontends styles btw
 - [ ] Best practices refactor
 
   - **I'm gonna do this boring shit later, going a bit forward so i can do websockets**
+  - [ ] fix users being able to see other peoples individual tags without auth
+  - [ ] test for security issues
   - [ ] Error handling, SQL, better authz
 
     - [ ] ADD ACTUAL RBAC AND RLS INSTEAD OF THIS BS EXISTS SHIT!
@@ -109,13 +111,21 @@ chat gippity made most of my frontends styles btw
 
   - [x] finish vault introduction page
   - [x] add "upload profile picture" to sign up
-  - [ ] learn about websocket pub/sub architecture
+  - [x] learn about websocket pub/sub architecture
+  - [x] make the debug page show which clients are connected (names)
+  - [x] make the pub/sub channel(vault) based
+  - [x] authorize the websocket connections
   - [ ] create my own http verb system in websockets
+
+    - [ ] make task stuff work
+    - [ ] make the tag stuff work
+
+  - [ ] add error logging to RBAC issues
   - [ ] create the "endpoints" in websockets
-  - [ ] make the http routing
 
 ### maybe later if i revisit
 
+- [ ] add a home page with "current active users"
 - [ ] add JSON endpoint for mobile app, openapi specs
 
   - [ ] add some documentation to the json returning api

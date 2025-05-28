@@ -149,8 +149,13 @@ func getTaskNavigationButtons(ctx context.Context, queries *db.Queries, createdA
 }
 
 // ---- CREATE ----
-func createTask(queries *db.Queries, name, idea string, filters TasksPageFilters,
+func CreateTask(queries *db.Queries, name, idea string,
 	userId, vaultId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
+	fmt.Println(userId.String())
+	fmt.Println(vaultId.String())
+	fmt.Println(name)
+	fmt.Println(idea)
+
 	id, errCreate := queries.CreateTask(ctx, db.CreateTaskParams{
 		Name:    name,
 		Idea:    idea,
@@ -158,11 +163,9 @@ func createTask(queries *db.Queries, name, idea string, filters TasksPageFilters
 		VaultID: vaultId,
 	})
 	if errCreate != nil {
-		if errors.Is(errCreate, pgx.ErrNoRows) {
-			return nil, utils.ErrNotFound
-		}
 		return nil, fmt.Errorf("%w: %v", utils.ErrUnprocessable, errCreate)
 	}
+	fmt.Println(id)
 
 	taskWithTags, errGetTask := getTaskWithTagsById(queries, userId, vaultId, id, ctx)
 	if errGetTask != nil {

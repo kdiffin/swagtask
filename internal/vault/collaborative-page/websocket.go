@@ -5,32 +5,33 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	db "swagtask/internal/db/generated"
+	"swagtask/internal/middleware"
+	"swagtask/internal/task"
+	"swagtask/internal/template"
+	"swagtask/internal/utils"
 	"sync"
 
 	"golang.org/x/net/websocket"
 )
 
-// type HubManager struct {
-// 	hubs map[string]*Hub
-// 	mu   sync.RWMutex
-// }
+type HubManager struct {
+	hubs map[string]*Hub
+	mu   sync.RWMutex
+}
 
-// var vaultHubManager = &HubManager{
-// 	hubs: make(map[string]*Hub),
-// }
+func (hm *HubManager) GetOrCreateHub(vaultID string) *Hub {
+	hm.mu.Lock()
+	defer hm.mu.Unlock()
 
-// func (hm *HubManager) GetOrCreateHub(vaultID string) *Hub {
-// 	hm.mu.Lock()
-// 	defer hm.mu.Unlock()
-
-// 	hub, exists := hm.hubs[vaultID]
-// 	if !exists {
-// 		hub = NewHub()
-// 		hm.hubs[vaultID] = hub
-// 		go hub.run() // start the goroutine
-// 	}
-// 	return hub
-// }
+	hub, exists := hm.hubs[vaultID]
+	if !exists {
+		hub = NewHub()
+		hm.hubs[vaultID] = hub
+		go hub.Run() // start the goroutine
+	}
+	return hub
+}
 
 // === Hub struct ===
 type Hub struct {
@@ -79,9 +80,23 @@ func (h *Hub) Run() {
 	}
 }
 
+var vaultHubManager = &HubManager{
+	hubs: make(map[string]*Hub),
+}
+
+type Payload struct {
+	Action string            `json:"action"`
+	Path   string            `json:"path"`
+	Data   map[string]string `json:"data"` // keep this flexible if `data` varies
+}
+
 // === WebSocket connection handler ===
-func WsHandler(hub *Hub) func(*websocket.Conn) {
+func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.ResponseWriter, r *http.Request) func(*websocket.Conn) {
+	vaultId, _ := middleware.VaultIDFromContext(r.Context())
+	user, _ := middleware.UserFromContext(r.Context())
+
 	return func(wsConn *websocket.Conn) {
+		hub := vaultHubManager.GetOrCreateHub(vaultId)
 		hub.register <- wsConn
 		defer func() {
 			hub.unregister <- wsConn
@@ -95,34 +110,50 @@ func WsHandler(hub *Hub) func(*websocket.Conn) {
 				break
 			}
 
-			var jsonMap map[string]interface{}
-			json.Unmarshal([]byte(msg), &jsonMap)
+			var payload Payload
+			errJson := json.Unmarshal([]byte(msg), &payload)
+			if errJson != nil {
+				log.Println("errJsonor unmarshalling:", errJson)
+				return
+			}
 
-			html := fmt.Sprintf(`
-			<div id="messages" 
-			  hx-swap-oob="afterbegin"
-			  >	
-			  <div class="bg-red-900 text-4xl">
-			  %v
+			if payload.Action == "create_task" && payload.Path == fmt.Sprintf("/vaults/%v/tasks", vaultId) {
+				task, errTask := task.CreateTask(queries, payload.Data["task_name"], payload.Data["task_idea"], utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+				if errTask != nil {
+					utils.LogError("error at websocket", errTask)
+					return
+				}
 
-			  </div>
-			</div>
-			`, jsonMap["message"])
-			hub.broadcast <- html
+				html, errRender := templates.ReturnString("collaborative-task", task)
+				if errRender != nil {
+					utils.LogError("error at websocket", errRender)
+					return
+				}
+				realHtml := wrapWithAttributesDiv(*html, `id="collaborative-tasks" hx-swap-oob="afterbegin"`)
+
+				hub.broadcast <- realHtml
+			}
+
 		}
 	}
 }
 
-func DebugHandler(hub *Hub) http.HandlerFunc {
+func wrapWithAttributesDiv(html string, attrs string) string {
+	s := fmt.Sprintf(`<div %v>`, attrs) + html + "</div>"
+
+	return s
+}
+
+func DebugHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		hub.mu.Lock()
-		defer hub.mu.Unlock()
+		fmt.Fprintf(w, "Connected hubs (vault websockets): %d\n", len(vaultHubManager.hubs))
+		for vaultId, hub := range vaultHubManager.hubs {
 
-		clientCount := len(hub.clients)
-		fmt.Fprintf(w, "Connected clients: %d\n", clientCount)
-
-		for conn := range hub.clients {
-			fmt.Fprintf(w, "- Client: %p\n", conn)
+			clientCount := len(hub.clients)
+			fmt.Fprintf(w, "Connected clients: (%v) %d\n", vaultId, clientCount)
+			for conn := range hub.clients {
+				fmt.Fprintf(w, "- Client: %p\n", conn)
+			}
 		}
 	}
 }

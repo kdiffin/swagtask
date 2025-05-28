@@ -105,9 +105,8 @@ func HandlerCreateTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 	}
 	name := r.FormValue("task_name")
 	idea := r.FormValue("task_idea")
-	filters := FilterParams(r)
 
-	task, err := createTask(queries, name, idea, filters, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	task, err := CreateTask(queries, name, idea, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if err != nil {
 		if errors.Is(err, utils.ErrUnprocessable) {
 			utils.LogError("error adding task", err)

@@ -44,10 +44,20 @@ func SetupVaultRoutes(mux *http.ServeMux, queries *db.Queries, templates *templa
 		collaborative_vault.HandlerGetTasks(w, r, queries, templates)
 	}))))
 
-	hub := collaborative_vault.NewHub()
-	go hub.Run()
+	mux.Handle("/vaults/{vaultId}/wstest/{$}", middleware.HandlerWithVaultIdFromPath(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			vaultId, _ := middleware.VaultIDFromContext(r.Context())
+			websocket.Handler(collaborative_vault.WsHandlerPubSubTest(vaultId)).ServeHTTP(w, r)
+		},
+	)))
 
-	mux.Handle("/ws", websocket.Handler(collaborative_vault.WsHandler(hub)))
-	mux.HandleFunc("/debug", collaborative_vault.DebugHandler(hub)) // <<== here
+	mux.Handle("/vaults/{vaultId}/ws/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			websocket.Handler(collaborative_vault.WsHandlerPubSub(queries, templates, w, r)).ServeHTTP(w, r)
+		},
+	))))
+
+	// mux.Handle("/ws", middleware.HandlerWithVaultIdFromPath(websocket.Handler(collaborative_vault.WsHandler(vaultId))))
+	mux.HandleFunc("/debug", collaborative_vault.DebugHandler()) // <<== here
 
 }

@@ -81,6 +81,16 @@
       document.body.addEventListener("htmx:sendError", (evt) => {
         alert("Error: Connection error");
       });
+
+      document.body.addEventListener("htmx:wsConfigSend", (evt) => {
+        const { action, path, ...rest } = evt.detail.parameters;
+        const structuredObject = {
+          action: action,
+          path: path,
+          data: rest,
+        };
+        evt.detail.parameters = structuredObject;
+      });
     });
     htmx.logAll();
   </script>
