@@ -136,7 +136,7 @@ func HandlerTaskToggleComplete(w http.ResponseWriter, r *http.Request, queries *
 		return
 	}
 
-	taskWithTags, err := updateTaskCompletion(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
+	taskWithTags, err := UpdateTaskCompletion(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -158,7 +158,7 @@ func HandlerUpdateTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 		return
 	}
 
-	taskWithTags, errUpdate := updateTask(queries, utils.PgUUID(vaultId), utils.PgUUID(taskId), utils.PgUUID(user.ID), name, idea, r.Context())
+	taskWithTags, errUpdate := UpdateTask(queries, utils.PgUUID(vaultId), utils.PgUUID(taskId), utils.PgUUID(user.ID), name, idea, r.Context())
 	if errUpdate != nil {
 		// return no contents
 		// if theres no update to tasks skip
@@ -192,7 +192,7 @@ func HandlerDeleteTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 		return
 	}
 
-	err = deleteTask(queries, utils.PgUUID(taskId), utils.PgUUID(vaultId), utils.PgUUID(user.ID), r.Context())
+	err = DeleteTask(queries, utils.PgUUID(taskId), utils.PgUUID(vaultId), utils.PgUUID(user.ID), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}

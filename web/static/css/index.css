@@ -1,3 +1,31 @@
+.live-cursor {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cursor-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #00bcd4; /* Change this per user if you want */
+  border-radius: 50%;
+  box-shadow: 0 0 5px #00bcd4;
+}
+
+.cursor-name {
+  background-color: #00bcd4;
+  color: white;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
 select {
   width: 120px;
 }

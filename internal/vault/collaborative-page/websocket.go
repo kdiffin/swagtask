@@ -134,6 +134,86 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 				hub.broadcast <- realHtml
 			}
 
+			if payload.Action == "delete_task" {
+				errTask := task.DeleteTask(queries, utils.PgUUID(payload.Data["task_id"]), utils.PgUUID(vaultId), utils.PgUUID(user.ID), r.Context())
+				if errTask != nil {
+					utils.LogError("error at websocket", errTask)
+					return
+				}
+
+				realHtml := wrapWithAttributesDiv("", fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
+
+				hub.broadcast <- realHtml
+			}
+
+			if payload.Action == "update_task" {
+				task, errTask := task.UpdateTask(
+					queries,
+					utils.PgUUID(vaultId),
+					utils.PgUUID(payload.Data["task_id"]),
+					utils.PgUUID(user.ID),
+					payload.Data["task_name"],
+					payload.Data["task_idea"],
+
+					r.Context())
+				if errTask != nil {
+					utils.LogError("error at websocket", errTask)
+					return
+				}
+
+				html, errRender := templates.ReturnString("collaborative-task", task)
+				if errRender != nil {
+					utils.LogError("error at websocket", errRender)
+					return
+				}
+				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
+
+				hub.broadcast <- realHtml
+			}
+			if payload.Action == "update_task_completion" {
+				task, errTask := task.UpdateTaskCompletion(
+					queries,
+					utils.PgUUID(user.ID),
+					utils.PgUUID(vaultId),
+					utils.PgUUID(payload.Data["task_id"]),
+					r.Context())
+				if errTask != nil {
+					utils.LogError("error at websocket", errTask)
+					return
+				}
+
+				html, errRender := templates.ReturnString("collaborative-task", task)
+				if errRender != nil {
+					utils.LogError("error at websocket", errRender)
+					return
+				}
+				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
+
+				hub.broadcast <- realHtml
+			}
+
+			if payload.Action == "move_cursor" {
+				var cursor struct {
+					Type     string
+					X        string `json:"x"`
+					Y        string `json:"y"`
+					Username string `json:"username"`
+				}
+
+				cursor.Username = user.Username
+				cursor.X = payload.Data["x"]
+				cursor.Y = payload.Data["y"]
+				cursor.Type = "cursor_info"
+
+				jsonCursor, errJsonMarsh := json.Marshal(cursor)
+				if errJsonMarsh != nil {
+					utils.LogError("", errJsonMarsh)
+					return
+				}
+
+				hub.broadcast <- string(jsonCursor)
+			}
+
 		}
 	}
 }

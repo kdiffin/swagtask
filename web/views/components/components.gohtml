@@ -36,6 +36,61 @@
     src="https://unpkg.com/htmx.org@2.0.4"
     crossorigin="anonymous"
   ></script>
+
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/css/index.css" />
+  <link
+    rel="shortcut icon"
+    href="/static/images/favicon.ico"
+    type="image/x-icon"
+  />
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.body.addEventListener("htmx:beforeSwap", (evt) => {
+        if (evt.detail.xhr.status === 404) {
+          alert("Error: Could Not Find Resource");
+        } else if (evt.detail.xhr.status === 422) {
+          evt.detail.shouldSwap = true;
+          evt.detail.isError = false;
+        } else if (evt.detail.xhr.status === 401) {
+          alert(
+            "Error: Unauthorized \nMessage: " + evt.detail.xhr.responseText
+          );
+        } else if (evt.detail.xhr.status === 400) {
+          alert("Error: Bad Request \nMessage: " + evt.detail.xhr.responseText);
+        } else if (evt.detail.xhr.status === 403) {
+          alert("Error: Forbidden \nMessage: " + evt.detail.xhr.responseText);
+        } else if (evt.detail.xhr.status === 500) {
+          alert(
+            "Error: Internal Server Error \nMessage: " +
+              evt.detail.xhr.responseText
+          );
+        } else if (evt.detail.xhr.status === 401) {
+          alert("Error: Bad Request \nMessage: " + evt.detail.xhr.responseText);
+        }
+      });
+      document.body.addEventListener("htmx:sendError", (evt) => {
+        alert("Error: Connection error");
+      });
+    });
+    htmx.logAll();
+  </script>
+</head>
+{{ end }}
+
+{{block "head-vault" .}}
+<head>
+  <title>{{.}} - SwagTask</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script
+    src="https://unpkg.com/htmx.org@2.0.4"
+    crossorigin="anonymous"
+  ></script>
   <script
     src="https://unpkg.com/htmx-ext-ws@2.0.2"
     crossorigin="anonymous"
@@ -91,8 +146,46 @@
         };
         evt.detail.parameters = structuredObject;
       });
+
+      // listen to mouse movement
+      // (() => {
+      //   let lastSent = 0;
+      //   let ws = null;
+      //   let moveHandler = null;
+
+      //   document.addEventListener("htmx:wsOpen", (ev) => {
+      //     ws = ev.detail.socketWrapper;
+
+      //     moveHandler = (e) => {
+      //       const now = Date.now();
+      //       if (now - lastSent > 10) {
+      //         ws.send(
+      //           JSON.stringify({
+      //             action: "move_cursor",
+      //             // path is required for my server to work
+      //             path: "",
+      //             data: {
+      //               x: e.pageX.toString(),
+      //               y: e.pageY.toString(),
+      //             },
+      //           })
+      //         );
+      //         lastSent = now;
+      //       }
+      //     };
+
+      //     document.addEventListener("mousemove", moveHandler);
+      //   });
+
+      //   document.addEventListener("htmx:wsClose", () => {
+      //     if (moveHandler) {
+      //       document.removeEventListener("mousemove", moveHandler);
+      //       moveHandler = null;
+      //     }
+      //     ws = null;
+      //   });
+      // })();
     });
-    htmx.logAll();
   </script>
 </head>
 {{ end }}

@@ -120,6 +120,7 @@ chat gippity made most of my frontends styles btw
     - [ ] make task stuff work
     - [ ] make the tag stuff work
 
+  - [ ] make real time mouse sharing
   - [ ] add error logging to RBAC issues
   - [ ] create the "endpoints" in websockets
 

@@ -176,7 +176,7 @@ func CreateTask(queries *db.Queries, name, idea string,
 }
 
 // ---- UPDATE ----
-func updateTaskCompletion(queries *db.Queries, userId, vaultId pgtype.UUID, taskId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
+func UpdateTaskCompletion(queries *db.Queries, userId, vaultId pgtype.UUID, taskId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
 	errCompletion := queries.ToggleTaskCompletion(ctx, db.ToggleTaskCompletionParams{
 		ID:      taskId,
 		UserID:  userId,
@@ -197,7 +197,7 @@ func updateTaskCompletion(queries *db.Queries, userId, vaultId pgtype.UUID, task
 	return taskWithTags, nil
 }
 
-func updateTask(queries *db.Queries, vaultId, taskId pgtype.UUID, userId pgtype.UUID,
+func UpdateTask(queries *db.Queries, vaultId, taskId pgtype.UUID, userId pgtype.UUID,
 	name string, idea string, ctx context.Context) (*TaskWithTags, error) {
 	namePg := utils.StringToPgText(name)
 	ideaPg := utils.StringToPgText(idea)
@@ -247,7 +247,7 @@ func addTagToTask(queries *db.Queries,
 }
 
 // ---- DELETE ----
-func deleteTask(queries *db.Queries, taskId, vaultId, userId pgtype.UUID, ctx context.Context) error {
+func DeleteTask(queries *db.Queries, taskId, vaultId, userId pgtype.UUID, ctx context.Context) error {
 	err := queries.DeleteTask(ctx, db.DeleteTaskParams{
 		ID:      taskId,
 		UserID:  userId,

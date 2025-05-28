@@ -44,7 +44,7 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (pgtype.
 	return id, err
 }
 
-const deleteTask = `-- name: DeleteTask :exec
+const DeleteTask = `-- name: DeleteTask :exec
 DELETE FROM tasks t
 WHERE 
 	t.id = $1
@@ -64,7 +64,7 @@ type DeleteTaskParams struct {
 
 // DELETE
 func (q *Queries) DeleteTask(ctx context.Context, arg DeleteTaskParams) error {
-	_, err := q.db.Exec(ctx, deleteTask, arg.ID, arg.UserID, arg.VaultID)
+	_, err := q.db.Exec(ctx, DeleteTask, arg.ID, arg.UserID, arg.VaultID)
 	return err
 }
 

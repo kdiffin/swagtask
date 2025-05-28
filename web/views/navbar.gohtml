@@ -145,6 +145,42 @@
     // Redirect to the updated URL
     window.location.href = newUrl;
   });
+
+  function getRandomColor() {
+    const colors = ["#f44336", "#2196f3", "#4caf50", "#ff9800", "#9c27b0"];
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    return colors[randomIndex];
+  }
+  document.addEventListener("DOMContentLoaded", () => {
+      document.body.addEventListener("htmx:wsAfterMessage", (evt) => {
+        let messageJson = JSON.parse(evt.detail.message);
+
+        if (messageJson.Type === "cursor_info") {
+          const { x, y, username } = messageJson;
+          const id = `cursor-${username}`;
+          let cursor = document.getElementById(id);
+
+          // Create cursor element if it doesn't exist
+          //  prettier-ignore-start
+           if(username != {{.User.Username}}) {
+          // prettier-ignore-end
+             if (!cursor) {
+               cursor = document.createElement("div");
+               cursor.id = id;
+               cursor.className = "live-cursor";
+               const color = getRandomColor();
+               cursor.innerHTML = `<div class="cursor-dot" style="background-color: ${color}; box-shadow: 0 0 5px ${color};"></div>
+                       <div class="cursor-name" style="background-color: ${color};">${username}</div>`;
+               document.body.appendChild(cursor);
+             }
+
+             // Update position
+             cursor.style.left = `${x}px`;
+             cursor.style.top = `${y}px`;
+           }
+        }
+      });
+    });
 </script>
 
 {{ end }}
