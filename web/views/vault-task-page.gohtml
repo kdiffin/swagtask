@@ -1,8 +1,12 @@
 {{ block "collaborative-task-page" . }}
 <html>
-  {{ template "head" .Name}}
+  {{ template "head-vault" .Name}}
 
-  <body class="bg-zinc-900 text-zinc-200 min-h-screen font-sans antialiased">
+  <body
+    hx-ext="ws"
+    ws-connect="/vaults/{{.Vault.ID}}/ws/"
+    class="bg-zinc-900 text-zinc-200 min-h-screen font-sans antialiased"
+  >
     {{ template "navbar" .Auth}}
     <div class="container mx-auto px-4 py-6 max-w-5xl space-y-6">
       {{ template "collaborative-show-task"  .}}
@@ -54,12 +58,12 @@
     <span>All Tasks</span>
   </a>
 
-  {{ if .NextButton.Exists }}
+  {{ if .Buttons.NextButton.Exists }}
   <a
-    href="/tasks/{{.NextButton.ID}}"
+    href="/vaults/{{.Vault.ID}}/tasks/{{.Buttons.PrevButton.ID}}"
     class="flex items-center gap-2 p-2.5 px-4 rounded-sm bg-zinc-800 hover:bg-zinc-700 text-white transition-colors duration-200 border border-zinc-700/50"
   >
-    <span>{{.NextButton.Name}}</span>
+    <span>{{.Buttons.NextButton.Name}}</span>
     <i class="fas fa-arrow-right text-xs"></i>
   </a>
   {{ else }}
