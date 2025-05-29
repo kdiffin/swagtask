@@ -5,7 +5,7 @@ import (
 	db "swagtask/internal/db/generated"
 )
 
-type taskUI struct {
+type TaskUI struct {
 	ID        string
 	Name      string
 	Author    auth.Author
@@ -13,9 +13,9 @@ type taskUI struct {
 	Completed bool
 }
 
-func newUITask(task db.Task, author auth.Author) taskUI {
+func newUITask(task db.Task, author auth.Author) TaskUI {
 
-	return taskUI{
+	return TaskUI{
 		ID:        task.ID.String(),
 		Author:    author,
 		Name:      task.Name,
@@ -33,14 +33,18 @@ type tagOption struct {
 type availableTag = tagOption
 type relatedTag tagOption
 type TaskWithTags struct {
-	taskUI
+	// THIS IS A STUPID HACK FOR THE VAULTS PAGE
+	// I CBA TO COPY THE CODE FOR THE VAULTS PART, SO I JUST ADDED THIS
+	// AFTER THIS I REALIZED I SHOULD PROB USE TEMPL OR SOMETHING.
+	TaskUI
+	VaultID       string
 	RelatedTags   []relatedTag
 	AvailableTags []availableTag
 }
 
-func newTaskWithTags(task taskUI, relatedTags []relatedTag, availableTags []availableTag) TaskWithTags {
+func newTaskWithTags(task TaskUI, relatedTags []relatedTag, availableTags []availableTag) TaskWithTags {
 	return TaskWithTags{
-		taskUI:        task,
+		TaskUI:        task,
 		RelatedTags:   relatedTags,
 		AvailableTags: availableTags,
 	}

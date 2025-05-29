@@ -51,6 +51,42 @@ func NewVaultTasksPage(
 	}
 }
 
+type vaultTaskPage struct {
+	User          UserVaultUI
+	Vault         VaultUI
+	Collaborators []CollaboratorUI
+
+	task.TaskPage
+}
+
+func NewVaultTaskPage(
+	taskWithTags task.TaskWithTags,
+	authorized bool,
+	buttons task.TaskPageButtons,
+	pathToPfp string,
+	vault VaultUI,
+	User UserVaultUI,
+	collaborators []CollaboratorUI,
+	username string) vaultTaskPage {
+
+	return vaultTaskPage{
+		TaskPage: task.TaskPage{
+			TaskWithTags: taskWithTags,
+			Auth: auth.AuthenticatedPage{
+				Authorized: authorized,
+				User: auth.UserUI{
+					PathToPfp: pathToPfp,
+					Username:  username,
+				},
+			},
+			Buttons: buttons,
+		},
+		Vault:         vault,
+		User:          User,
+		Collaborators: collaborators,
+	}
+}
+
 type vaultTagsPage struct {
 	tag.TagsPage
 	User          UserVaultUI

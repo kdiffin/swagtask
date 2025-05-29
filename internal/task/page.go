@@ -25,20 +25,20 @@ type taskButton struct {
 	Name   string
 	Exists bool
 }
-type taskPageButtons struct {
+type TaskPageButtons struct {
 	PrevButton taskButton
 	NextButton taskButton
 }
-type taskPage struct {
+type TaskPage struct {
 	TaskWithTags
-	Buttons taskPageButtons
+	Buttons TaskPageButtons
 	Auth    auth.AuthenticatedPage
 }
 
-func newTaskPage(task TaskWithTags, prevButton, nextButton taskButton, authorized bool, pathToPfp string, username string) taskPage {
-	return taskPage{
+func NewTaskPage(task TaskWithTags, prevButton, nextButton taskButton, authorized bool, pathToPfp string, username string) TaskPage {
+	return TaskPage{
 		TaskWithTags: task,
-		Buttons: taskPageButtons{
+		Buttons: TaskPageButtons{
 			PrevButton: prevButton,
 			NextButton: nextButton,
 		},

@@ -44,7 +44,7 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (pgtype.
 	return id, err
 }
 
-const DeleteTask = `-- name: DeleteTask :exec
+const deleteTask = `-- name: DeleteTask :exec
 DELETE FROM tasks t
 WHERE 
 	t.id = $1
@@ -64,7 +64,7 @@ type DeleteTaskParams struct {
 
 // DELETE
 func (q *Queries) DeleteTask(ctx context.Context, arg DeleteTaskParams) error {
-	_, err := q.db.Exec(ctx, DeleteTask, arg.ID, arg.UserID, arg.VaultID)
+	_, err := q.db.Exec(ctx, deleteTask, arg.ID, arg.UserID, arg.VaultID)
 	return err
 }
 
@@ -170,13 +170,24 @@ func (q *Queries) GetFilteredTasks(ctx context.Context, arg GetFilteredTasksPara
 }
 
 const getNextTaskDetails = `-- name: GetNextTaskDetails :one
-SELECT name, id FROM tasks 
+WITH authorized_user AS (
+  SELECT vault_id, user_id
+  FROM vault_user_relations
+  WHERE user_id = $2::UUID
+    AND vault_id = $3::UUID
+    AND (role = 'owner' OR role = 'collaborator')
+)
+SELECT t.name, t.id FROM tasks t
+JOIN authorized_user a_u 
+	ON a_u.user_id = $2::UUID 
+	AND a_u.vault_id = $3::UUID
 WHERE created_at > $1
 	AND EXISTS(
 		SELECT 1 FROM vault_user_relations v_u_rel
 		WHERE v_u_rel.user_id = $2::UUID 
 		AND v_u_rel.vault_id = $3::UUID
 	)
+	AND a_u.vault_id  = t.vault_id
 ORDER BY created_at ASC LIMIT 1
 `
 
@@ -199,13 +210,24 @@ func (q *Queries) GetNextTaskDetails(ctx context.Context, arg GetNextTaskDetails
 }
 
 const getPreviousTaskDetails = `-- name: GetPreviousTaskDetails :one
-SELECT name, id FROM tasks 
+WITH authorized_user AS (
+  SELECT vault_id, user_id
+  FROM vault_user_relations
+  WHERE user_id = $2::UUID
+    AND vault_id = $3::UUID
+    AND (role = 'owner' OR role = 'collaborator')
+)
+SELECT t.name, t.id FROM tasks t
+JOIN authorized_user a_u 
+	ON a_u.user_id = $2::UUID 
+	AND a_u.vault_id = $3::UUID
 WHERE created_at < $1
 	AND EXISTS(
 		SELECT 1 FROM vault_user_relations v_u_rel
 		WHERE v_u_rel.user_id = $2::UUID 
 		AND v_u_rel.vault_id = $3::UUID
-	)  
+	)
+	AND a_u.vault_id  = t.vault_id
 ORDER BY created_at DESC LIMIT 1
 `
 

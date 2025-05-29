@@ -43,6 +43,9 @@ func SetupVaultRoutes(mux *http.ServeMux, queries *db.Queries, templates *templa
 	mux.Handle("GET /vaults/{vaultId}/tasks/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		collaborative_vault.HandlerGetTasks(w, r, queries, templates)
 	}))))
+	mux.Handle("GET /vaults/{vaultId}/tasks/{id}/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		collaborative_vault.HandlerGetTask(w, r, queries, templates)
+	}))))
 
 	mux.Handle("/vaults/{vaultId}/wstest/{$}", middleware.HandlerWithVaultIdFromPath(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {

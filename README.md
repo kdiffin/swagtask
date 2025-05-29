@@ -117,12 +117,15 @@ chat gippity made most of my frontends styles btw
   - [x] authorize the websocket connections
   - [ ] create my own http verb system in websockets
 
-    - [ ] make task stuff work
+    - [x] make task stuff work
     - [ ] make the tag stuff work
 
-  - [ ] make real time mouse sharing
+  - [ ] think what to do with paths
+  - [x] make real time mouse sharing
+  - [ ] architecture better
+  - [ ] make the page like a SPA so u dont have to reconnect to the ws when switching from tasks to tags page
+
   - [ ] add error logging to RBAC issues
-  - [ ] create the "endpoints" in websockets
 
 ### maybe later if i revisit
 

@@ -82,13 +82,13 @@ func HandlerGetTask(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
-	taskWithTags, createdAt, err := getTaskPage(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(id), r.Context())
+	taskWithTags, createdAt, err := GetTaskPage(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(id), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	prevButton, nextButton := getTaskNavigationButtons(r.Context(), queries, createdAt, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(id))
-	page := newTaskPage(*taskWithTags, prevButton, nextButton, true, user.PathToPfp, user.Username)
+	prevButton, nextButton := GetTaskNavigationButtons(r.Context(), queries, createdAt, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(id))
+	page := NewTaskPage(*taskWithTags, prevButton, nextButton, true, user.PathToPfp, user.Username)
 	templates.Render(w, "task-page", page)
 }
 
@@ -168,7 +168,7 @@ func HandlerUpdateTask(w http.ResponseWriter, r *http.Request, queries *db.Queri
 			return
 		} else if errors.Is(errUpdate, utils.ErrUnprocessable) {
 			templates.Render(w, "tasks-container-error", "Task has same idea: "+idea)
-			taskWithTags, _ := getTaskWithTagsById(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
+			taskWithTags, _ := GetTaskWithTagsById(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
 			templates.Render(w, "task", taskWithTags)
 			return
 		} else if utils.CheckError(w, r, errUpdate) {

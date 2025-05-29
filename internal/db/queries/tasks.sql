@@ -87,23 +87,45 @@ ORDER BY t_with_author.created_at DESC;
 
 -- TODO: reimplement
 -- name: GetPreviousTaskDetails :one
-SELECT name, id FROM tasks 
+WITH authorized_user AS (
+  SELECT vault_id, user_id
+  FROM vault_user_relations
+  WHERE user_id = sqlc.arg('user_id')::UUID
+    AND vault_id = sqlc.arg('vault_id')::UUID
+    AND (role = 'owner' OR role = 'collaborator')
+)
+SELECT t.name, t.id FROM tasks t
+JOIN authorized_user a_u 
+	ON a_u.user_id = sqlc.arg('user_id')::UUID 
+	AND a_u.vault_id = sqlc.arg('vault_id')::UUID
 WHERE created_at < $1
 	AND EXISTS(
 		SELECT 1 FROM vault_user_relations v_u_rel
 		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
 		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
-	)  
+	)
+	AND a_u.vault_id  = t.vault_id
 ORDER BY created_at DESC LIMIT 1;
 
 -- name: GetNextTaskDetails :one
-SELECT name, id FROM tasks 
+WITH authorized_user AS (
+  SELECT vault_id, user_id
+  FROM vault_user_relations
+  WHERE user_id = sqlc.arg('user_id')::UUID
+    AND vault_id = sqlc.arg('vault_id')::UUID
+    AND (role = 'owner' OR role = 'collaborator')
+)
+SELECT t.name, t.id FROM tasks t
+JOIN authorized_user a_u 
+	ON a_u.user_id = sqlc.arg('user_id')::UUID 
+	AND a_u.vault_id = sqlc.arg('vault_id')::UUID
 WHERE created_at > $1
 	AND EXISTS(
 		SELECT 1 FROM vault_user_relations v_u_rel
 		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
 		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID
 	)
+	AND a_u.vault_id  = t.vault_id
 ORDER BY created_at ASC LIMIT 1;
 
 -- CREATE

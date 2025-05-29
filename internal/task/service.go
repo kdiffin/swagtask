@@ -14,7 +14,7 @@ import (
 
 // ---- READ ----
 
-func getTaskWithTagsById(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
+func GetTaskWithTagsById(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
 	taskWithRelations, err := queries.GetTaskWithTagRelations(ctx, db.GetTaskWithTagRelationsParams{
 		ID:      id,
 		UserID:  userId,
@@ -29,7 +29,7 @@ func getTaskWithTagsById(queries *db.Queries, userId, vaultId, id pgtype.UUID, c
 	if len(taskWithRelations) == 0 {
 		return nil, utils.ErrNotFound
 	}
-	var task taskUI
+	var task TaskUI
 	tagsOfTask := []relatedTag{}
 
 	allTags, errTags := queries.GetAllTagsDesc(ctx, db.GetAllTagsDescParams{
@@ -41,7 +41,7 @@ func getTaskWithTagsById(queries *db.Queries, userId, vaultId, id pgtype.UUID, c
 	}
 
 	for _, taskWithRelation := range taskWithRelations {
-		task = taskUI{
+		task = TaskUI{
 			ID:   taskWithRelation.ID.String(),
 			Name: taskWithRelation.Name,
 			Idea: taskWithRelation.Idea,
@@ -86,7 +86,7 @@ func GetFilteredTasksWithTags(queries *db.Queries, filters TasksPageFilters,
 
 	tasksWithTags := []TaskWithTags{}
 	taskIdToTags := make(map[pgtype.UUID][]relatedTag)
-	idToTask := make(map[pgtype.UUID]taskUI)
+	idToTask := make(map[pgtype.UUID]TaskUI)
 	orderedIds := []pgtype.UUID{}
 	idSeen := make(map[pgtype.UUID]bool)
 	for _, task := range taskswithTagRelations {
@@ -100,7 +100,7 @@ func GetFilteredTasksWithTags(queries *db.Queries, filters TasksPageFilters,
 			orderedIds = append(orderedIds, task.ID)
 		}
 
-		idToTask[task.ID] = taskUI{
+		idToTask[task.ID] = TaskUI{
 			ID:        task.ID.String(),
 			Name:      task.Name,
 			Idea:      task.Idea,
@@ -125,7 +125,7 @@ func GetFilteredTasksWithTags(queries *db.Queries, filters TasksPageFilters,
 	return tasksWithTags, nil
 }
 
-func getTaskNavigationButtons(ctx context.Context, queries *db.Queries, createdAt pgtype.Timestamp,
+func GetTaskNavigationButtons(ctx context.Context, queries *db.Queries, createdAt pgtype.Timestamp,
 	userId, vaultId, id pgtype.UUID) (taskButton, taskButton) {
 	prev, errPrev := queries.GetPreviousTaskDetails(ctx, db.GetPreviousTaskDetailsParams{
 		CreatedAt: createdAt,
@@ -167,7 +167,7 @@ func CreateTask(queries *db.Queries, name, idea string,
 	}
 	fmt.Println(id)
 
-	taskWithTags, errGetTask := getTaskWithTagsById(queries, userId, vaultId, id, ctx)
+	taskWithTags, errGetTask := GetTaskWithTagsById(queries, userId, vaultId, id, ctx)
 	if errGetTask != nil {
 		return nil, errGetTask
 	}
@@ -189,7 +189,7 @@ func UpdateTaskCompletion(queries *db.Queries, userId, vaultId pgtype.UUID, task
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, errCompletion)
 	}
 
-	taskWithTags, errGetTask := getTaskWithTagsById(queries, userId, vaultId, taskId, ctx)
+	taskWithTags, errGetTask := GetTaskWithTagsById(queries, userId, vaultId, taskId, ctx)
 	if errGetTask != nil {
 		return nil, errGetTask
 	}
@@ -216,7 +216,7 @@ func UpdateTask(queries *db.Queries, vaultId, taskId pgtype.UUID, userId pgtype.
 		return nil, fmt.Errorf("%w: %v", utils.ErrUnprocessable, errCompletion)
 	}
 
-	taskWithTags, errGetTask := getTaskWithTagsById(queries, userId, vaultId, taskId, ctx)
+	taskWithTags, errGetTask := GetTaskWithTagsById(queries, userId, vaultId, taskId, ctx)
 	if errGetTask != nil {
 		return nil, errGetTask
 	}
@@ -238,7 +238,7 @@ func addTagToTask(queries *db.Queries,
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, err)
 	}
 
-	taskWithTags, errTasks := getTaskWithTagsById(queries, userId, vaultId, taskId, ctx)
+	taskWithTags, errTasks := GetTaskWithTagsById(queries, userId, vaultId, taskId, ctx)
 	if errTasks != nil {
 		return nil, errTasks
 	}
@@ -272,7 +272,7 @@ func deleteTagRelationFromTask(queries *db.Queries, tagId, userId, vaultId, task
 		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, errRelations)
 	}
 
-	taskWithTags, err := getTaskWithTagsById(queries, userId, vaultId, taskId, ctx)
+	taskWithTags, err := GetTaskWithTagsById(queries, userId, vaultId, taskId, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +281,7 @@ func deleteTagRelationFromTask(queries *db.Queries, tagId, userId, vaultId, task
 }
 
 // this is a one off for the task page
-func getTaskPage(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*TaskWithTags, pgtype.Timestamp, error) {
+func GetTaskPage(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx context.Context) (*TaskWithTags, pgtype.Timestamp, error) {
 	taskWithRelations, err := queries.GetTaskWithTagRelations(ctx, db.GetTaskWithTagRelationsParams{
 		ID:      id,
 		UserID:  userId,
@@ -296,7 +296,7 @@ func getTaskPage(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx conte
 	if len(taskWithRelations) == 0 {
 		return nil, pgtype.Timestamp{}, utils.ErrNotFound
 	}
-	var task taskUI
+	var task TaskUI
 	tagsOfTask := []relatedTag{}
 
 	allTags, errTags := queries.GetAllTagsDesc(ctx, db.GetAllTagsDescParams{
@@ -309,7 +309,7 @@ func getTaskPage(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx conte
 
 	var createdAt pgtype.Timestamp
 	for _, taskWithRelation := range taskWithRelations {
-		task = taskUI{
+		task = TaskUI{
 			ID:   taskWithRelation.ID.String(),
 			Name: taskWithRelation.Name,
 			Idea: taskWithRelation.Idea,
