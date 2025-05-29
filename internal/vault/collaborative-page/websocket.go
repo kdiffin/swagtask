@@ -7,6 +7,7 @@ import (
 	"net/http"
 	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
+	"swagtask/internal/tag"
 	"swagtask/internal/task"
 	"swagtask/internal/template"
 	"swagtask/internal/utils"
@@ -124,7 +125,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					return
 				}
 
-				html, errRender := templates.ReturnString("collaborative-task", task)
+				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
 					utils.LogError("error at websocket", errRender)
 					return
@@ -161,7 +162,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					return
 				}
 
-				html, errRender := templates.ReturnString("collaborative-task", task)
+				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
 					utils.LogError("error at websocket", errRender)
 					return
@@ -182,7 +183,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					return
 				}
 
-				html, errRender := templates.ReturnString("collaborative-task", task)
+				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
 					utils.LogError("error at websocket", errRender)
 					return
@@ -214,10 +215,52 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 				hub.broadcast <- string(jsonCursor)
 			}
 
+			if payload.Action == "create_tag" {
+				// MAKE THIS WORK BY SENDING ONE TAG NOT EVERYTHING
+				fmt.Println(user.DefaultVaultID)
+				err := queries.CreateTag(r.Context(), db.CreateTagParams{
+					Name:    payload.Data["tag_name"],
+					UserID:  utils.PgUUID(user.ID),
+					VaultID: utils.PgUUID(user.DefaultVaultID),
+				})
+				if utils.CheckError(w, r, err) {
+					fmt.Println("error was here1")
+					return
+				}
+
+				tagsWithTasks, errTags := tag.GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
+				if utils.CheckError(w, r, errTags) {
+					fmt.Println("error was here")
+					return
+				}
+				html, errRender := templates.ReturnString("collaborative-tags-list-container", tagsWithTasks)
+				if errRender != nil {
+					utils.LogError("error at websocket", errRender)
+					return
+				}
+				realHtml := wrapWithAttributesDiv(*html, `id="collaborative-tags-list-container" hx-swap-oob="outerHTML"`)
+
+				hub.broadcast <- realHtml
+			}
+
 		}
 	}
 }
-
+func addVaultIdToTask(vaultId string, t task.TaskWithTags) task.TaskWithTags {
+	tasksReal := task.TaskWithTags{
+		TaskUI: task.TaskUI{
+			ID:        t.ID,
+			Name:      t.Name,
+			Author:    t.Author,
+			Idea:      t.Idea,
+			Completed: t.Completed,
+		},
+		VaultID:       vaultId,
+		RelatedTags:   t.RelatedTags,
+		AvailableTags: t.AvailableTags,
+	}
+	return tasksReal
+}
 func wrapWithAttributesDiv(html string, attrs string) string {
 	s := fmt.Sprintf(`<div %v>`, attrs) + html + "</div>"
 

@@ -104,7 +104,7 @@ chat gippity made most of my frontends styles btw
   - [ ] add decent error logging
   - [ ] add sql query logging
   - [ ] fix that one dumb down migration at 8
-  - [ ] fix add tag in tasks page
+  - [x] fix add tag in tasks page
   - **move onto phase with collaborative vaults with websockets**
 
 - [ ] Make the multi user part work (vault implementation)
@@ -119,13 +119,18 @@ chat gippity made most of my frontends styles btw
 
     - [x] make task stuff work
     - [ ] make the tag stuff work
+          **!!!**
+      - [ ] refactor how adding tags works
+    - [x] think and fix what to do with paths
 
-  - [ ] think what to do with paths
   - [x] make real time mouse sharing
-  - [ ] architecture better
-  - [ ] make the page like a SPA so u dont have to reconnect to the ws when switching from tasks to tags page
+  - [x] think about what to do with the ws having to recnnent on every url change
 
-  - [ ] add error logging to RBAC issues
+        - [x] hx boost ftw
+        - [x] make the page like a SPA so u dont have to reconnect to the ws when switching from tasks to tags page
+
+  - [ ] architecture better
+  - [ ] add error showing to RBAC issues
 
 ### maybe later if i revisit
 

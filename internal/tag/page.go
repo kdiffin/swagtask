@@ -7,7 +7,7 @@ type TagsPage struct {
 	Auth          auth.AuthenticatedPage
 }
 
-func newTagsPage(tagsWithTasks []TagWithTasks, authorized bool, pathToPfp string, username string) TagsPage {
+func NewTagsPage(tagsWithTasks []TagWithTasks, authorized bool, pathToPfp string, username string) TagsPage {
 	return TagsPage{
 		TagsWithTasks: tagsWithTasks,
 		Auth: auth.AuthenticatedPage{

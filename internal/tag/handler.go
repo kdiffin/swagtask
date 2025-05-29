@@ -22,7 +22,7 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 		return
 	}
 
-	page := newTagsPage(tagsWithTasks, true, user.PathToPfp, user.Username)
+	page := NewTagsPage(tagsWithTasks, true, user.PathToPfp, user.Username)
 	templates.Render(w, "tags-page", page)
 }
 

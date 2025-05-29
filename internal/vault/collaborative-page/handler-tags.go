@@ -5,18 +5,26 @@ import (
 	"net/http"
 	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
+	"swagtask/internal/tag"
 	"swagtask/internal/template"
-	"swagtask/internal/utils"
 	common "swagtask/internal/vault/common"
+
+	"swagtask/internal/utils"
 )
 
-func HandlerGetVault(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
-	user, errUser := middleware.UserFromContext(r.Context())
-	if utils.CheckError(w, r, errUser) {
+func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
+	if utils.CheckError(w, r, err) {
 		return
 	}
-	vaultId, errVaultId := middleware.VaultIDFromContext(r.Context())
-	if utils.CheckError(w, r, errVaultId) {
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
+
+	tagsWithTasks, errTags := tag.GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
+	if utils.CheckError(w, r, errTags) {
+		fmt.Println("error was here")
 		return
 	}
 
@@ -36,15 +44,15 @@ func HandlerGetVault(w http.ResponseWriter, r *http.Request, queries *db.Queries
 		collaborators = append(collaborators, common.CollaboratorUI(item))
 	}
 
-	page := common.NewVaultPage(
+	page := common.NewVaultTagsPage(tagsWithTasks,
+		vaultWithCollaborators.VaultUI,
 		common.UserVaultUI{
 			PathToPfp:  user.PathToPfp,
-			Username:   user.Username,
 			Authorized: true,
+			Username:   user.Username,
 			Role:       role,
 		},
-		vaultWithCollaborators.VaultUI,
 		collaborators)
-	templates.Render(w, "vault-page", page)
+	templates.Render(w, "collaborative-tags-page", page)
 
 }

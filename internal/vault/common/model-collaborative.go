@@ -1,7 +1,6 @@
 package vault
 
 import (
-	"swagtask/internal/auth"
 	"swagtask/internal/tag"
 	"swagtask/internal/task"
 )
@@ -10,13 +9,14 @@ import (
 
 type CollaboratorUI = collaboratorOption
 type UserVaultUI struct {
-	PathToPfp string
-	Username  string
-	Role      string
+	PathToPfp  string
+	Username   string
+	Role       string
+	Authorized bool
 }
 
 type vaultTasksPage struct {
-	User          UserVaultUI
+	Auth          UserVaultUI
 	Vault         VaultUI
 	Collaborators []CollaboratorUI
 
@@ -26,33 +26,25 @@ type vaultTasksPage struct {
 func NewVaultTasksPage(
 	tasks []task.TaskWithTags,
 	filters task.TasksPageFilters,
-	authorized bool,
-	pathToPfp string,
+
 	vault VaultUI,
 	User UserVaultUI,
 	collaborators []CollaboratorUI,
-	username string) vaultTasksPage {
+) vaultTasksPage {
 
 	return vaultTasksPage{
 		TasksPage: task.TasksPage{
 			Tasks:   tasks,
 			Filters: filters,
-			Auth: auth.AuthenticatedPage{
-				Authorized: authorized,
-				User: auth.UserUI{
-					PathToPfp: pathToPfp,
-					Username:  username,
-				},
-			},
 		},
 		Vault:         vault,
-		User:          User,
+		Auth:          User,
 		Collaborators: collaborators,
 	}
 }
 
 type vaultTaskPage struct {
-	User          UserVaultUI
+	Auth          UserVaultUI
 	Vault         VaultUI
 	Collaborators []CollaboratorUI
 
@@ -61,88 +53,67 @@ type vaultTaskPage struct {
 
 func NewVaultTaskPage(
 	taskWithTags task.TaskWithTags,
-	authorized bool,
+
 	buttons task.TaskPageButtons,
-	pathToPfp string,
+
 	vault VaultUI,
 	User UserVaultUI,
 	collaborators []CollaboratorUI,
-	username string) vaultTaskPage {
+) vaultTaskPage {
 
 	return vaultTaskPage{
 		TaskPage: task.TaskPage{
 			TaskWithTags: taskWithTags,
-			Auth: auth.AuthenticatedPage{
-				Authorized: authorized,
-				User: auth.UserUI{
-					PathToPfp: pathToPfp,
-					Username:  username,
-				},
-			},
-			Buttons: buttons,
+			Buttons:      buttons,
 		},
 		Vault:         vault,
-		User:          User,
+		Auth:          User,
 		Collaborators: collaborators,
 	}
 }
 
 type vaultTagsPage struct {
 	tag.TagsPage
-	User          UserVaultUI
+	Vault VaultUI
+
+	Auth          UserVaultUI
 	Collaborators []CollaboratorUI
 }
 
-func newVaultTagsPage(
+func NewVaultTagsPage(
 	tags []tag.TagWithTasks,
-	authorized bool,
-	pathToPfp string,
+	Vault VaultUI,
 	User UserVaultUI,
 	collaborators []CollaboratorUI,
-	username string) vaultTagsPage {
+) vaultTagsPage {
 
 	return vaultTagsPage{
 		TagsPage: tag.TagsPage{
 			TagsWithTasks: tags,
-			Auth: auth.AuthenticatedPage{
-				Authorized: authorized,
-				User: auth.UserUI{
-					PathToPfp: pathToPfp,
-					Username:  username,
-				},
-			},
 		},
-		User:          User,
+		Vault:         Vault,
+		Auth:          User,
 		Collaborators: collaborators,
 	}
 }
 
 type vaultHomePage struct {
-	User          UserVaultUI
+	Auth          UserVaultUI
 	Vault         VaultUI
 	Collaborators []CollaboratorUI
-	Auth          auth.AuthenticatedPage
 }
 
 func NewVaultPage(
-	authorized bool,
+
 	User UserVaultUI,
-	pathToPfp string,
-	username string,
 	vault VaultUI,
 	collaborators []CollaboratorUI,
 ) vaultHomePage {
 
 	return vaultHomePage{
 		Collaborators: collaborators,
-		User:          User,
-		Auth: auth.AuthenticatedPage{
-			Authorized: authorized,
-			User: auth.UserUI{
-				PathToPfp: pathToPfp,
-				Username:  username,
-			},
-		},
+		Auth:          User,
+
 		Vault: vault,
 	}
 }

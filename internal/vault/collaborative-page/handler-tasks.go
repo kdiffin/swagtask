@@ -64,20 +64,20 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request, queries *db.Queries
 	page := common.NewVaultTasksPage(
 		tasksReal,
 		filters,
-		true,
-		user.PathToPfp,
 		vaultWithCollaborators.VaultUI,
 		common.UserVaultUI{
-			PathToPfp: user.PathToPfp,
-			Username:  user.Username,
-			Role:      role,
+			PathToPfp:  user.PathToPfp,
+			Authorized: true,
+			Username:   user.Username,
+			Role:       role,
 		},
 		collaborators,
-		user.Username)
+	)
 
 	templates.Render(w, "collaborative-tasks-page", page)
 }
 
+// this is for the single page
 // i had to replicate this function because of the crap with templates
 // not being smart
 func HandlerGetTask(w http.ResponseWriter,
@@ -132,20 +132,18 @@ func HandlerGetTask(w http.ResponseWriter,
 	}
 	prevButton, nextButton := task.GetTaskNavigationButtons(r.Context(), queries, createdAt, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(id))
 	page := common.NewVaultTaskPage(tasksReal,
-		true,
 		task.TaskPageButtons{
 			PrevButton: prevButton,
 			NextButton: nextButton,
 		},
-		user.PathToPfp,
 		vaultWithCollaborators.VaultUI,
 		common.UserVaultUI{
-			PathToPfp: user.PathToPfp,
-			Username:  user.Username,
-			Role:      role,
+			PathToPfp:  user.PathToPfp,
+			Username:   user.Username,
+			Authorized: true,
+			Role:       role,
 		},
 		collaborators,
-		user.Username,
 	)
 
 	templates.Render(w, "collaborative-task-page", page)

@@ -3,7 +3,7 @@
   {{ template "head" .Vault.Name}}
 
   <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
-    {{ template "navbar" .Auth }}
+    {{ template "collaborative-navbar" .}}
 
     <main class="container mx-auto px-4 py-4 max-w-5xl space-y-6">
       <div class="flex justify-between items-center gap-2">
@@ -11,11 +11,11 @@
           <h1 class="text-4xl font-semibold">
             Welcome to <span class="text-yellow-400">{{.Vault.Name}}</span
             >,
-            <span class="text-blue-400">{{.User.Username}}</span>
+            <span class="text-blue-400">{{.Auth.Username}}</span>
           </h1>
           <div class="py-2">
             <p class="">
-              You are a <span class="text-purple-400">{{.User.Role}}</span>
+              You are a <span class="text-purple-400">{{.Auth.Role}}</span>
             </p>
             <div class="flex items-center gap-2">
               This vault is owned by:
@@ -31,7 +31,7 @@
             </div>
           </div>
         </div>
-        <img src="{{.User.PathToPfp}}" alt="" class="w-14 h-14 rounded-full" />
+        <img src="{{.Auth.PathToPfp}}" alt="" class="w-14 h-14 rounded-full" />
       </div>
 
       <!-- Cards Section -->

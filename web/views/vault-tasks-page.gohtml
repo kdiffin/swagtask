@@ -2,14 +2,15 @@
 <html class="bg-zinc-900">
   {{ template "head-vault" "Collaborative Tasks" }}
 
-  <body hx-ext="ws" class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
-    {{ template "navbar" .Auth }}
+  <body
+    hx-ext="ws"
+    ws-connect="/vaults/{{.Vault.ID}}/ws/"
+    class="bg-zinc-900 text-gray-200 min-h-screen font-sans"
+  >
+    {{ template "collaborative-navbar" .}}
     <!-- example -->
 
-    <div
-      class="elastic container py-10 border"
-      ws-connect="/vaults/{{.Vault.ID}}/wstest/"
-    >
+    <div class="elastic container py-10 border">
       <form ws-send>
         <h3 class="text-2xl text-purple-500">Send a Message</h3>
         <div>
@@ -30,10 +31,7 @@
       <div id="idMessage"></div>
     </div>
 
-    <main
-      ws-connect="/vaults/{{.Vault.ID}}/ws/"
-      class="container mx-auto px-4 py-4 max-w-6xl space-y-6"
-    >
+    <main class="container mx-auto px-4 py-4 max-w-6xl space-y-6">
       <!-- Collaborative Header -->
       <div class="bg-zinc-800 rounded-sm shadow-lg border border-zinc-700 p-6">
         <div class="flex justify-between items-start mb-4">
@@ -67,13 +65,13 @@
           </div>
           <div class="flex items-center gap-3">
             <img
-              src="{{.User.PathToPfp}}"
+              src="{{.Auth.PathToPfp}}"
               alt=""
               class="w-12 h-12 rounded-full border-2 border-zinc-600"
             />
             <div>
-              <p class="text-white font-medium">{{.User.Username}}</p>
-              <p class="text-sm text-purple-400">{{.User.Role}}</p>
+              <p class="text-white font-medium">{{.Auth.Username}}</p>
+              <p class="text-sm text-purple-400">{{.Auth.Role}}</p>
             </div>
           </div>
         </div>
@@ -175,6 +173,7 @@
 
 {{ block "collaborative-task" . }}
 <div
+  hx-boost="true"
   id="task-{{ .ID }}"
   class="bg-zinc-900/80 space-y-3 relative border border-zinc-700/50 rounded-sm shadow-md p-5 transition-all hover:shadow-lg hover:border-zinc-600/50"
 >

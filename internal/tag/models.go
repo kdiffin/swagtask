@@ -4,7 +4,7 @@ import "swagtask/internal/auth"
 
 type tagAuthor = auth.Author
 
-type tagUI struct {
+type TagUI struct {
 	VaultID string
 	Author  tagAuthor
 	Name    string
@@ -18,14 +18,14 @@ type availableTask = taskOption
 type relatedTask taskOption
 
 type TagWithTasks struct {
-	tagUI
+	TagUI
 	RelatedTasks   []relatedTask
 	AvailableTasks []availableTask
 }
 
-func newTagWithTasks(tag tagUI, relatedTasks []relatedTask, availableTasks []availableTask) TagWithTasks {
+func newTagWithTasks(tag TagUI, relatedTasks []relatedTask, availableTasks []availableTask) TagWithTasks {
 	return TagWithTasks{
-		tagUI:          tag,
+		TagUI:          tag,
 		RelatedTasks:   relatedTasks,
 		AvailableTasks: availableTasks,
 	}
