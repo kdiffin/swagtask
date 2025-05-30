@@ -37,13 +37,18 @@ func main() {
 
 	templates := template.NewTemplate()
 	mux := router.NewMux(queries, templates)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // fallback for local dev
+	}
 	server := http.Server{
-		Addr:    "0.0.0.0:42069",
+		Addr:    ":" + port,
 		Handler: middleware.Logging(mux),
 	}
 
 	fmt.Println("running server")
-	log.Fatal(server.ListenAndServeTLS("cert.pem", "key.pem"))
+
+	log.Fatal(server.ListenAndServe())
 	fmt.Println("not running servers")
 
 }
