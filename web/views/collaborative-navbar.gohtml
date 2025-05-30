@@ -179,64 +179,43 @@ class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50">
   </div>
 </div>
 <script>
-  // Get the form element
-  const form = document.getElementById("taskForm");
 
-  // Add an event listener for form submission
-  form.addEventListener("submit", function (event) {
-    event.preventDefault(); // Prevent the default form submission
+  // function getRandomColor() {
+  //   const colors = ["#f44336", "#2196f3", "#4caf50", "#ff9800", "#9c27b0"];
+  //   const randomIndex = Math.floor(Math.random() * colors.length);
+  //   return colors[randomIndex];
+  // }
+  // document.addEventListener("DOMContentLoaded", () => {
+  //     document.body.addEventListener("htmx:wsAfterMessage", (evt) => {
+  //       console.log("DEEZ")
+  //       let messageJson = JSON.parse(evt.detail.message);
 
-    // Get the input value
-    const taskName = document.getElementById("navbar-search-task").value;
+  //       if (messageJson.Type === "cursor_info") {
+  //         const { x, y, username } = messageJson;
+  //         const id = `cursor-${username}`;
+  //         let cursor = document.getElementById(id);
 
-    // Get the current URL search parameters
-    const currentParams = new URLSearchParams(window.location.search);
+  //         // Create cursor element if it doesn't exist
+  //         //  prettier-ignore-start
+  //          if(username != {{.Auth.Username}}) {
+  //         // prettier-ignore-end
+  //            if (!cursor) {
+  //              cursor = document.createElement("div");
+  //              cursor.id = id;
+  //              cursor.className = "live-cursor";
+  //              const color = getRandomColor();
+  //              cursor.innerHTML = `<div class="cursor-dot" style="background-color: ${color}; box-shadow: 0 0 5px ${color};"></div>
+  //                      <div class="cursor-name" style="background-color: ${color};">${username}</div>`;
+  //              document.body.appendChild(cursor);
+  //            }
 
-    // Add the new taskName parameter
-    currentParams.set("taskName", taskName);
-
-    // Construct the new URL with the updated query string
-    const newUrl = `/tasks?${currentParams.toString()}/`;
-
-    // Redirect to the updated URL
-    window.location.href = newUrl;
-  });
-
-  function getRandomColor() {
-    const colors = ["#f44336", "#2196f3", "#4caf50", "#ff9800", "#9c27b0"];
-    const randomIndex = Math.floor(Math.random() * colors.length);
-    return colors[randomIndex];
-  }
-  document.addEventListener("DOMContentLoaded", () => {
-      document.body.addEventListener("htmx:wsAfterMessage", (evt) => {
-        let messageJson = JSON.parse(evt.detail.message);
-
-        if (messageJson.Type === "cursor_info") {
-          const { x, y, username } = messageJson;
-          const id = `cursor-${username}`;
-          let cursor = document.getElementById(id);
-
-          // Create cursor element if it doesn't exist
-          //  prettier-ignore-start
-           if(username != {{.Auth.Username}}) {
-          // prettier-ignore-end
-             if (!cursor) {
-               cursor = document.createElement("div");
-               cursor.id = id;
-               cursor.className = "live-cursor";
-               const color = getRandomColor();
-               cursor.innerHTML = `<div class="cursor-dot" style="background-color: ${color}; box-shadow: 0 0 5px ${color};"></div>
-                       <div class="cursor-name" style="background-color: ${color};">${username}</div>`;
-               document.body.appendChild(cursor);
-             }
-
-             // Update position
-             cursor.style.left = `${x}px`;
-             cursor.style.top = `${y}px`;
-           }
-        }
-      });
-    });
+  //            // Update position
+  //            cursor.style.left = `${x}px`;
+  //            cursor.style.top = `${y}px`;
+  //          }
+  //       }
+  //     });
+  //   });
 </script>
 
 {{ end }}

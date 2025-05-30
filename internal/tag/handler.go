@@ -73,6 +73,27 @@ func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 	w.Write([]byte(nil))
 }
 
+func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+	tagId := r.PathValue("id")
+	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
+	if utils.CheckError(w, r, err) {
+		return
+	}
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
+
+	errTag := CreateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	if utils.CheckError(w, r, errTag) {
+		return
+	}
+
+	// bc we want htmx to rerender it
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(nil))
+}
+
 func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
 	tagId := r.PathValue("id")
 	taskId := r.FormValue("task_id")

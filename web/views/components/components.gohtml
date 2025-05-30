@@ -148,43 +148,43 @@
       });
 
       // listen to mouse movement
-      // (() => {
-      //   let lastSent = 0;
-      //   let ws = null;
-      //   let moveHandler = null;
+      (() => {
+        let lastSent = 0;
+        let ws = null;
+        let moveHandler = null;
 
-      //   document.addEventListener("htmx:wsOpen", (ev) => {
-      //     ws = ev.detail.socketWrapper;
+        document.addEventListener("htmx:wsOpen", (ev) => {
+          ws = ev.detail.socketWrapper;
 
-      //     moveHandler = (e) => {
-      //       const now = Date.now();
-      //       if (now - lastSent > 10) {
-      //         ws.send(
-      //           JSON.stringify({
-      //             action: "move_cursor",
-      //             // path is required for my server to work
-      //             path: "",
-      //             data: {
-      //               x: e.pageX.toString(),
-      //               y: e.pageY.toString(),
-      //             },
-      //           })
-      //         );
-      //         lastSent = now;
-      //       }
-      //     };
+          moveHandler = (e) => {
+            const now = Date.now();
+            if (now - lastSent > 10) {
+              ws.send(
+                JSON.stringify({
+                  action: "move_cursor",
+                  // path is required for my server to work
+                  path: "",
+                  data: {
+                    x: e.pageX.toString(),
+                    y: e.pageY.toString(),
+                  },
+                })
+              );
+              lastSent = now;
+            }
+          };
 
-      //     document.addEventListener("mousemove", moveHandler);
-      //   });
+          document.addEventListener("mousemove", moveHandler);
+        });
 
-      //   document.addEventListener("htmx:wsClose", () => {
-      //     if (moveHandler) {
-      //       document.removeEventListener("mousemove", moveHandler);
-      //       moveHandler = null;
-      //     }
-      //     ws = null;
-      //   });
-      // })();
+        document.addEventListener("htmx:wsClose", () => {
+          if (moveHandler) {
+            document.removeEventListener("mousemove", moveHandler);
+            moveHandler = null;
+          }
+          ws = null;
+        });
+      })();
     });
   </script>
 </head>

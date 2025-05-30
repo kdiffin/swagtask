@@ -19,7 +19,7 @@ WITH authorized_user AS (
 )
 INSERT INTO tags (name, user_id, vault_id)
 SELECT sqlc.arg('name'), sqlc.arg('user_id')::UUID, sqlc.arg('vault_id')::UUID
-FROM authorized_user;
+FROM authorized_user RETURNING id;
 
 -- name: GetTagWithTaskRelations :many
 WITH tg_author AS (

@@ -1,6 +1,6 @@
 chat gippity made the readme
 im doing this to learn htmx and golang i hate react now im a htmx-grug-pilled dev, f the virtual dom
-chat gippity made most of my frontends styles btw
+v0 made like 50% of my frontends styles btw
 
 ---
 
@@ -120,7 +120,8 @@ chat gippity made most of my frontends styles btw
     - [x] make task stuff work
     - [ ] make the tag stuff work
           **!!!**
-      - [ ] refactor how adding tags works
+      - [ ] refactor how adding tags works (single tag)
+        - [ ] change the query to be like the tasks one where it returns and redo the handler then
     - [x] think and fix what to do with paths
 
   - [x] make real time mouse sharing
@@ -129,11 +130,15 @@ chat gippity made most of my frontends styles btw
         - [x] hx boost ftw
         - [x] make the page like a SPA so u dont have to reconnect to the ws when switching from tasks to tags page
 
+  - [ ] refactor all the services and websockets logic
+    - [ ] test (manually)
+    - [ ] main thing is change everything to be vault-scoped (everything)
   - [ ] architecture better
   - [ ] add error showing to RBAC issues
 
 ### maybe later if i revisit
 
+- [ ] do a good frontend with templ
 - [ ] add a home page with "current active users"
 - [ ] add JSON endpoint for mobile app, openapi specs
 
@@ -166,7 +171,6 @@ Aight 😤 let’s cook something that's:
 - 📝 Add / Edit / Delete tasksw
 - 🏷️ Tag tasks with colors (e.g., `#school`, `#project`, `#bug`)
 - ✅ Mark tasks complete
-- 🧵 Nest sub-tasks inside parent tasks
 - 🔍 HTMX-powered search and tag filter
 - 💥 All inline — no page reloads
 
