@@ -1,0 +1,227 @@
+{{ block "collaborative-navbar" . }}
+<nav
+  hx-boost="true"
+  class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50"
+>
+  <div class="container mx-auto px-6 py-4">
+    <div class="flex items-center justify-between">
+      <!-- Left - Vault Info -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center">
+            {{if .Vault.Locked}}
+            <i class="fas fa-lock text-white text-lg"></i>
+            {{else}}
+            <i class="fas fa-vault text-white text-lg"></i>
+            {{ end }}
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white">{{.Vault.Name}}</h1>
+            <p class="text-zinc-400 text-sm">{{.Vault.Description}}</p>
+          </div>
+        </div>
+
+        <!-- Vault Status -->
+        {{if .Vault.Locked}}
+        <span
+          class="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium border border-red-500/30"
+        >
+          <i class="fas fa-lock text-xs mr-1"></i>
+          Locked
+        </span>
+        {{else}}
+        <span
+          class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium border border-green-500/30"
+        >
+          <i class="fas fa-unlock text-xs mr-1"></i>
+          Active
+        </span>
+        {{ end }}
+      </div>
+
+      <!-- Center - Search Input -->
+      <!-- <div class="flex-1 max-w-md mx-8">
+        <form id="searchForm" class="relative">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+            <i class="fas fa-search text-sm"></i>
+          </span>
+          <input
+            type="text"
+            id="navbar-search"
+            name="search"
+            placeholder="Search tasks"
+            class="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm transition-all placeholder-zinc-500"
+          />
+        </form>
+      </div> -->
+
+      <!-- Right - Navigation & User -->
+      <div class="flex items-center space-x-6">
+        <!-- Navigation Links -->
+        <div class="flex items-center space-x-4">
+          <a
+            hx-boost="false"
+            href="/"
+            class="flex items-center space-x-2 text-zinc-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-zinc-700/50"
+          >
+            <i class="fas fa-home text-sm"></i>
+            <span class="text-sm font-medium">Home</span>
+          </a>
+          <a
+            href="/vaults/{{.Vault.ID}}/tasks/"
+            class="flex items-center space-x-2 text-zinc-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-zinc-700/50"
+          >
+            <i class="fas fa-tasks text-sm"></i>
+            <span class="text-sm font-medium">Tasks</span>
+          </a>
+          <a
+            href="/vaults/{{.Vault.ID}}/tags/"
+            class="flex items-center space-x-2 text-zinc-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-zinc-700/50"
+          >
+            <i class="fas fa-tag text-sm"></i>
+            <span class="text-sm font-medium">Tags</span>
+          </a>
+        </div>
+
+        <!-- User Profile -->
+        {{if .Auth.Authorized}}
+        <div class="flex items-center space-x-3">
+          <div class="flex items-center space-x-2">
+            <img
+              src="{{.Auth.PathToPfp}}"
+              alt="Profile"
+              class="w-8 h-8 rounded-full border-2 border-zinc-600"
+            />
+            <div class="text-right">
+              <div class="text-white text-sm font-medium">
+                {{.Auth.Username}}
+              </div>
+              <div class="text-zinc-400 text-xs">{{.Auth.Role}}</div>
+            </div>
+          </div>
+          <form action="/logout/" method="post" class="inline">
+            <button
+              type="submit"
+              class="text-red-400 hover:text-red-300 transition-colors p-2 rounded-md hover:bg-red-500/10"
+            >
+              <i class="fas fa-sign-out-alt"></i>
+            </button>
+          </form>
+        </div>
+        {{else}}
+        <div class="flex items-center space-x-3">
+          <a
+            href="/login/"
+            class="text-zinc-400 hover:text-white transition-colors text-sm font-medium"
+          >
+            Log in
+          </a>
+          <a
+            href="/sign-up/"
+            class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200"
+          >
+            Sign up
+          </a>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- <script>
+  // Search form handling
+  const searchForm = document.getElementById("searchForm");
+  
+  searchForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    
+    const searchValue = document.getElementById("navbar-search").value;
+    
+    if (searchValue.trim()) {
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.set("search", searchValue);
+      
+      // Redirect to current page with search parameter
+      const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
+      window.location.href = newUrl;
+    }
+  });
+</script> -->
+
+<!-- Mobile menu toggle (hidden by default) -->
+<div
+  class="md:hidden hidden bg-slate-900/95 border-b border-purple-500/20"
+  id="mobile-menu"
+>
+  <div class="container mx-auto px-6 py-4">
+    <div class="space-y-3">
+      <a
+        href="/vaults/{{.Vault.ID}}/tasks/"
+        class="block text-white hover:text-purple-300 transition-colors"
+      >
+        <i class="fas fa-tasks mr-2"></i>Tasks
+      </a>
+      <a
+        href="/vaults/{{.Vault.ID}}/analytics/"
+        class="block text-purple-300 hover:text-white transition-colors"
+      >
+        <i class="fas fa-chart-line mr-2"></i>Analytics
+      </a>
+      <a
+        href="/vaults/{{.Vault.ID}}/settings/"
+        class="block text-purple-300 hover:text-white transition-colors"
+      >
+        <i class="fas fa-cog mr-2"></i>Settings
+      </a>
+      <a
+        href="/vaults/{{.Vault.ID}}/activity/"
+        class="block text-purple-300 hover:text-white transition-colors"
+      >
+        <i class="fas fa-history mr-2"></i>Activity
+      </a>
+    </div>
+  </div>
+</div>
+<script>
+  function getRandomColor() {
+    const colors = ["#f44336", "#2196f3", "#4caf50", "#ff9800", "#9c27b0"];
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    return colors[randomIndex];
+  }
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.addEventListener("htmx:wsAfterMessage", (evt) => {
+      console.log("DEEZ");
+      let messageJson = JSON.parse(evt.detail.message);
+
+      if (messageJson.Type === "cursor_info") {
+        const { x, y, username } = messageJson;
+        const id = `cursor-${username}`;
+        let cursor = document.getElementById(id);
+
+        // Create cursor element if it doesn't exist
+        //  prettier-ignore-start
+
+        if (username != {{.Auth.Username}}){
+
+          // prettier-ignore-end
+          if (!cursor) {
+            cursor = document.createElement("div");
+            cursor.id = id;
+            cursor.className = "live-cursor";
+            const color = getRandomColor();
+            cursor.innerHTML = `<div class="cursor-dot" style="background-color: ${color}; box-shadow: 0 0 5px ${color};"></div>
+                         <div class="cursor-name" style="background-color: ${color};">${username}</div>`;
+            document.body.appendChild(cursor);
+          }
+        }
+
+        // Update position
+        cursor.style.left = `${x}px`;
+        cursor.style.top = `${y}px`;
+      }
+    });
+  });
+</script>
+
+{{ end }}

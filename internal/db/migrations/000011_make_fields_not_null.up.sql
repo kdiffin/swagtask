@@ -1,0 +1,50 @@
+ALTER TABLE sessions
+ALTER COLUMN user_id
+SET
+    NOT NULL;
+
+ALTER TABLE tags
+ALTER COLUMN created_at
+SET
+    NOT NULL,
+ALTER COLUMN updated_at
+SET
+    NOT NULL;
+
+ALTER TABLE tasks
+ALTER COLUMN created_at
+SET
+    NOT NULL,
+ALTER COLUMN updated_at
+SET
+    NOT NULL,
+ALTER COLUMN completed
+SET
+    NOT NULL;
+
+ALTER TABLE users
+ALTER COLUMN created_at
+SET
+    NOT NULL,
+ALTER COLUMN updated_at
+SET
+    NOT NULL,
+ALTER COLUMN path_to_pfp
+SET
+    NOT NULL;
+
+ALTER TABLE vault_user_relations
+ALTER COLUMN role
+SET
+    NOT NULL;
+
+ALTER TABLE vaults
+ALTER COLUMN created_at
+SET
+    NOT NULL,
+ALTER COLUMN updated_at
+SET
+    NOT NULL,
+ALTER COLUMN locked
+SET
+    NOT NULL;

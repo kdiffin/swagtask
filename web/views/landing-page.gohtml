@@ -1,0 +1,241 @@
+{{ define "landing-page" }}
+<html class="bg-zinc-900">
+  <style>
+    .link {
+      color: lightcoral;
+    }
+    .link:hover {
+      color: lightblue;
+      text-underline-offset: 4px;
+      text-decoration: underline;
+    }
+  </style>
+  {{ template "head-vault" "Welcome to Your Collaborative Vault App" }}
+  <body class="bg-zinc-900 text-gray-200 min-h-screen font-sans">
+    {{ template "navbar" .Auth }}
+    <main
+      class="container mx-auto px-4 py-12 max-w-4xl flex flex-col items-center gap-12"
+    >
+      <!-- Hero Section -->
+      <section class="w-full text-center space-y-6">
+        <h1
+          class="text-4xl md:text-5xl font-bold text-white flex items-center justify-center gap-3"
+        >
+          Hello grug, <span class="text-purple-400"> app == SwagTask</span>
+        </h1>
+        <div>
+          <p class="text-lg max-w-2xl mb-1 mx-auto">
+            This site is a minimalist realtime multicollaborative todo app made
+            with Go's stdlib, HTMX and Tailwind (yes, virtually only 2
+            dependencies)
+          </p>
+        </div>
+
+        <a
+          href="/vaults"
+          class="inline-block mt-4 px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-sm shadow transition-colors text-lg"
+        >
+          App
+        </a>
+        <a
+          href="https://github.com/kdiffin/fem-htmx-proj"
+          target="_blank"
+          class="inline-block mt-4 px-8 py-3 bg-zinc-600 hover:bg-zinc-500 text-white font-semibold rounded-sm shadow transition-colors text-lg"
+        >
+          Github
+        </a>
+
+        <div class="mx-auto max-w-3xl pt-4">
+          <p class="text-sm mb-2 text-purple-400">
+            Click for a demo login, u can sign up and login urself too
+          </p>
+
+          <div class="flex items-center justify-center flex-wrap gap-2">
+            <form action="/login/" method="POST">
+              <input type="hidden" name="username" value="cerealguy" />
+              <input type="hidden" name="password" value="cerealguy" />
+              <button
+                type="submit"
+                class="flex hover:bg-zinc-600/50 cursor-pointer items-center gap-2 bg-zinc-900 px-3 py-2 rounded-sm border border-zinc-700"
+              >
+                <img
+                  class="w-6 h-6 rounded-full"
+                  src="/static/images/cerealguy.jpg"
+                />
+
+                <span class="text-sm text-white">cerealguy</span>
+                <span
+                  class="text-xs bg-purple-400/20 rounded-full px-2 text-purple-300"
+                  >yes</span
+                >
+              </button>
+            </form>
+
+            <form action="/login/" method="POST">
+              <button
+                type="submit"
+                class="flex hover:bg-zinc-600/50 cursor-pointer items-center gap-2 bg-zinc-900 px-3 py-2 rounded-sm border border-zinc-700"
+              >
+                <input type="hidden" name="username" value="chud" />
+                <input type="hidden" name="password" value="chud" />
+                <img
+                  class="w-6 h-6 rounded-full"
+                  src="/static/images/chudjak.jpg"
+                />
+                <span class="text-sm text-white">chud</span>
+                <span
+                  class="text-xs bg-purple-400/20 rounded-full px-2 text-purple-300"
+                  >billions must todo app</span
+                >
+              </button>
+            </form>
+            <form method="POST" action="/login/">
+              <input type="hidden" name="username" value="admin" />
+              <input type="hidden" name="password" value="admin" />
+              <button
+                type="submit"
+                class="flex hover:bg-zinc-600/50 cursor-pointer items-center gap-2 bg-zinc-900 px-3 py-2 rounded-sm border border-zinc-700"
+              >
+                <img
+                  class="w-6 h-6 rounded-full"
+                  src="/static/images/default-avatar.jpg"
+                />
+                <span class="text-sm text-white">admin</span>
+                <span
+                  class="text-xs bg-purple-400/20 rounded-full px-2 text-purple-300"
+                  >administrator.</span
+                >
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- Demo GIF Section -->
+      <section class="w-full flex flex-col items-center">
+        <div
+          class="w-full max-w-3xl aspect-video bg-zinc-800/70 border border-zinc-700/40 rounded-md flex items-center justify-center shadow-lg"
+        >
+          <!-- Replace src below with your actual demo GIF path -->
+          <video autoplay muted playsinline>
+            <source src="/static/videos/final.mp4" auto type="video/mp4" />
+          </video>
+          <!-- <span class="text-zinc-500 text-lg">loading probably</span> -->
+        </div>
+        <p class="mt-2 text-zinc-500 text-sm">See SwagTask in action!</p>
+      </section>
+
+      <!-- Blog Section -->
+      <section class="mt-12 w-full max-w-3xl mx-auto">
+        <div
+          class="bg-zinc-800/80 border border-zinc-700/40 rounded-md p-8 shadow-lg"
+        >
+          <h2
+            class="text-2xl md:text-3xl font-bold text-white flex items-center justify-center gap-3 mb-6"
+          >
+            Blog/Rant type thing?
+          </h2>
+          <div class="space-y-5">
+            <p class="text-zinc-300 text-base leading-relaxed">
+              Everything here was hand-rolled (even the pub-sub) and follows
+              <span
+                class="inline-block bg-purple-700/20 px-2 py-1 rounded text-purple-300 font-medium"
+              >
+                <a
+                  href="https://htmx.org/essays/hateoas/"
+                  target="_blank"
+                  class="underline hover:text-purple-400 transition-colors"
+                >
+                  HATEOAS.
+                </a>
+              </span>
+            </p>
+            <ul
+              class="list-disc list-inside mb-5 text-zinc-400 text-base space-y-1 pl-4 mb-2"
+            >
+              <li>no frameworks, no build step, just Go stdlib and htmx</li>
+              <li>pub-sub, websockets, and all the glue code is mine</li>
+              <li>
+                no dependencies, no npm, no yarn, no package.json (If I havent
+                made it clear yet, I'm tired of JS build step/dependency hell.)
+              </li>
+            </ul>
+            <p class="text-zinc-300 text-base leading-relaxed">
+              <span class="italic text-zinc-400">
+                This app is a heavy WIP.
+              </span>
+            </p>
+
+            <hr class="border-zinc-700" />
+            I made this website to test the limits of a no build-step, low-js,
+            zero dependency system.
+            <br />
+            <br />
+            I stumbled upon the Go programming language, the Go standard library
+            and HTMX, Which I fell in love with after developing this app. I am
+            quite impressed with how far I was able to take this.
+            <br />
+            <br />
+            Because of this project being so no-dependency focused I actually
+            managed to learn many topics I delegated to SaaS and libraries
+            previously.
+            <br />
+            <br />
+            Most notably being http, networking and how the browser actually
+            works -> this was delegated to nextjs previously and I didnt
+            understand the network tab in my browser, with htmx the network tab
+            becomes a first class citizen in development which greatly enhanced
+            my understanding of REST principles and http/s.
+            <br />
+            <br />
+            You become enlightened to browser native caching techniques and
+            actual performance optimizations instead of pointless v-dom rerender
+            juggling with state and memoization attemps, HTMX is lean and mean,
+            low-level-esque and imperative, and a joy for backend developers.
+            <br />
+            <br />
+            Really enjoyed that freedom this project.
+            <br />
+            <br />
+            Getting exposed to an event-driven system leveled me up and now I
+            really know when I need smth reactive (lets say a chat app thats
+            dynamic in terms of client side rendering) or when i need smth event
+            driven (most things). This realization has piqued my interest in
+            templ and alpine, which I believe could be a good replacement to the
+            missing part of my stack, being
+            <span class="underline text-blue-400"
+              >islands of reactivity and componentization</span
+            >
+            <br />
+            <br />
+            My only drawbacks here have been the lack of UI componentization and
+            typesafety (in go's http/template). In my future projects I'll use
+            templ for sure. Template based dev ain't for me, more of a
+            components guy.
+            <br />
+            <br />
+            And for the realtime thing I think a reactive way of doings things
+            would be better if the system got more complex. (this is just a
+            hunch though, after I do the alpine stuff I'll have an opinion on
+            this for real)
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-12 w-full max-w-3xl mx-auto">
+        <h2
+          class="text-2xl md:text-3xl font-bold text-white flex items-center justify-center gap-3 mb-6"
+        >
+          Random
+        </h2>
+        <div class="grid place-items-center gap-12">
+          <img src="/static/images/dancing-gopher.gif" alt="" srcset="" />
+          <img src="/static/images/poison.png" alt="" srcset="" />
+          <img src="/static/images/htmxmeme.png" alt="" srcset="" />
+        </div>
+      </section>
+    </main>
+    {{ template "footer" . }}
+  </body>
+</html>
+{{ end }}

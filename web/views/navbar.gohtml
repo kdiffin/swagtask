@@ -1,0 +1,148 @@
+{{ block "navbar" . }}
+<nav
+  class="bg-zinc-800/80 backdrop-blur-md shadow-md border-b border-zinc-700/50 sticky top-0 z-10 mb-6"
+>
+  <div class="container mx-auto px-4 py-3">
+    <div class="flex items-center justify-between">
+      <!-- Left: Logo -->
+      <div class="flex items-center">
+        <i class="fas fa-tasks text-blue-500 mr-2 text-xl"></i>
+        <strong class="text-xl font-bold text-white">
+          <a href="/" class="hover:opacity-90 transition-opacity">SwagTask</a>
+        </strong>
+      </div>
+
+      <!-- Center: Search bar -->
+      <div class="flex-1 mx-10 max-w-md">
+        <form id="taskForm" class="relative flex items-center w-full">
+          <div class="relative w-full">
+            <span
+              class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+            >
+              <i class="fas fa-search text-xs"></i>
+            </span>
+            <input
+              class="w-full rounded-sm border border-zinc-700 bg-zinc-900/80 text-white placeholder-zinc-500 py-2 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+              type="text"
+              id="navbar-search-task"
+              placeholder="Search tasks..."
+              name="taskName"
+              required
+            />
+            <button
+              type="submit"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 hover:text-zinc-300"
+            >
+              <i class="fas fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right: Nav & Auth -->
+      <div class="hidden md:flex items-center gap-4">
+        <div class="flex items-center space-x-4">
+          <a
+            href="/tasks/"
+            class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
+          >
+            Tasks
+          </a>
+          <a
+            href="/tags/"
+            class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
+          >
+            Tags
+          </a>
+          <a
+            href="/vaults/"
+            class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
+          >
+            Vaults
+          </a>
+        </div>
+
+        <div class="h-5 w-px bg-zinc-700/50"></div>
+
+        <div class="flex items-center gap-4">
+          {{ if .Authorized }}
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <img
+                src="{{.User.PathToPfp}}"
+                alt="profile picture"
+                class="w-7 h-7 rounded-full object-cover border border-white/20 shadow-sm"
+              />
+              <span
+                class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
+              >
+                {{.User.Username}}
+              </span>
+            </div>
+            <form action="/logout/" method="post">
+              <button
+                type="submit"
+                class="text-red-400 hover:text-red-300 font-medium transition duration-200 text-sm"
+              >
+                <i class="fas fa-sign-out-alt text-xs mr-1"></i>Logout
+              </button>
+            </form>
+          </div>
+          {{ else }}
+          <div class="flex items-center gap-3">
+            <a
+              href="/login/"
+              class="text-zinc-300 hover:text-white transition duration-200 text-sm font-medium"
+            >
+              Log in
+            </a>
+            <a
+              href="/sign-up/"
+              class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-sm text-sm font-medium transition-colors duration-200"
+            >
+              Sign up
+            </a>
+          </div>
+          {{ end }}
+        </div>
+      </div>
+
+      <!-- Mobile menu button -->
+      <button class="md:hidden text-zinc-300 hover:text-white">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu (hidden by default) -->
+  <div class="md:hidden hidden">
+    <!-- Mobile navigation links -->
+  </div>
+</nav>
+
+<script>
+  // Get the form element
+  const form = document.getElementById("taskForm");
+
+  // Add an event listener for form submission
+  form.addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    // Get the input value
+    const taskName = document.getElementById("navbar-search-task").value;
+
+    // Get the current URL search parameters
+    const currentParams = new URLSearchParams(window.location.search);
+
+    // Add the new taskName parameter
+    currentParams.set("taskName", taskName);
+
+    // Construct the new URL with the updated query string
+    const newUrl = `/tasks?${currentParams.toString()}/`;
+
+    // Redirect to the updated URL
+    window.location.href = newUrl;
+  });
+</script>
+
+{{ end }}

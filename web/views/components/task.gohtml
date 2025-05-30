@@ -1,0 +1,283 @@
+{{ block "task" . }}
+<div
+  id="task-{{ .ID }}"
+  class="request-container bg-zinc-900/80 space-y-3 relative border border-zinc-700/50 rounded-sm shadow-md p-5 transition-all hover:shadow-lg"
+>
+  {{ block "task-header" . }}{{ end }}
+
+  {{ template "task-tags" .}}
+
+  {{ block "task-edit-form" . }}{{ end }}
+  <div
+    class="flex select-none pointer-events-none items-center justify-between pt-3 border-t border-zinc-700/50"
+  >
+    <div class="flex items-center gap-3"></div>
+
+    <div class="text-xs text-zinc-500">
+      <i class="fas fa-clock text-[10px] mr-1"></i>
+      <span>Created at: </span>
+      <span data-iso="{{.CreatedAt}}" class="created-at">{{.CreatedAt}}</span>
+    </div>
+  </div>
+</div>
+{{ end }}
+
+{{ block "task-header" . }}
+<div class="flex justify-between items-start">
+  <div>
+    <h3 class="text-xl font-semibold text-white">{{ .Name }}</h3>
+    <p class="text-sm text-zinc-400 mt-1.5">{{ .Idea }}</p>
+  </div>
+  <div class="space-y-3">
+    <div class="flex items-center gap-2">
+      <div class="relative w-6 h-6">
+        <img
+          id="completion-indicator-task-{{ .ID }}"
+          src="/static/images/bars.svg"
+          class="w-full htmx-indicator absolute top-0 left-0"
+          alt="loading"
+        />
+        <img
+          id="delete-indicator-task-{{ .ID }}"
+          src="/static/images/bars.svg"
+          class="w-full htmx-indicator absolute top-0 left-0"
+          alt="loading"
+        />
+        <img
+          id="add-tag-indicator-task-{{ .ID }}"
+          src="/static/images/bars.svg"
+          class="w-full htmx-indicator absolute top-0 left-0"
+          alt="loading"
+        />
+      </div>
+
+      <a
+        href="/tasks/{{ .ID }}"
+        class="text-xs text-zinc-400 bg-zinc-800 px-2.5 py-1.5 w-16 truncate hover:min-w-max rounded-sm hover:text-white hover:bg-zinc-700 transition-colors"
+        >#{{ .ID }}</a
+      >
+      <div class="flex justify-between items-center">
+        {{ if .Completed }}
+        <button
+          hx-post="/tasks/{{ .ID }}/toggle-complete/"
+          hx-swap="outerHTML transition:true swap:100ms  "
+          hx-target="#task-{{ .ID }}"
+          hx-indicator="#completion-indicator-task-{{ .ID }}"
+          hx-indicator-delay="300"
+          class="text-xs bg-green-600 px-2.5 py-1.5 hover:bg-green-500 text-white rounded-sm transition-colors font-medium"
+        >
+          <i class="fas fa-check text-xs mr-1"></i> Complete
+        </button>
+        {{ else }}
+        <button
+          hx-post="/tasks/{{ .ID }}/toggle-complete/"
+          hx-swap="outerHTML transition:true swap:100ms  "
+          hx-target="#task-{{ .ID }}"
+          hx-indicator="#completion-indicator-task-{{ .ID }}"
+          hx-indicator="300"
+          class="request-blocked text-xs bg-zinc-700 px-2.5 py-1.5 hover:bg-zinc-600 text-white rounded-sm transition-colors font-medium"
+        >
+          <i class="fas fa-times text-xs mr-1"></i> Incomplete
+        </button>
+        {{ end }}
+      </div>
+
+      <button
+        hx-delete="/tasks/{{ .ID }}/"
+        hx-confirm="Are you sure you want to delete this task?"
+        hx-swap="outerHTML transition:true swap:100ms  "
+        hx-indicator="#delete-indicator-task-{{ .ID }}"
+        hx-target="#task-{{ .ID }}"
+        class="text-red-400 hover:text-red-300 p-2 rounded-sm hover:bg-zinc-800 transition-colors"
+      >
+        <i class="fas fa-trash text-sm"></i>
+      </button>
+    </div>
+
+    <div class="float-right">
+      {{ template "task-author" .Author }}
+    </div>
+  </div>
+</div>
+{{ end }}
+
+{{ block "task-tags" . }}
+<div class="flex flex-wrap gap-2">
+  {{ if .RelatedTags }}
+  {{ range.RelatedTags }}
+  <div
+    class="text-xs group bg-purple-600/90 flex items-center gap-1 hover:bg-purple-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
+  >
+    <a class="hover:underline" href="/tasks?tags={{.Name}}/">#{{ .Name }}</a>
+
+    <form
+      hx-delete="/tasks/{{ $.ID }}/tags/"
+      hx-swap="outerHTML transition:true swap:100ms"
+      hx-target="#task-{{ $.ID }}"
+    >
+      <button
+        name="tag_id"
+        value="{{.ID}}"
+        class="group-hover:flex hidden font-semibold ml-1"
+      >
+        <i class="fas fa-times text-[10px]"></i>
+      </button>
+    </form>
+  </div>
+  {{ end }}
+  {{ end }}
+
+  {{ template "add-task-to-tag" . }}
+</div>
+{{ end }}
+
+{{ block "task-author" . }}
+<div class="flex items-center justify-between gap-2">
+  <div class="flex items-center rounded-sm gap-2">
+    <img
+      src="{{.PathToPfp}}"
+      alt="profile picture"
+      class="w-6 h-6 rounded-full object-cover border shadow-sm"
+    />
+    <span
+      class="text-zinc-300 hover:text-white transition duration-200 text-sm"
+    >
+      {{.Username}}
+    </span>
+  </div>
+  <!-- <div class="text-xs text-zinc-500">
+    <i class="fas fa-clock text-[10px] mr-1"></i>
+    <span>Created: .CreatedAt</span>
+  </div> -->
+</div>
+{{ end }}
+
+{{ block "add-task-to-tag" . }}
+<form
+  hx-post="/tasks/{{.ID}}/tags/"
+  hx-target="#task-{{.ID}}"
+  hx-trigger="change"
+  hx-indicator="#add-tag-indicator-task-{{.ID}}"
+  hx-swap="outerHTML transition:true swap:100ms"
+>
+  <select
+    name="tag_id"
+    class="text-xs bg-zinc-800/90 border border-zinc-700/50 text-white px-2.5 py-1.5 rounded-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+  >
+    <option disabled selected class="text-zinc-500">+ add tag</option>
+    {{
+      range.AvailableTags
+    }}
+    <option value="{{ .ID }}">{{ .Name }}</option>
+    {{
+      end
+    }}
+  </select>
+</form>
+{{ end }}
+
+{{ define "task-form-card" }}
+<div class="bg-zinc-800 rounded-lg shadow-md border border-zinc-700/50">
+  <div class="p-5">
+    <div class="flex items-center mb-4">
+      <i class="fa-brands fa-wpforms text-blue-400 mr-2.5 text-lg"></i>
+      <h2 class="text-lg font-semibold text-white">Create New</h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      <div class="bg-zinc-900/60 rounded-md p-4 border border-zinc-700/30">
+        <h3 class="text-sm font-medium text-zinc-300 mb-3 flex items-center">
+          <i class="fas fa-clipboard-list text-blue-400 mr-2"></i>
+          New Task
+        </h3>
+        {{ template "create-task" . }}
+      </div>
+
+      <div class="bg-zinc-900/60 rounded-md p-4 border border-zinc-700/30">
+        <h3 class="text-sm font-medium text-zinc-300 mb-3 flex items-center">
+          <i class="fas fa-tag text-purple-400 mr-2"></i>
+          New Tag
+        </h3>
+        {{ template "create-tag" . }}
+      </div>
+    </div>
+  </div>
+</div>
+{{ end }}
+
+{{ define "create-tag" }}
+<form
+  id="tagform"
+  hx-post="/tags/"
+  hx-vals='{"source": "/tasks"}'
+  hx-swap="outerHTML transition:true swap:100ms  "
+  hx-target="#tasks-container"
+  class="space-y-3"
+>
+  <div class="relative">
+    <span
+      class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+    >
+      <i class="fas fa-tag text-xs"></i>
+    </span>
+    <input
+      type="text"
+      class="w-full pl-10 pr-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-white text-sm transition-all"
+      name="tag_name"
+      placeholder="Tag name"
+      required
+    />
+  </div>
+  <button
+    class="w-full px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-md transition-all flex items-center justify-center shadow-sm text-sm"
+    type="submit"
+  >
+    <i class="fas fa-plus mr-2"></i> Create Tag
+  </button>
+  <div id="tag-error-form" class="text-red-400 text-xs"></div>
+</form>
+{{ end }}
+
+{{ define "create-task" }}
+<form
+  id="ourform"
+  hx-target="#tasks"
+  hx-swap="afterbegin transition:true swap:200ms   "
+  hx-post="/tasks/"
+  class="space-y-3"
+>
+  <div class="relative">
+    <span
+      class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+    >
+      <i class="fas fa-pencil-alt text-xs"></i>
+    </span>
+    <input
+      type="text"
+      class="w-full pl-10 pr-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm transition-all"
+      name="task_name"
+      placeholder="Task name"
+    />
+  </div>
+  <div class="relative">
+    <span
+      class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+    >
+      <i class="fas fa-lightbulb text-xs"></i>
+    </span>
+    <input
+      type="text"
+      class="w-full pl-10 pr-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm transition-all"
+      name="task_idea"
+      placeholder="Task description"
+    />
+  </div>
+  <button
+    class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-md transition-all flex items-center justify-center shadow-sm text-sm"
+    type="submit"
+  >
+    <i class="fas fa-plus mr-2"></i> Create Task
+  </button>
+  <div id="error-form" class="text-red-400 text-xs"></div>
+</form>
+{{ end }}

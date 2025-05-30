@@ -1,0 +1,244 @@
+{{ block "add-tag-card"  . }}
+<div
+  class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 p-5 backdrop-blur-sm"
+>
+  <div class="flex items-center mb-4">
+    <i class="fas fa-tags text-purple-400 mr-2.5 text-lg"></i>
+    <h2 class="text-lg font-semibold text-white">Add New Tag</h2>
+  </div>
+
+  <form
+    hx-post="/tags/"
+    hx-vals='{"source": "/tags"}'
+    hx-target="#tags-list"
+    hx-swap="afterbegin transition:true swap:200ms"
+    novalidate
+  >
+    <div class="flex flex-col sm:flex-row gap-3">
+      <div class="relative flex-grow">
+        <span
+          class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+        >
+          <i class="fas fa-tag text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="tag_name"
+          placeholder="Tag name (e.g., work, personal)"
+          required
+          class="w-full rounded-sm border border-zinc-700 bg-zinc-900/90 pl-10 pr-3 py-2.5 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="flex items-center justify-center gap-1 bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-sm text-white font-medium shadow-sm text-sm transition-colors duration-200"
+      >
+        <i class="fas fa-plus mr-1.5"></i>Create Tag
+      </button>
+    </div>
+  </form>
+  <!-- Optional: Add a div here for htmx to insert form errors -->
+  <div id="add-tag-form-error"></div>
+</div>
+{{ end }}
+
+{{ block "tags-list-container"  . }}
+<div
+  id="tags-list-container"
+  class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 backdrop-blur-sm"
+>
+  <div
+    class="p-5 border-b border-zinc-700/70 flex items-center justify-between"
+  >
+    <div class="flex items-center">
+      <i class="fas fa-list-ul text-blue-400 mr-2.5 text-lg"></i>
+      <h2 class="text-lg font-semibold text-white">Your Tags</h2>
+    </div>
+    <!-- Optional: Add filter/sort buttons here later if needed -->
+  </div>
+  <div
+    class="grid grid-cols-1 md:grid-cols-2 gap-5 p-5"
+    role="list"
+    id="tags-list"
+    aria-label="Tags list"
+  >
+    {{ range . }}
+    {{ template "tag-card" . }}
+    {{ end }}
+  </div>
+</div>
+{{ end }}
+
+{{ block "tag-card" . }}
+<article
+  id="tag-{{.ID}}"
+  class="bg-zinc-900/90 border border-zinc-700/50 rounded-sm p-5 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col"
+  role="listitem"
+  aria-labelledby="tag-title-{{ .ID }}"
+>
+  <div class="">
+    <header class="flex justify-between items-center mb-4">
+      <h2
+        id="tag-title-{{ .ID }}"
+        class="text-lg font-semibold truncate select-text"
+        title="#{{ .Name }}"
+      >
+        <span class="text-purple-400">#</span>{{ .Name }}
+      </h2>
+
+      <div class="flex items-center gap-2">
+        <button
+          class="text-red-400 hover:text-red-300 p-1.5 rounded-sm hover:bg-zinc-800/80 transition-colors duration-200"
+          hx-delete="/tags/{{ .ID }}/"
+          hx-target="closest article"
+          hx-swap="outerHTML transition:true swap:100ms  "
+          title="Delete tag #{{ .Name }}"
+          aria-label="Delete tag #{{ .Name }}"
+          type="button"
+        >
+          <i class="fas fa-trash text-sm"></i>
+        </button>
+
+        {{ template "attach-task-form" . }}
+      </div>
+    </header>
+  </div>
+
+  {{ template "rename-tag-form" . }}
+  {{ template "tag-tasks" .}}
+  <hr size="12px" class="border-zinc-700/50 my-4" />
+  <div class="flex items-center justify-between gap-2">
+    <div class="flex items-center rounded-sm gap-2">
+      <img
+        src="{{.Author.PathToPfp}}"
+        alt="profile picture"
+        class="w-6 h-6 rounded-full object-cover border border-white/20 shadow-sm"
+      />
+      <span
+        class="text-zinc-300 hover:text-white transition duration-200 text-sm"
+      >
+        {{.Author.Username}}
+      </span>
+    </div>
+    <div class="flex items-center gap-2">
+      <a
+        title="{{.ID}}"
+        href="/tasks/?tags={{.Name}}"
+        class="text-xs w-16 hover:min-w-max truncate text-zinc-400 bg-zinc-800/80 px-2 py-1 rounded-sm hover:text-white hover:bg-zinc-700"
+        >#{{ .ID }}</a
+      >
+      <div class="text-xs text-zinc-500">
+        <i class="fas fa-clock text-[10px] mr-1"></i>
+        <span data-iso="{{.CreatedAt}}" class="created-at">{{.CreatedAt}}</span>
+      </div>
+    </div>
+  </div>
+</article>
+{{ end }}
+
+{{ block "tag-tasks" .}}
+<div class="flex flex-wrap gap-2">
+  {{ if .RelatedTasks }}
+  {{ range.RelatedTasks }}
+  <div
+    class="text-xs group bg-blue-600/90 flex items-center gap-1 hover:bg-blue-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
+  >
+    <a class="hover:underline" href="/tasks/{{.ID}}/">
+      <i class="fa-solid fa-clipboard text-[10px] mr-1"></i> {{.Name}}</a
+    >
+
+    <form
+      hx-delete="/tags/{{ $.ID }}/tasks/"
+      hx-swap="outerHTML transition:true swap:100ms"
+      hx-target="#tag-{{ $.ID }}"
+    >
+      <button
+        name="task_id"
+        value="{{.ID}}"
+        class="group-hover:flex hidden font-semibold ml-1"
+      >
+        <i class="fas fa-times text-[10px]"></i>
+      </button>
+    </form>
+  </div>
+  {{ end }}
+  {{ else }}
+  <div
+    class="text-xs text-zinc-500 group flex items-center gap-1 bg-transparent border border-zinc-700/50 text-white px-2.5 py-1 rounded-full"
+  >
+    <i class="fas fa-info-circle text-[10px] mr-1"></i>
+    No tasks
+  </div>
+  {{ end }}
+</div>
+{{ end }}
+
+{{ block "rename-tag-form" . }}
+<form
+  class="mb-4 space-y-2"
+  hx-target="#tag-{{.ID}}"
+  hx-put="/tags/{{ .ID }}/"
+  hx-swap="outerHTML transition:true swap:100ms  "
+  novalidate
+>
+  <label
+    for="rename-tag-{{ .ID }}"
+    class="block text-xs font-medium text-zinc-400"
+  >
+    Rename tag
+  </label>
+  <div class="flex gap-2">
+    <div class="relative flex-grow">
+      <span
+        class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"
+      >
+        <i class="fas fa-pen text-xs"></i>
+      </span>
+      <input
+        id="rename-tag-{{ .ID }}"
+        name="tag_name"
+        type="text"
+        value="{{ .Name }}"
+        required
+        autocomplete="off"
+        class="w-full rounded-sm border border-zinc-700 bg-zinc-800/90 pl-10 pr-3 py-2 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+        placeholder="New tag name"
+      />
+    </div>
+
+    <button
+      type="submit"
+      class="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 px-3 py-2 rounded-sm text-white font-medium shadow-sm text-sm transition-colors duration-200"
+    >
+      <i class="fas fa-pen text-xs"></i> Update
+    </button>
+  </div>
+</form>
+{{ end }}
+
+{{ block "attach-task-form"  . }}
+<form
+  hx-post="/tags/{{.ID}}/tasks/"
+  hx-target="#tag-{{.ID}}"
+  hx-trigger="change"
+  hx-swap="outerHTML transition:true swap:100ms"
+  class="space-y-2 flex flex-col"
+>
+  <select
+    name="task_id"
+    class="self-start text-xs border bg-zinc-800/90 border-zinc-700/50 text-white px-2.5 py-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+  >
+    <option disabled selected>Attach to task</option>
+
+    <!-- Dynamically populate tasks here -->
+    {{
+      range.AvailableTasks
+    }}
+    <option value="{{.ID}}">{{.Name}}</option>
+    {{
+      end
+    }}
+  </select>
+</form>
+{{ end }}

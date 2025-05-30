@@ -1,7 +1,9 @@
 /tmp/
+/tmp
 /dist/
 /node_modules/
-/views/**/*.go
-/backend/tmp/
-
-
+.env
+backend/tmp/
+backend/**/*.env
+backend/bin/
+*.pem

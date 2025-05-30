@@ -1,0 +1,83 @@
+{{ block "collaborative-task-page" . }}
+<html>
+  {{ template "head-vault" .Name}}
+
+  <body
+    hx-ext="ws"
+    ws-connect="/vaults/{{.Vault.ID}}/ws/"
+    class="bg-zinc-900 text-zinc-200 min-h-screen font-sans antialiased"
+  >
+    {{ template "collaborative-navbar" .}}
+    <div class="container mx-auto px-4 py-6 max-w-5xl space-y-6">
+      {{ template "collaborative-show-task"  .}}
+      {{ template "collaborative-bottom-task-nav" .}}
+      {{ template "footer" . }}
+    </div>
+  </body>
+</html>
+{{ end }}
+
+{{ block "collaborative-show-task" . }}
+<div
+  class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 backdrop-blur-sm"
+>
+  <div class="p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center">
+        <i class="fas fa-clipboard-check text-blue-400 mr-2.5 text-lg"></i>
+        <h2 class="text-lg font-semibold text-white">Task Details</h2>
+      </div>
+    </div>
+
+    <div id="tasks" class="space-y-4">
+      {{ template "collaborative-task" .}}
+    </div>
+  </div>
+</div>
+{{ end }}
+
+{{ block "collaborative-bottom-task-nav" . }}
+<div class="flex justify-between flex-wrap gap-3">
+  {{ if .Buttons.PrevButton.Exists }}
+  <a
+    href="/vaults/{{.Vault.ID}}/tasks/{{.Buttons.PrevButton.ID}}"
+    class="flex items-center gap-2 p-2.5 px-4 rounded-sm bg-zinc-800 hover:bg-zinc-700 text-white transition-colors duration-200 border border-zinc-700/50"
+  >
+    <i class="fas fa-arrow-left text-xs"></i>
+    <span>{{.Buttons.PrevButton.Name}}</span>
+  </a>
+  {{ else }}
+  <div></div>
+  {{ end }}
+
+  <a
+    href="/tasks/"
+    class="flex items-center gap-2 p-2.5 px-4 rounded-sm bg-blue-600 hover:bg-blue-500 text-white transition-colors duration-200"
+  >
+    <i class="fas fa-list text-xs"></i>
+    <span>All Tasks</span>
+  </a>
+
+  {{ if .Buttons.NextButton.Exists }}
+  <a
+    href="/vaults/{{.Vault.ID}}/tasks/{{.Buttons.PrevButton.ID}}"
+    class="flex items-center gap-2 p-2.5 px-4 rounded-sm bg-zinc-800 hover:bg-zinc-700 text-white transition-colors duration-200 border border-zinc-700/50"
+  >
+    <span>{{.Buttons.NextButton.Name}}</span>
+    <i class="fas fa-arrow-right text-xs"></i>
+  </a>
+  {{ else }}
+  <div></div>
+  {{ end }}
+</div>
+{{ end }}
+
+{{ block "error-indicator" .}}
+<div hx-swap-oob="outerHTML" id="error-indicator">
+  <div
+    class="bg-red-900/90 text-red-200 p-2.5 px-4 rounded-sm border border-red-700/50 text-sm flex items-center shadow-md"
+  >
+    <i class="fas fa-exclamation-circle text-xs mr-2"></i>{{ . }}
+  </div>
+</div>
+{{ end }}

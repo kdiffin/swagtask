@@ -1,0 +1,95 @@
+.live-cursor {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cursor-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #00bcd4; /* Change this per user if you want */
+  border-radius: 50%;
+  box-shadow: 0 0 5px #00bcd4;
+}
+
+.cursor-name {
+  background-color: #00bcd4;
+  color: white;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+select {
+  width: 120px;
+}
+.container {
+  width: 100%;
+  max-width: 80rem; /* Equivalent to Tailwind's max-w-6xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem; /* px-4 */
+  padding-right: 1rem;
+}
+
+.htmx-swapping {
+  opacity: 75%;
+  transition: all 200ms ease-in-out;
+}
+
+.htmx-indicator {
+  opacity: 0;
+  transition: "opacity", 200ms, ease-in-out;
+}
+.htmx-request.htmx-indicator {
+  opacity: 1;
+  transition: "opacity", 200ms, ease-in-out;
+}
+
+button {
+  cursor: pointer;
+}
+*:disabled {
+  cursor: not-allowed;
+}
+
+select {
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #ccc transparent; /* For Firefox */
+  cursor: pointer;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(39, 39, 42, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(82, 82, 91, 0.5);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(113, 113, 122, 0.7);
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke,
+    opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid rgba(124, 58, 237, 0.6);
+  outline-offset: 2px;
+}
