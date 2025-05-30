@@ -224,7 +224,7 @@ func UpdateTask(queries *db.Queries, vaultId, taskId pgtype.UUID, userId pgtype.
 	return taskWithTags, nil
 }
 
-func addTagToTask(queries *db.Queries,
+func AddTagToTask(queries *db.Queries,
 	tagId, userId, taskId, vaultId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
 	err := queries.CreateTagTaskRelation(ctx, db.CreateTagTaskRelationParams{
 		TaskID: taskId,
@@ -260,7 +260,7 @@ func DeleteTask(queries *db.Queries, taskId, vaultId, userId pgtype.UUID, ctx co
 	return nil
 }
 
-func deleteTagRelationFromTask(queries *db.Queries, tagId, userId, vaultId, taskId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
+func DeleteTagRelationFromTask(queries *db.Queries, tagId, userId, vaultId, taskId pgtype.UUID, ctx context.Context) (*TaskWithTags, error) {
 	errRelations := queries.DeleteTagTaskRelation(ctx, db.DeleteTagTaskRelationParams{
 		TaskID: taskId,
 		TagID:  tagId})

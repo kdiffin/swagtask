@@ -22,7 +22,7 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 		return
 	}
 
-	tagsWithTasks, errTags := tag.GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
+	tagsWithTasks, errTags := tag.GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errTags) {
 		fmt.Println("error was here")
 		return

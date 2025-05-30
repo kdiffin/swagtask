@@ -347,18 +347,19 @@ LEFT JOIN tag_task_relations rel
 LEFT JOIN tags tg 
 	ON tg.ID = rel.tag_id
 WHERE
+	vault_id = $1::UUID
   	-- authorization, checks if user is inside of this vault
-	EXISTS(
+	AND EXISTS(
 		SELECT 1 FROM vault_user_relations v_u_rel
-		WHERE v_u_rel.user_id = $1::UUID 
-		AND v_u_rel.vault_id = $2::UUID
+		WHERE v_u_rel.user_id = $2::UUID 
+		AND v_u_rel.vault_id = $1::UUID
 	)
 ORDER BY t_with_author.created_at DESC
 `
 
 type GetTasksWithTagRelationsParams struct {
-	UserID  pgtype.UUID
 	VaultID pgtype.UUID
+	UserID  pgtype.UUID
 }
 
 type GetTasksWithTagRelationsRow struct {
@@ -379,7 +380,7 @@ type GetTasksWithTagRelationsRow struct {
 
 // READ
 func (q *Queries) GetTasksWithTagRelations(ctx context.Context, arg GetTasksWithTagRelationsParams) ([]GetTasksWithTagRelationsRow, error) {
-	rows, err := q.db.Query(ctx, getTasksWithTagRelations, arg.UserID, arg.VaultID)
+	rows, err := q.db.Query(ctx, getTasksWithTagRelations, arg.VaultID, arg.UserID)
 	if err != nil {
 		return nil, err
 	}

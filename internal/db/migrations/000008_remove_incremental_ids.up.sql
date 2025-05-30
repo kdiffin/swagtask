@@ -93,13 +93,13 @@ SET
     DATA TYPE UUID USING (gen_random_uuid ());
 
 -- Now add all foreign keys back
-ALTER TABLE tags ADD CONSTRAINT fk_user_tags FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE tags ADD CONSTRAINT fk_user_tags FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
 
-ALTER TABLE tasks ADD CONSTRAINT fk_user_tasks FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE tasks ADD CONSTRAINT fk_user_tasks FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
 
-ALTER TABLE sessions ADD CONSTRAINT fk_sessions_user FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE sessions ADD CONSTRAINT fk_sessions_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
 
-ALTER TABLE vault_user_relations ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE vault_user_relations ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
 
 -- Tag-Task id column
 ALTER TABLE tag_task_relations
@@ -112,9 +112,9 @@ ALTER COLUMN id
 SET DEFAULT gen_random_uuid ();
 
 -- Add back tag_task_relations foreign keys
-ALTER TABLE tag_task_relations ADD CONSTRAINT fk_tag FOREIGN KEY (tag_id) REFERENCES tags (id);
+ALTER TABLE tag_task_relations ADD CONSTRAINT fk_tag FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE;
 
-ALTER TABLE tag_task_relations ADD CONSTRAINT fk_task FOREIGN KEY (task_id) REFERENCES tasks (id);
+ALTER TABLE tag_task_relations ADD CONSTRAINT fk_task FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE;
 
 -- removing the sequence stuff
 DROP SEQUENCE IF EXISTS tag_task_relations_id_seq;

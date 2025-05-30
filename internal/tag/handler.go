@@ -44,7 +44,7 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	tagWithTask, err := updateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), tagName, r.Context())
+	tagWithTask, err := UpdateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), tagName, r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -63,7 +63,7 @@ func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	errTag := deleteTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	errTag := DeleteTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errTag) {
 		return
 	}
@@ -74,7 +74,6 @@ func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 }
 
 func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
-	tagId := r.PathValue("id")
 	user, err := middleware.UserFromContext(r.Context())
 	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
@@ -84,14 +83,12 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	tag, errTag := CreateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	tagWithTasks, errTag := CreateTag(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.FormValue("tag_name"), r.Context())
 	if utils.CheckError(w, r, errTag) {
 		return
 	}
 
-	// bc we want htmx to rerender it
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(nil))
+	templates.Render(w, "tag-card", tagWithTasks)
 }
 
 func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
@@ -106,7 +103,7 @@ func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Que
 		return
 	}
 
-	tagWithTasks, err := addTaskToTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(vaultId), r.Context())
+	tagWithTasks, err := AddTaskToTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
@@ -125,7 +122,7 @@ func HandlerRemoveTaskFromTag(w http.ResponseWriter, r *http.Request, queries *d
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
-	tagWithTasks, err := deleteTaskRelationFromTag(queries, utils.PgUUID(tagId), utils.PgUUID(taskId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	tagWithTasks, err := DeleteTaskRelationFromTag(queries, utils.PgUUID(tagId), utils.PgUUID(taskId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}

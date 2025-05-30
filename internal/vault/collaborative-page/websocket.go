@@ -114,20 +114,23 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			var payload Payload
 			errJson := json.Unmarshal([]byte(msg), &payload)
 			if errJson != nil {
-				log.Println("errJsonor unmarshalling:", errJson)
+				log.Fatal("errJsonor unmarshalling:", errJson)
 				return
 			}
 
 			if payload.Action == "create_task" && payload.Path == fmt.Sprintf("/vaults/%v/tasks", vaultId) {
+				fmt.Println(payload.Data["taskIdea"], "idea")
+				fmt.Println(payload.Data["taskName"], "name")
+
 				task, errTask := task.CreateTask(queries, payload.Data["task_name"], payload.Data["task_idea"], utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 				if errTask != nil {
-					utils.LogError("error at websocket", errTask)
+					utils.CheckErrorWebsocket(hub.broadcast, "Duplicate idea in the same vault", errTask)
 					return
 				}
 
 				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
-					utils.LogError("error at websocket", errRender)
+					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					return
 				}
 				realHtml := wrapWithAttributesDiv(*html, `id="collaborative-tasks" hx-swap-oob="afterbegin"`)
@@ -138,7 +141,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			if payload.Action == "delete_task" {
 				errTask := task.DeleteTask(queries, utils.PgUUID(payload.Data["task_id"]), utils.PgUUID(vaultId), utils.PgUUID(user.ID), r.Context())
 				if errTask != nil {
-					utils.LogError("error at websocket", errTask)
+					utils.CheckErrorWebsocket(hub.broadcast, "Internal server error", errTask)
 					return
 				}
 
@@ -158,13 +161,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 					r.Context())
 				if errTask != nil {
-					utils.LogError("error at websocket", errTask)
+					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTask)
 					return
 				}
 
 				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
-					utils.LogError("error at websocket", errRender)
+					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					return
 				}
 				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
@@ -179,13 +182,61 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					utils.PgUUID(payload.Data["task_id"]),
 					r.Context())
 				if errTask != nil {
-					utils.LogError("error at websocket", errTask)
+					utils.CheckErrorWebsocket(hub.broadcast, "Internal server error", errTask)
 					return
 				}
 
 				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
-					utils.LogError("error at websocket", errRender)
+					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
+					return
+				}
+				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
+
+				hub.broadcast <- realHtml
+			}
+
+			if payload.Action == "add_tag_to_task" {
+				task, errTask := task.AddTagToTask(
+					queries,
+					utils.PgUUID(payload.Data["tag_id"]),
+					utils.PgUUID(user.ID),
+					utils.PgUUID(payload.Data["task_id"]),
+					utils.PgUUID(vaultId),
+
+					r.Context())
+				if errTask != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTask)
+					return
+				}
+
+				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
+				if errRender != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
+					return
+				}
+				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
+
+				hub.broadcast <- realHtml
+			}
+
+			if payload.Action == "remove_tag_from_task" {
+				task, errTask := task.DeleteTagRelationFromTask(
+					queries,
+					utils.PgUUID(payload.Data["tag_id"]),
+					utils.PgUUID(user.ID),
+					utils.PgUUID(vaultId),
+					utils.PgUUID(payload.Data["task_id"]),
+
+					r.Context())
+				if errTask != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTask)
+					return
+				}
+
+				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
+				if errRender != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					return
 				}
 				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
@@ -208,7 +259,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 				jsonCursor, errJsonMarsh := json.Marshal(cursor)
 				if errJsonMarsh != nil {
-					utils.LogError("", errJsonMarsh)
+					utils.CheckErrorWebsocket(hub.broadcast, "Internal server error", errJsonMarsh)
 					return
 				}
 
@@ -216,33 +267,151 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			}
 
 			if payload.Action == "create_tag" {
-				// MAKE THIS WORK BY SENDING ONE TAG NOT EVERYTHING
-				fmt.Println(user.DefaultVaultID)
-				err := queries.CreateTag(r.Context(), db.CreateTagParams{
-					Name:    payload.Data["tag_name"],
-					UserID:  utils.PgUUID(user.ID),
-					VaultID: utils.PgUUID(user.DefaultVaultID),
-				})
-				if utils.CheckError(w, r, err) {
-					fmt.Println("error was here1")
+				// MAKE THIS WORK BY SENDING sONE TAG NOT EVERYTHING
+				if i, ok := payload.Data["source"]; ok && i == "/tags" {
+					tagWithTasks, errTag := tag.CreateTag(queries,
+						utils.PgUUID(user.ID),
+						utils.PgUUID(vaultId),
+						payload.Data["tag_name"],
+						r.Context())
+					if errTag != nil {
+						utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tags with the same name", errTag)
+						return
+					}
+					html, errRender := templates.ReturnString("collaborative-tag", tagWithTasks)
+					if errRender != nil {
+						utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
+						return
+					}
+					realHtml := wrapWithAttributesDiv(*html, `id="collaborative-tags" hx-swap-oob="afterbegin"`)
+
+					hub.broadcast <- realHtml
+				} else {
+					_, errTag := tag.CreateTag(queries,
+						utils.PgUUID(user.ID),
+						utils.PgUUID(vaultId),
+						payload.Data["tag_name"],
+						r.Context())
+					if errTag != nil {
+						utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tags with the same name", errTag)
+						return
+					}
+
+					filters := task.FilterParams(r)
+					tasks, errTasks := task.GetFilteredTasksWithTags(queries,
+						filters,
+						utils.PgUUID(user.ID),
+						utils.PgUUID(vaultId),
+						r.Context(),
+					)
+					if errTasks != nil {
+						utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tags with the same name", errTasks)
+						return
+					}
+
+					html, errRender := templates.ReturnString("collaborative-tasks-container", tasks)
+
+					if errRender != nil {
+						utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
+						return
+					}
+					realHtml := wrapWithAttributesDiv(*html, `id="collaborative-tasks-container" hx-swap-oob="outerHTML"`)
+
+					hub.broadcast <- realHtml
+
+				}
+
+			}
+
+			if payload.Action == "update_tag" {
+				tag, errTag := tag.UpdateTag(
+					queries,
+					utils.PgUUID(payload.Data["tag_id"]),
+					utils.PgUUID(user.ID),
+					utils.PgUUID(vaultId),
+					payload.Data["tag_name"],
+					r.Context())
+
+				if errTag != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTag)
 					return
 				}
 
-				tagsWithTasks, errTags := tag.GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(user.DefaultVaultID), r.Context())
-				if utils.CheckError(w, r, errTags) {
-					fmt.Println("error was here")
-					return
-				}
-				html, errRender := templates.ReturnString("collaborative-tags-list-container", tagsWithTasks)
+				html, errRender := templates.ReturnString("collaborative-tag", tag)
 				if errRender != nil {
-					utils.LogError("error at websocket", errRender)
+					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					return
 				}
-				realHtml := wrapWithAttributesDiv(*html, `id="collaborative-tags-list-container" hx-swap-oob="outerHTML"`)
+				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="tag-%v" hx-swap-oob="outerHTML"`, payload.Data["tag_id"]))
+
+				hub.broadcast <- realHtml
+			}
+			if payload.Action == "delete_tag" {
+				errTag := tag.DeleteTag(
+					queries,
+					utils.PgUUID(payload.Data["tag_id"]),
+					utils.PgUUID(user.ID),
+					utils.PgUUID(vaultId),
+					r.Context())
+
+				if errTag != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTag)
+					return
+				}
+
+				realHtml := wrapWithAttributesDiv("", fmt.Sprintf(`id="tag-%v" hx-swap-oob="outerHTML"`, payload.Data["tag_id"]))
 
 				hub.broadcast <- realHtml
 			}
 
+			if payload.Action == "add_task_to_tag" {
+				tag, errTag := tag.AddTaskToTag(
+					queries,
+					utils.PgUUID(payload.Data["tag_id"]),
+					utils.PgUUID(user.ID),
+					utils.PgUUID(payload.Data["task_id"]),
+
+					utils.PgUUID(vaultId),
+					r.Context())
+
+				if errTag != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTag)
+					return
+				}
+
+				html, errRender := templates.ReturnString("collaborative-tag", tag)
+				if errRender != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
+					return
+				}
+				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="tag-%v" hx-swap-oob="outerHTML"`, payload.Data["tag_id"]))
+
+				hub.broadcast <- realHtml
+			}
+			if payload.Action == "remove_task_from_tag" {
+				tag, errTag := tag.DeleteTaskRelationFromTag(
+					queries,
+					utils.PgUUID(payload.Data["tag_id"]),
+					utils.PgUUID(payload.Data["task_id"]),
+					utils.PgUUID(user.ID),
+
+					utils.PgUUID(vaultId),
+					r.Context())
+
+				if errTag != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTag)
+					return
+				}
+
+				html, errRender := templates.ReturnString("collaborative-tag", tag)
+				if errRender != nil {
+					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
+					return
+				}
+				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="tag-%v" hx-swap-oob="outerHTML"`, payload.Data["tag_id"]))
+
+				hub.broadcast <- realHtml
+			}
 		}
 	}
 }

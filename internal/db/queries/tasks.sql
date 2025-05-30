@@ -15,8 +15,9 @@ LEFT JOIN tag_task_relations rel
 LEFT JOIN tags tg 
 	ON tg.ID = rel.tag_id
 WHERE
+	vault_id = sqlc.arg('vault_id')::UUID
   	-- authorization, checks if user is inside of this vault
-	EXISTS(
+	AND EXISTS(
 		SELECT 1 FROM vault_user_relations v_u_rel
 		WHERE v_u_rel.user_id = sqlc.arg('user_id')::UUID 
 		AND v_u_rel.vault_id = sqlc.arg('vault_id')::UUID

@@ -23,12 +23,39 @@ func HandlerAddTagToTask(w http.ResponseWriter, r *http.Request, queries *db.Que
 		return
 	}
 
-	taskWithTags, err := addTagToTask(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(vaultId), r.Context())
+	taskWithTags, err := AddTagToTask(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
 	templates.Render(w, "task", taskWithTags)
+}
+
+func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+	user, err := middleware.UserFromContext(r.Context())
+	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
+	if utils.CheckError(w, r, err) {
+		return
+	}
+	if utils.CheckError(w, r, errVault) {
+		return
+	}
+
+	_, errTag := queries.CreateTag(r.Context(), db.CreateTagParams{
+		Name:    r.FormValue("tag_name"),
+		UserID:  utils.PgUUID(user.ID),
+		VaultID: utils.PgUUID(vaultId),
+	})
+	if utils.CheckError(w, r, errTag) {
+		return
+	}
+
+	filters := FilterParams(r)
+	tasks, err := GetFilteredTasksWithTags(queries, filters, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	if utils.CheckError(w, r, err) {
+		return
+	}
+	templates.Render(w, "tasks-container", tasks)
 }
 
 func HandlerRemoveTagFromTask(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
@@ -43,7 +70,7 @@ func HandlerRemoveTagFromTask(w http.ResponseWriter, r *http.Request, queries *d
 		return
 	}
 
-	taskWithTags, err := deleteTagRelationFromTask(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
+	taskWithTags, err := DeleteTagRelationFromTask(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(taskId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}

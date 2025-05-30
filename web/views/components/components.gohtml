@@ -133,6 +133,15 @@
           alert("Error: Bad Request \nMessage: " + evt.detail.xhr.responseText);
         }
       });
+      document.body.addEventListener("htmx:wsAfterMessage", (evt) => {
+        let messageJson = JSON.parse(evt.detail.message);
+
+        if (messageJson.type == "error") {
+          alert(
+            `Status: ${messageJson.status} \nMessage: ${messageJson.message}`
+          );
+        }
+      });
       document.body.addEventListener("htmx:sendError", (evt) => {
         alert("Error: Connection error");
       });
@@ -147,44 +156,44 @@
         evt.detail.parameters = structuredObject;
       });
 
-      // listen to mouse movement
-      (() => {
-        let lastSent = 0;
-        let ws = null;
-        let moveHandler = null;
+      // // listen to mouse movement
+      // (() => {
+      //   let lastSent = 0;
+      //   let ws = null;
+      //   let moveHandler = null;
 
-        document.addEventListener("htmx:wsOpen", (ev) => {
-          ws = ev.detail.socketWrapper;
+      //   document.addEventListener("htmx:wsOpen", (ev) => {
+      //     ws = ev.detail.socketWrapper;
 
-          moveHandler = (e) => {
-            const now = Date.now();
-            if (now - lastSent > 10) {
-              ws.send(
-                JSON.stringify({
-                  action: "move_cursor",
-                  // path is required for my server to work
-                  path: "",
-                  data: {
-                    x: e.pageX.toString(),
-                    y: e.pageY.toString(),
-                  },
-                })
-              );
-              lastSent = now;
-            }
-          };
+      //     moveHandler = (e) => {
+      //       const now = Date.now();
+      //       if (now - lastSent > 10) {
+      //         ws.send(
+      //           JSON.stringify({
+      //             action: "move_cursor",
+      //             // path is required for my server to work
+      //             path: "",
+      //             data: {
+      //               x: e.pageX.toString(),
+      //               y: e.pageY.toString(),
+      //             },
+      //           })
+      //         );
+      //         lastSent = now;
+      //       }
+      //     };
 
-          document.addEventListener("mousemove", moveHandler);
-        });
+      //     document.addEventListener("mousemove", moveHandler);
+      //   });
 
-        document.addEventListener("htmx:wsClose", () => {
-          if (moveHandler) {
-            document.removeEventListener("mousemove", moveHandler);
-            moveHandler = null;
-          }
-          ws = null;
-        });
-      })();
+      //   document.addEventListener("htmx:wsClose", () => {
+      //     if (moveHandler) {
+      //       document.removeEventListener("mousemove", moveHandler);
+      //       moveHandler = null;
+      //     }
+      //     ws = null;
+      //   });
+      // })();
     });
   </script>
 </head>

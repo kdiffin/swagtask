@@ -2,12 +2,14 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"runtime"
 	"runtime/debug"
 )
 
+// add a message field here
 func CheckError(w http.ResponseWriter, r *http.Request, err error) bool {
 	for knownErr, status := range knownErrors {
 		if errors.Is(err, knownErr) {
@@ -32,6 +34,40 @@ func CheckError(w http.ResponseWriter, r *http.Request, err error) bool {
 	return false
 }
 
+func CheckErrorWebsocket(broadcast chan string, message string, err error) bool {
+	for knownErr, status := range knownErrors {
+		if errors.Is(err, knownErr) {
+			if status == http.StatusUnauthorized {
+				LogError(message, err)
+				// for htmx routes
+				broadcast <- fmt.Sprintf(`{
+  						"type": "error",
+  						"status": %v,
+  						"message": "%v"
+					}`, status, message)
+				return true
+			} else {
+				LogError(message, err)
+				broadcast <- fmt.Sprintf(`{
+  						"type": "error",
+  						"status": %v,
+  						"message": "%v"
+					}`, status, message)
+				return true
+			}
+		}
+	}
+	if err != nil {
+		LogError(message, err)
+		broadcast <- fmt.Sprintf(`{
+  						"type": "error",
+  						"status": %v,
+  						"message": "%v"
+					}`, 0, message)
+		return true
+	}
+	return false
+}
 func LogError(context string, err error) {
 	if err == nil {
 		return

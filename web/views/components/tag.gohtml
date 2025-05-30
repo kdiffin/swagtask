@@ -10,8 +10,8 @@
   <form
     hx-post="/tags/"
     hx-vals='{"source": "/tags"}'
-    hx-target="#tags-list-container"
-    hx-swap="outerHTML transition:true swap:200ms"
+    hx-target="#tags-list"
+    hx-swap="afterbegin transition:true swap:200ms"
     novalidate
   >
     <div class="flex flex-col sm:flex-row gap-3">
@@ -92,7 +92,7 @@
           class="text-red-400 hover:text-red-300 p-1.5 rounded-sm hover:bg-zinc-800/80 transition-colors duration-200"
           hx-delete="/tags/{{ .ID }}/"
           hx-target="closest article"
-          hx-swap="outerHTML swap:200ms transition:true"
+          hx-swap="outerHTML transition:true swap:100ms  "
           title="Delete tag #{{ .Name }}"
           aria-label="Delete tag #{{ .Name }}"
           type="button"
@@ -144,7 +144,7 @@
 
     <form
       hx-delete="/tags/{{ $.ID }}/tasks/"
-      hx-swap="outerHTML"
+      hx-swap="outerHTML transition:true swap:100ms"
       hx-target="#tag-{{ $.ID }}"
     >
       <button
@@ -173,7 +173,7 @@
   class="mb-4 space-y-2"
   hx-target="#tag-{{.ID}}"
   hx-put="/tags/{{ .ID }}/"
-  hx-swap="outerHTML swap:200ms transition:true"
+  hx-swap="outerHTML transition:true swap:100ms  "
   novalidate
 >
   <label
@@ -200,6 +200,7 @@
         placeholder="New tag name"
       />
     </div>
+
     <button
       type="submit"
       class="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 px-3 py-2 rounded-sm text-white font-medium shadow-sm text-sm transition-colors duration-200"
@@ -215,7 +216,7 @@
   hx-post="/tags/{{.ID}}/tasks/"
   hx-target="#tag-{{.ID}}"
   hx-trigger="change"
-  hx-swap="outerHTML"
+  hx-swap="outerHTML transition:true swap:100ms"
   class="space-y-2 flex flex-col"
 >
   <select

@@ -115,26 +115,26 @@ v0 made like 50% of my frontends styles btw
   - [x] make the debug page show which clients are connected (names)
   - [x] make the pub/sub channel(vault) based
   - [x] authorize the websocket connections
-  - [ ] create my own http verb system in websockets
+  - [x] create my own http verb system in websockets
 
     - [x] make task stuff work
     - [ ] make the tag stuff work
           **!!!**
-      - [ ] refactor how adding tags works (single tag)
-        - [ ] change the query to be like the tasks one where it returns and redo the handler then
+      - [x] refactor how adding tags works (single tag)
+        - [x] change the query to be like the tasks one where it returns and redo the handler then
     - [x] think and fix what to do with paths
 
   - [x] make real time mouse sharing
-  - [x] think about what to do with the ws having to recnnent on every url change
+  - [x] think about what to do with the ws having to reconnect on every url change
 
         - [x] hx boost ftw
         - [x] make the page like a SPA so u dont have to reconnect to the ws when switching from tasks to tags page
 
   - [ ] refactor all the services and websockets logic
     - [ ] test (manually)
-    - [ ] main thing is change everything to be vault-scoped (everything)
   - [ ] architecture better
   - [ ] add error showing to RBAC issues
+    - [ ] just implement utils.showerror but for websockets
 
 ### maybe later if i revisit
 

@@ -42,8 +42,21 @@ func (q *Queries) DeleteTagTaskRelation(ctx context.Context, arg DeleteTagTaskRe
 }
 
 const getAllTaskOptions = `-- name: GetAllTaskOptions :many
-SELECT name, id from tasks WHERE user_id = $1 ORDER BY id DESC
+SELECT name, id from tasks 
+WHERE 
+    vault_id = $1::UUID
+  	-- authorization, checks if user is inside of this vault
+	AND EXISTS(
+		SELECT 1 FROM vault_user_relations v_u_rel
+		WHERE v_u_rel.user_id = $2::UUID 
+		AND v_u_rel.vault_id = $1::UUID
+	)
 `
+
+type GetAllTaskOptionsParams struct {
+	VaultID pgtype.UUID
+	UserID  pgtype.UUID
+}
 
 type GetAllTaskOptionsRow struct {
 	Name string
@@ -51,8 +64,8 @@ type GetAllTaskOptionsRow struct {
 }
 
 // this is for the UI whenever we wanna add a relation from a task to a tag
-func (q *Queries) GetAllTaskOptions(ctx context.Context, userID pgtype.UUID) ([]GetAllTaskOptionsRow, error) {
-	rows, err := q.db.Query(ctx, getAllTaskOptions, userID)
+func (q *Queries) GetAllTaskOptions(ctx context.Context, arg GetAllTaskOptionsParams) ([]GetAllTaskOptionsRow, error) {
+	rows, err := q.db.Query(ctx, getAllTaskOptions, arg.VaultID, arg.UserID)
 	if err != nil {
 		return nil, err
 	}

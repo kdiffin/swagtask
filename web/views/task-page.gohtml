@@ -83,7 +83,7 @@
   id="change-task-{{ .ID }}"
   hx-put="/tasks/{{ .ID }}/"
   hx-target="#task-{{ .ID }}"
-  hx-swap="outerHTML swap:200ms transition:true"
+  hx-swap="outerHTML transition:true swap:100ms  "
   class="flex md:flex-row flex-col gap-3"
 >
   <div class="grid md:grid-cols-2 w-full gap-3">

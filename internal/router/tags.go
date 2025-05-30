@@ -11,15 +11,14 @@ import (
 )
 
 func SetupTagRoutes(mux *http.ServeMux, queries *db.Queries, templates *template.Template) {
-	// mux.HandleFunc("POST /tags/{$}", func(w http.ResponseWriter, r *http.Request) {
-	// 	tag.HandlerCreateTag(w, r, queries, templates)
-	// })
+
 	mux.Handle("GET /tags/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerGetTags(w, r, queries, templates)
 	})))
 	mux.Handle("PUT /tags/{id}/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerUpdateTag(w, r, queries, templates)
 	})))
+
 	mux.Handle("DELETE /tags/{id}/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tag.HandlerDeleteTag(w, r, queries, templates)
 	})))

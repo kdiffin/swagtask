@@ -28,14 +28,12 @@
 {{ end }}
 
 {{ block "vault-create-tag" . }}
-<form
-  id="tagform"
-  hx-post="/vault/{{.}}/tags/"
-  hx-vals='{"source": "/tasks"}'
-  hx-swap="outerHTML swap:200ms transition:true"
-  hx-target="#collaborative-tasks-container"
-  class="space-y-3"
->
+<form id="tagform" ws-send class="space-y-3">
+  <input type="hidden" name="action" value="create_tag" />
+  <input type="hidden" name="path" value="/vaults/{{.}}/tags" />
+
+  <input type="hidden" name="source" value="/tasks" />
+
   <div class="relative">
     <span
       class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"

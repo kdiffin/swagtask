@@ -86,7 +86,7 @@
           </div>
         </div>
       </div>
-      {{ template "add-tag-card" . }}
+      {{ template "add-collaborative-tag" . }}
       {{ template "collaborative-tags-list-container" .TagsWithTasks }}
       {{ template "footer" . }}
     </main>
@@ -94,7 +94,7 @@
 </html>
 {{ end }}
 
-{{ block "add-tag-card" . }}
+{{ block "add-collaborative-tag" . }}
 <div
   class="bg-zinc-800/90 rounded-sm shadow-lg border border-zinc-700/50 p-5 backdrop-blur-sm"
 >
@@ -105,7 +105,8 @@
 
   <form ws-send novalidate>
     <input type="hidden" name="action" value="create_tag" />
-    <input type="hidden" name="path" value="/vaults/{{.}}/tags/" />
+    <input type="hidden" name="path" value="/vaults/{{.Vault.ID}}/tags/" />
+    <input type="hidden" name="source" value="/tags" />
 
     <div class="flex flex-col sm:flex-row gap-3">
       <div class="relative flex-grow">
@@ -151,17 +152,17 @@
   <div
     class="grid grid-cols-1 md:grid-cols-2 gap-5 p-5"
     role="list"
-    id="collaborative-tags-list"
+    id="collaborative-tags"
     aria-label="Tags list"
   >
     {{ range . }}
-    {{ template "tag-card" . }}
+    {{ template "collaborative-tag" . }}
     {{ end }}
   </div>
 </div>
 {{ end }}
 
-{{ block "tag-card" . }}
+{{ block "collaborative-tag" . }}
 <article
   id="tag-{{.ID}}"
   class="bg-zinc-900/90 border border-zinc-700/50 rounded-sm p-5 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col"
@@ -179,25 +180,30 @@
       </h2>
 
       <div class="flex items-center gap-2">
-        <button
-          class="text-red-400 hover:text-red-300 p-1.5 rounded-sm hover:bg-zinc-800/80 transition-colors duration-200"
-          hx-delete="/vaults/{{.VaultID}}/tags/{{ .ID }}/"
-          hx-target="closest article"
-          hx-swap="outerHTML swap:200ms transition:true"
-          title="Delete tag #{{ .Name }}"
-          aria-label="Delete tag #{{ .Name }}"
-          type="button"
-        >
-          <i class="fas fa-trash text-sm"></i>
-        </button>
+        <form ws-send>
+          <input type="hidden" name="action" value="delete_tag" />
 
-        {{ template "attach-task-form" . }}
+          <input type="hidden" name="path" value="/vaults/{{.VaultID}}/tags/" />
+
+          <input type="hidden" name="tag_id" value="{{ .ID }}" />
+
+          <button
+            class="text-red-400 hover:text-red-300 p-1.5 rounded-sm hover:bg-zinc-800/80 transition-colors duration-200"
+            title="Delete tag #{{ .Name }}"
+            aria-label="Delete tag #{{ .Name }}"
+            type="submit"
+          >
+            <i class="fas fa-trash text-sm"></i>
+          </button>
+        </form>
+
+        {{ template "collaborative-attach-task-form" . }}
       </div>
     </header>
   </div>
 
-  {{ template "rename-tag-form" . }}
-  {{ template "tag-tasks" .}}
+  {{ template "collaborative-rename-tag-form" . }}
+  {{ template "collaborative-tag-tasks" .}}
   <hr size="12px" class="border-zinc-700/50 my-4" />
   <div class="flex items-center justify-between gap-2">
     <div class="flex items-center rounded-sm gap-2">
@@ -222,7 +228,7 @@
 </article>
 {{ end }}
 
-{{ block "tag-tasks" .}}
+{{ block "collaborative-tag-tasks" .}}
 <div class="flex flex-wrap gap-2">
   {{ if .RelatedTasks }}
   {{ range.RelatedTasks }}
@@ -233,11 +239,16 @@
       <i class="fa-solid fa-clipboard text-[10px] mr-1"></i> {{.Name}}</a
     >
 
-    <form
-      hx-delete="/vaults/{{ $.VaultID }}/tags/{{ $.ID }}/tasks/"
-      hx-swap="outerHTML"
-      hx-target="#tag-{{ $.ID }}"
-    >
+    <form ws-send>
+      <input type="hidden" name="action" value="remove_task_from_tag" />
+
+      <input
+        type="hidden"
+        name="path"
+        value="/vaults/TODO/tags/{{ $.ID }}/tasks/"
+      />
+
+      <input type="hidden" name="tag_id" value="{{ $.ID }}" />
       <button
         name="task_id"
         value="{{.ID}}"
@@ -259,14 +270,17 @@
 </div>
 {{ end }}
 
-{{ block "rename-tag-form" . }}
-<form
-  class="mb-4 space-y-2"
-  hx-target="#tag-{{.ID}}"
-  hx-put="/vaults/{{ .VaultID }}/tags/{{ .ID }}/"
-  hx-swap="outerHTML swap:200ms transition:true"
-  novalidate
->
+{{ block "collaborative-rename-tag-form" . }}
+<form ws-send class="mb-4 space-y-2" novalidate>
+  <input type="hidden" name="action" value="update_tag" />
+
+  <input
+    type="hidden"
+    name="path"
+    value="/vaults/{{ .VaultID }}/tags/{{ .ID }}/"
+  />
+  <input type="hidden" name="tag_id" value="{{ .ID }}" />
+
   <label
     for="rename-tag-{{ .ID }}"
     class="block text-xs font-medium text-zinc-400"
@@ -301,14 +315,17 @@
 </form>
 {{ end }}
 
-{{ block "attach-task-form" . }}
-<form
-  hx-post="/vaults/{{.VaultID}}/tags/{{.ID}}/tasks/"
-  hx-target="#tag-{{.ID}}"
-  hx-trigger="change"
-  hx-swap="outerHTML"
-  class="space-y-2 flex flex-col"
->
+{{ block "collaborative-attach-task-form" . }}
+<form ws-send hx-trigger="change" class="space-y-2 flex flex-col">
+  <input type="hidden" name="action" value="add_task_to_tag" />
+
+  <input
+    type="hidden"
+    name="path"
+    value="/vaults/{{ .VaultID }}/tags/{{ .ID }}//tasks"
+  />
+  <input type="hidden" name="tag_id" value="{{ .ID }}" />
+
   <select
     name="task_id"
     class="self-start text-xs border bg-zinc-800/90 border-zinc-700/50 text-white px-2.5 py-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"

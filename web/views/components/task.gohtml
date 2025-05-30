@@ -49,7 +49,7 @@
         {{ if .Completed }}
         <button
           hx-post="/tasks/{{ .ID }}/toggle-complete/"
-          hx-swap="outerHTML swap:200ms transition:true"
+          hx-swap="outerHTML transition:true swap:100ms  "
           hx-target="#task-{{ .ID }}"
           hx-indicator="#completion-indicator-task-{{ .ID }}"
           hx-indicator-delay="300"
@@ -60,7 +60,7 @@
         {{ else }}
         <button
           hx-post="/tasks/{{ .ID }}/toggle-complete/"
-          hx-swap="outerHTML swap:200ms transition:true"
+          hx-swap="outerHTML transition:true swap:100ms  "
           hx-target="#task-{{ .ID }}"
           hx-indicator="#completion-indicator-task-{{ .ID }}"
           hx-indicator="300"
@@ -74,7 +74,7 @@
       <button
         hx-delete="/tasks/{{ .ID }}/"
         hx-confirm="Are you sure you want to delete this task?"
-        hx-swap="outerHTML swap:200ms transition:true"
+        hx-swap="outerHTML transition:true swap:100ms  "
         hx-indicator="#delete-indicator-task-{{ .ID }}"
         hx-target="#task-{{ .ID }}"
         class="text-red-400 hover:text-red-300 p-2 rounded-sm hover:bg-zinc-800 transition-colors"
@@ -101,7 +101,7 @@
 
     <form
       hx-delete="/tasks/{{ $.ID }}/tags/"
-      hx-swap="outerHTML"
+      hx-swap="outerHTML transition:true swap:100ms"
       hx-target="#task-{{ $.ID }}"
     >
       <button
@@ -147,7 +147,7 @@
   hx-target="#task-{{.ID}}"
   hx-trigger="change"
   hx-indicator="#add-tag-indicator-task-{{.ID}}"
-  hx-swap="outerHTML"
+  hx-swap="outerHTML transition:true swap:100ms"
 >
   <select
     name="tag_id"
@@ -199,7 +199,7 @@
   id="tagform"
   hx-post="/tags/"
   hx-vals='{"source": "/tasks"}'
-  hx-swap="outerHTML swap:200ms transition:true"
+  hx-swap="outerHTML transition:true swap:100ms  "
   hx-target="#tasks-container"
   class="space-y-3"
 >
@@ -231,7 +231,7 @@
 <form
   id="ourform"
   hx-target="#tasks"
-  hx-swap="afterbegin swap:200ms transition:true"
+  hx-swap="afterbegin transition:true swap:200ms   "
   hx-post="/tasks/"
   class="space-y-3"
 >
