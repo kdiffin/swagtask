@@ -202,15 +202,18 @@
         // Create cursor element if it doesn't exist
         //  prettier-ignore-start
 
-        // prettier-ignore-end
-        if (!cursor) {
-          cursor = document.createElement("div");
-          cursor.id = id;
-          cursor.className = "live-cursor";
-          const color = getRandomColor();
-          cursor.innerHTML = `<div class="cursor-dot" style="background-color: ${color}; box-shadow: 0 0 5px ${color};"></div>
-                       <div class="cursor-name" style="background-color: ${color};">${username}</div>`;
-          document.body.appendChild(cursor);
+        if (username != {{.Auth.Username}}){
+
+          // prettier-ignore-end
+          if (!cursor) {
+            cursor = document.createElement("div");
+            cursor.id = id;
+            cursor.className = "live-cursor";
+            const color = getRandomColor();
+            cursor.innerHTML = `<div class="cursor-dot" style="background-color: ${color}; box-shadow: 0 0 5px ${color};"></div>
+                         <div class="cursor-name" style="background-color: ${color};">${username}</div>`;
+            document.body.appendChild(cursor);
+          }
         }
 
         // Update position
