@@ -9,7 +9,7 @@ WHERE vault_id = sqlc.arg('vault_id')::UUID
   )
 ORDER BY created_at DESC;
 
--- name: CreateTag :exec
+-- name: CreateTag :one
 WITH authorized_user AS (
   SELECT 1
   FROM vault_user_relations

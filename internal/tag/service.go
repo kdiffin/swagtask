@@ -126,6 +126,27 @@ func updateTag(queries *db.Queries, tagId, userId, vaultId pgtype.UUID,
 	return tagWithTasks, nil
 }
 
+func CreateTag(queries *db.Queries, userId, vaultId pgtype.UUID,
+	tagName string, ctx context.Context) (*TagWithTasks, error) {
+
+	tagId, err := queries.CreateTag(ctx, db.CreateTagParams{
+		Name:    tagName,
+		UserID:  userId,
+		VaultID: vaultId,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", utils.ErrBadRequest, err)
+	}
+
+	tagWithTasks, errTags := getTagWithTasksById(queries, tagId, userId, vaultId, ctx)
+	if errTags != nil {
+
+		return nil, errTags
+	}
+
+	return tagWithTasks, nil
+}
+
 func deleteTag(queries *db.Queries, tagId, userId, vaultId pgtype.UUID, ctx context.Context) error {
 	errDelete := queries.DeleteTag(ctx, db.DeleteTagParams{
 		ID:      tagId,

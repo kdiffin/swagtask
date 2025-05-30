@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createTag = `-- name: CreateTag :exec
+const createTag = `-- name: CreateTag :one
 WITH authorized_user AS (
   SELECT 1
   FROM vault_user_relations
@@ -21,7 +21,7 @@ WITH authorized_user AS (
 )
 INSERT INTO tags (name, user_id, vault_id)
 SELECT $1, $2::UUID, $3::UUID
-FROM authorized_user
+FROM authorized_user RETURNING id
 `
 
 type CreateTagParams struct {
@@ -30,9 +30,11 @@ type CreateTagParams struct {
 	VaultID pgtype.UUID
 }
 
-func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) error {
-	_, err := q.db.Exec(ctx, createTag, arg.Name, arg.UserID, arg.VaultID)
-	return err
+func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createTag, arg.Name, arg.UserID, arg.VaultID)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteTag = `-- name: DeleteTag :exec

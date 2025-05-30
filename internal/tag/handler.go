@@ -84,7 +84,7 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	errTag := CreateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	tag, errTag := CreateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errTag) {
 		return
 	}
