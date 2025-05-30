@@ -33,6 +33,7 @@ func getTagWithTasksById(queries *db.Queries, tagId, userId, vaultId pgtype.UUID
 			Username:  tagWithTaskRelation.AuthorUsername,
 		}
 		TagUIStruct.VaultID = tagWithTaskRelation.VaultID.String()
+		TagUIStruct.CreatedAt = utils.BrowserFormattedtTime(tagWithTaskRelation.CreatedAt)
 
 		if tagWithTaskRelation.TaskID.Valid && tagWithTaskRelation.TaskName.Valid {
 			relatedTasks = append(relatedTasks, relatedTask{
@@ -96,8 +97,9 @@ func GetTagsWithTasks(queries *db.Queries, userId, vaultId pgtype.UUID, ctx cont
 		avaialbleTags := getTagAvailableTasks(allTaskOptions, tagsOfTask)
 
 		tagWithTasks := newTagWithTasks(TagUI{
-			VaultID: tag.VaultID.String(),
-			Name:    tag.Name,
+			VaultID:   tag.VaultID.String(),
+			Name:      tag.Name,
+			CreatedAt: utils.BrowserFormattedtTime(tag.CreatedAt),
 			Author: tagAuthor{
 				PathToPfp: tag.AuthorPathToPfp,
 				Username:  tag.AuthorUsername,

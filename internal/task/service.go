@@ -42,9 +42,10 @@ func GetTaskWithTagsById(queries *db.Queries, userId, vaultId, id pgtype.UUID, c
 
 	for _, taskWithRelation := range taskWithRelations {
 		task = TaskUI{
-			ID:   taskWithRelation.ID.String(),
-			Name: taskWithRelation.Name,
-			Idea: taskWithRelation.Idea,
+			ID:        taskWithRelation.ID.String(),
+			Name:      taskWithRelation.Name,
+			Idea:      taskWithRelation.Idea,
+			CreatedAt: utils.BrowserFormattedtTime(taskWithRelation.CreatedAt),
 			Author: auth.Author{
 				PathToPfp: taskWithRelation.AuthorPathToPfp,
 				Username:  taskWithRelation.AuthorUsername,
@@ -103,6 +104,7 @@ func GetFilteredTasksWithTags(queries *db.Queries, filters TasksPageFilters,
 		idToTask[task.ID] = TaskUI{
 			ID:        task.ID.String(),
 			Name:      task.Name,
+			CreatedAt: utils.BrowserFormattedtTime(task.CreatedAt),
 			Idea:      task.Idea,
 			Completed: task.Completed,
 			Author: auth.Author{
@@ -310,9 +312,10 @@ func GetTaskPage(queries *db.Queries, userId, vaultId, id pgtype.UUID, ctx conte
 	var createdAt pgtype.Timestamp
 	for _, taskWithRelation := range taskWithRelations {
 		task = TaskUI{
-			ID:   taskWithRelation.ID.String(),
-			Name: taskWithRelation.Name,
-			Idea: taskWithRelation.Idea,
+			ID:        taskWithRelation.ID.String(),
+			CreatedAt: utils.BrowserFormattedtTime(createdAt),
+			Name:      taskWithRelation.Name,
+			Idea:      taskWithRelation.Idea,
 			Author: auth.Author{
 				PathToPfp: taskWithRelation.AuthorPathToPfp,
 				Username:  taskWithRelation.AuthorUsername,

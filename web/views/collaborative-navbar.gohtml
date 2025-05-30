@@ -1,7 +1,8 @@
 {{ block "collaborative-navbar" . }}
 <nav
-hx-boost="true"
-class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50">
+  hx-boost="true"
+  class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50"
+>
   <div class="container mx-auto px-6 py-4">
     <div class="flex items-center justify-between">
       <!-- Left - Vault Info -->
@@ -22,12 +23,16 @@ class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50">
 
         <!-- Vault Status -->
         {{if .Vault.Locked}}
-        <span class="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium border border-red-500/30">
+        <span
+          class="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium border border-red-500/30"
+        >
           <i class="fas fa-lock text-xs mr-1"></i>
           Locked
         </span>
         {{else}}
-        <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium border border-green-500/30">
+        <span
+          class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium border border-green-500/30"
+        >
           <i class="fas fa-unlock text-xs mr-1"></i>
           Active
         </span>
@@ -35,7 +40,7 @@ class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50">
       </div>
 
       <!-- Center - Search Input -->
-      <div class="flex-1 max-w-md mx-8">
+      <!-- <div class="flex-1 max-w-md mx-8">
         <form id="searchForm" class="relative">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
             <i class="fas fa-search text-sm"></i>
@@ -48,13 +53,14 @@ class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50">
             class="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white text-sm transition-all placeholder-zinc-500"
           />
         </form>
-      </div>
+      </div> -->
 
       <!-- Right - Navigation & User -->
       <div class="flex items-center space-x-6">
         <!-- Navigation Links -->
         <div class="flex items-center space-x-4">
           <a
+            hx-boost="false"
             href="/"
             class="flex items-center space-x-2 text-zinc-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-zinc-700/50"
           >
@@ -87,7 +93,9 @@ class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50">
               class="w-8 h-8 rounded-full border-2 border-zinc-600"
             />
             <div class="text-right">
-              <div class="text-white text-sm font-medium">{{.Auth.Username}}</div>
+              <div class="text-white text-sm font-medium">
+                {{.Auth.Username}}
+              </div>
               <div class="text-zinc-400 text-xs">{{.Auth.Role}}</div>
             </div>
           </div>
@@ -121,10 +129,7 @@ class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50">
   </div>
 </nav>
 
-
-</nav>
-
-<script>
+<!-- <script>
   // Search form handling
   const searchForm = document.getElementById("searchForm");
   
@@ -142,7 +147,7 @@ class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50">
       window.location.href = newUrl;
     }
   });
-</script>
+</script> -->
 
 <!-- Mobile menu toggle (hidden by default) -->
 <div
@@ -179,43 +184,41 @@ class="border-b border-zinc-700/50 bg-zinc-800 mb-10 top-0 z-50">
   </div>
 </div>
 <script>
+  function getRandomColor() {
+    const colors = ["#f44336", "#2196f3", "#4caf50", "#ff9800", "#9c27b0"];
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    return colors[randomIndex];
+  }
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.addEventListener("htmx:wsAfterMessage", (evt) => {
+      console.log("DEEZ");
+      let messageJson = JSON.parse(evt.detail.message);
 
-  // function getRandomColor() {
-  //   const colors = ["#f44336", "#2196f3", "#4caf50", "#ff9800", "#9c27b0"];
-  //   const randomIndex = Math.floor(Math.random() * colors.length);
-  //   return colors[randomIndex];
-  // }
-  // document.addEventListener("DOMContentLoaded", () => {
-  //     document.body.addEventListener("htmx:wsAfterMessage", (evt) => {
-  //       console.log("DEEZ")
-  //       let messageJson = JSON.parse(evt.detail.message);
+      if (messageJson.Type === "cursor_info") {
+        const { x, y, username } = messageJson;
+        const id = `cursor-${username}`;
+        let cursor = document.getElementById(id);
 
-  //       if (messageJson.Type === "cursor_info") {
-  //         const { x, y, username } = messageJson;
-  //         const id = `cursor-${username}`;
-  //         let cursor = document.getElementById(id);
+        // Create cursor element if it doesn't exist
+        //  prettier-ignore-start
 
-  //         // Create cursor element if it doesn't exist
-  //         //  prettier-ignore-start
-  //          if(username != {{.Auth.Username}}) {
-  //         // prettier-ignore-end
-  //            if (!cursor) {
-  //              cursor = document.createElement("div");
-  //              cursor.id = id;
-  //              cursor.className = "live-cursor";
-  //              const color = getRandomColor();
-  //              cursor.innerHTML = `<div class="cursor-dot" style="background-color: ${color}; box-shadow: 0 0 5px ${color};"></div>
-  //                      <div class="cursor-name" style="background-color: ${color};">${username}</div>`;
-  //              document.body.appendChild(cursor);
-  //            }
+        // prettier-ignore-end
+        if (!cursor) {
+          cursor = document.createElement("div");
+          cursor.id = id;
+          cursor.className = "live-cursor";
+          const color = getRandomColor();
+          cursor.innerHTML = `<div class="cursor-dot" style="background-color: ${color}; box-shadow: 0 0 5px ${color};"></div>
+                       <div class="cursor-name" style="background-color: ${color};">${username}</div>`;
+          document.body.appendChild(cursor);
+        }
 
-  //            // Update position
-  //            cursor.style.left = `${x}px`;
-  //            cursor.style.top = `${y}px`;
-  //          }
-  //       }
-  //     });
-  //   });
+        // Update position
+        cursor.style.left = `${x}px`;
+        cursor.style.top = `${y}px`;
+      }
+    });
+  });
 </script>
 
 {{ end }}

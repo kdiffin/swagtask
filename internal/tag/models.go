@@ -5,10 +5,12 @@ import "swagtask/internal/auth"
 type tagAuthor = auth.Author
 
 type TagUI struct {
-	VaultID string
-	Author  tagAuthor
-	Name    string
-	ID      string
+	VaultID   string
+	Author    tagAuthor
+	Name      string
+	CreatedAt string
+
+	ID string
 }
 type taskOption struct {
 	Name string

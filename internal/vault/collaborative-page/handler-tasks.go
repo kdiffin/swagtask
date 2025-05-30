@@ -34,6 +34,7 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request, queries *db.Queries
 		tasksReal = append(tasksReal, task.TaskWithTags{
 			TaskUI: task.TaskUI{
 				ID:        t.ID,
+				CreatedAt: t.CreatedAt,
 				Name:      t.Name,
 				Author:    t.Author,
 				Idea:      t.Idea,
@@ -106,6 +107,7 @@ func HandlerGetTask(w http.ResponseWriter,
 	tasksReal := task.TaskWithTags{
 		TaskUI: task.TaskUI{
 			ID:        t.ID,
+			CreatedAt: t.CreatedAt,
 			Name:      t.Name,
 			Author:    t.Author,
 			Idea:      t.Idea,

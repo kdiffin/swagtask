@@ -418,6 +418,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 func addVaultIdToTask(vaultId string, t task.TaskWithTags) task.TaskWithTags {
 	tasksReal := task.TaskWithTags{
 		TaskUI: task.TaskUI{
+			CreatedAt: t.CreatedAt,
 			ID:        t.ID,
 			Name:      t.Name,
 			Author:    t.Author,

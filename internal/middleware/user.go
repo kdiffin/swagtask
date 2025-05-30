@@ -75,3 +75,16 @@ func HandlerWithUser(queries *db.Queries, next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
+func HandlerWithUserNoRedirect(queries *db.Queries, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, err := getUserInfoFromSessionId(queries, r)
+		var ctx context.Context
+		if err == nil {
+			ctx = context.WithValue(r.Context(), userContextKey, user)
+		} else {
+			ctx = context.Background()
+		}
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}

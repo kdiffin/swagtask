@@ -11,6 +11,7 @@ type TaskUI struct {
 	Author    auth.Author
 	Idea      string
 	Completed bool
+	CreatedAt string
 }
 
 func newUITask(task db.Task, author auth.Author) TaskUI {

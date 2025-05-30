@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"os"
+	"swagtask/internal/auth"
 	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
 	"swagtask/internal/tag"
@@ -16,11 +17,41 @@ func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 	uploadsFS := http.FS(os.DirFS("./web/pfps/"))
 	staticFS := http.FS(os.DirFS("./web/static/"))
 
+	mux.Handle("/{$}", middleware.HandlerWithUserNoRedirect(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, err := middleware.UserFromContext(r.Context())
+
+		type pageType struct {
+			Auth auth.AuthenticatedPage
+		}
+
+		var page pageType
+		if err != nil {
+
+			page = pageType{
+				Auth: auth.AuthenticatedPage{
+					Authorized: false,
+					User: auth.UserUI{
+						PathToPfp: "",
+						Username:  "",
+					},
+				},
+			}
+		} else {
+			page = pageType{
+				Auth: auth.AuthenticatedPage{
+					Authorized: true,
+					User: auth.UserUI{
+						PathToPfp: user.PathToPfp,
+						Username:  user.Username,
+					},
+				},
+			}
+		}
+		templates.Render(w, "landing-page", page)
+	})))
 	mux.Handle("/pfps/", http.StripPrefix("/pfps/", http.FileServer(uploadsFS)))
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(staticFS)))
-	mux.HandleFunc("/{$}", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("hellow orld"))
-	})
+
 	mux.Handle("POST /tags/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.FormValue("source") == "/tags" {
 			tag.HandlerCreateTag(w, r, queries, templates)
