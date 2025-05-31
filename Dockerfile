@@ -23,7 +23,7 @@ RUN apk --no-cache add ca-certificates curl
 
 
 # Download migrate CLI binary
-RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz \
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.3/migrate.darwin-amd64.tar.gz | tar xvz \
   && mv migrate.linux-amd64 /usr/local/bin/migrate
 
   # Copy the Go binary and migrations
