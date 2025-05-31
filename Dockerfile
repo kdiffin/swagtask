@@ -19,7 +19,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Install ca-certificates for HTTPS
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates curl
 
 
 # Download migrate CLI binary
