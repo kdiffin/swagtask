@@ -1,0 +1,13 @@
+# .dockerignore
+# Ignore files/folders not needed in the Docker image
+tmp/
+*.md
+*.log
+*.env
+.git
+.gitignore
+node_modules/
+web/pfps/
+web/static/images/*.psd
+web/static/videos/*.mov
+web/static/videos/*.gif
