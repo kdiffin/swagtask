@@ -51,6 +51,22 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      const imagesWithFallback = document.querySelectorAll(".fallback-avatar");
+
+      const fallbackImageUrl = "/static/images/default-avatar.jpg";
+
+      imagesWithFallback.forEach((imageElement) => {
+        imageElement.onerror = function () {
+          console.warn(
+            `Original image failed to load: ${this.src}. Using fallback.`
+          );
+          this.src = fallbackImageUrl;
+          this.onerror = null;
+        };
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
       document.body.addEventListener("htmx:beforeSwap", (evt) => {
         if (evt.detail.xhr.status === 404) {
           alert("Error: Could Not Find Resource");
@@ -110,6 +126,21 @@
   />
 
   <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const imagesWithFallback = document.querySelectorAll(".fallback-avatar");
+
+      const fallbackImageUrl = "/static/images/default-avatar.jpg";
+
+      imagesWithFallback.forEach((imageElement) => {
+        imageElement.onerror = function () {
+          console.warn(
+            `Original image failed to load: ${this.src}. Using fallback.`
+          );
+          this.src = fallbackImageUrl;
+          this.onerror = null;
+        };
+      });
+    });
     document.addEventListener("DOMContentLoaded", () => {
       document.body.addEventListener("htmx:beforeSwap", (evt) => {
         if (evt.detail.xhr.status === 404) {

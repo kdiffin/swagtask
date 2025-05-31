@@ -23,7 +23,7 @@
                 <img
                   src="{{.Vault.Author.PathToPfp}}"
                   alt=""
-                  class="w-6 h-6 rounded-full"
+                  class="w-6 h-6 fallback-avatar rounded-full"
                 />
 
                 <span class="text-pink-400">{{.Vault.Author.Username}}</span>
@@ -31,7 +31,11 @@
             </div>
           </div>
         </div>
-        <img src="{{.Auth.PathToPfp}}" alt="" class="w-14 h-14 rounded-full" />
+        <img
+          src="{{.Auth.PathToPfp}}"
+          alt=""
+          class="w-14 h-14 fallback-avatar rounded-full"
+        />
       </div>
 
       <!-- Cards Section -->
@@ -111,7 +115,7 @@
               <img
                 src="{{.PathToPfp}}"
                 alt="{{.Name}}'s pfp"
-                class="w-10 h-10 rounded-full object-cover border-2 border-zinc-600"
+                class="w-10 h-10 fallback-avatar rounded-full object-cover border-2 border-zinc-600"
               />
               <div>
                 <p class="font-semibold text-gray-100">{{.Name}}</p>

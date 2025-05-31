@@ -67,7 +67,7 @@
             <img
               src="{{.Auth.PathToPfp}}"
               alt=""
-              class="w-12 h-12 rounded-full border-2 border-zinc-600"
+              class="w-12 h-12 fallback-avatar rounded-full border-2 border-zinc-600"
             />
             <div>
               <p class="text-white font-medium">{{.Auth.Username}}</p>
@@ -90,7 +90,7 @@
               <img
                 src="{{.PathToPfp}}"
                 alt="{{.Name}}"
-                class="w-6 h-6 rounded-full"
+                class="w-6 h-6 fallback-avatar rounded-full"
               />
               <span class="text-sm text-white">{{.Name}}</span>
               <span
@@ -330,7 +330,7 @@
     <img
       src="{{.PathToPfp}}"
       alt="profile picture"
-      class="w-6 h-6 rounded-full object-cover border shadow-sm"
+      class="w-6 h-6 rounded-full fallback-avatar object-cover border shadow-sm"
     />
     <span
       class="text-zinc-300 hover:text-white transition duration-200 text-sm"
