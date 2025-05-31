@@ -180,7 +180,14 @@
   {{ block "collaborative-task-header" . }}
   <div class="flex justify-between items-start">
     <div>
-      <h3 class="text-xl font-semibold text-white">{{ .Name }}</h3>
+      <h3 class="text-xl font-semibold text-white">
+        <a
+          class="hover:text-blue-400 hover:underline hover:underline-offset-4"
+          href="/vaults/{{.VaultID}}/tasks/{{.ID}}/"
+        >
+          {{ .Name }}
+        </a>
+      </h3>
       <p class="text-sm text-zinc-400 mt-1.5">{{ .Idea }}</p>
     </div>
     <div class="space-y-3">
@@ -341,7 +348,7 @@
   <div
     class="text-xs group bg-purple-600/90 flex items-center gap-1 hover:bg-purple-500 text-white px-2.5 py-1 rounded-full transition-colors duration-200 shadow-sm"
   >
-    <a class="hover:underline" href="/tasks?tags={{.Name}}/">#{{ .Name }}</a>
+    #{{ .Name }}
 
     <form ws-send>
       <input type="hidden" name="action" value="remove_tag_from_task" />

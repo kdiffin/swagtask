@@ -84,7 +84,12 @@
         class="text-lg font-semibold truncate select-text"
         title="#{{ .Name }}"
       >
-        <span class="text-purple-400">#</span>{{ .Name }}
+        <a
+          class="hover:text-blue-400 hover:underline hover:underline-offset-4"
+          href="/tasks/?tags={{.Name}}"
+        >
+          <span class="text-purple-400">#</span>{{ .Name }}
+        </a>
       </h2>
 
       <div class="flex items-center gap-2">
