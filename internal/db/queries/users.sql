@@ -42,6 +42,10 @@ WITH
 -- name: GetUserCredentials :one
 SELECT id, password_hash FROM users WHERE username=$1;
 
+-- name: GetUsers :many
+SELECT username, path_to_pfp  FROM users;
+
+
 -- name: CreateSession :exec
 INSERT INTO sessions (id, user_id) VALUES($1,$2);
 

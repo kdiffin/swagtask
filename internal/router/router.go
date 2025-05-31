@@ -20,13 +20,15 @@ func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 	mux.Handle("/{$}", middleware.HandlerWithUserNoRedirect(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, err := middleware.UserFromContext(r.Context())
 
+		users, _ := queries.GetUsers(r.Context())
+
 		type pageType struct {
-			Auth auth.AuthenticatedPage
+			Auth  auth.AuthenticatedPage
+			Users []db.GetUsersRow
 		}
 
 		var page pageType
 		if err != nil {
-
 			page = pageType{
 				Auth: auth.AuthenticatedPage{
 					Authorized: false,
@@ -35,6 +37,7 @@ func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 						Username:  "",
 					},
 				},
+				Users: users,
 			}
 		} else {
 			page = pageType{
@@ -45,6 +48,7 @@ func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 						Username:  user.Username,
 					},
 				},
+				Users: users,
 			}
 		}
 		templates.Render(w, "landing-page", page)
