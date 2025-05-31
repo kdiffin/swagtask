@@ -7,7 +7,6 @@ tmp/
 .git
 .gitignore
 node_modules/
-web/pfps/
 web/static/images/*.psd
 web/static/videos/*.mov
 web/static/videos/*.gif
