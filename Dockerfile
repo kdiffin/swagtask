@@ -23,17 +23,17 @@ RUN apk --no-cache add ca-certificates curl
 
 
 # Download migrate CLI binary
-RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.3/migrate.darwin-amd64.tar.gz | tar xvz \
-  && mv migrate.linux-amd64 /usr/local/bin/migrate
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.3/migrate.linux-amd64.tar.gz | tar xvz && mv migrate /usr/local/bin/migrate
 
-  # Copy the Go binary and migrations
+# Copy the Go binary and migrations
 COPY --from=builder /app/swagtask .
-COPY internal/db/migrations/ internal/db/migrations/
-
+COPY internal/db/migrations/ internal/db/migrations/ 
 
 # Copy static files and templates
 COPY web/ web/
+# You have migrations copied twice, still harmless but good to notice!
 COPY internal/db/migrations/ internal/db/migrations/
+
 
 # Expose the port your app listens on
 EXPOSE 8080
