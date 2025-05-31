@@ -108,14 +108,15 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			err := websocket.Message.Receive(wsConn, &msg)
 			if err != nil {
 				log.Println("Receive error:", err)
-				break
+				utils.CheckErrorWebsocket(hub.broadcast, "Internal server error unmarshalling json", err)
+				continue
 			}
 
 			var payload Payload
 			errJson := json.Unmarshal([]byte(msg), &payload)
 			if errJson != nil {
-				log.Fatal("errJsonor unmarshalling:", errJson)
-				return
+				log.Println("errJsonor unmarshalling:", errJson)
+				continue
 			}
 
 			if payload.Action == "create_task" && payload.Path == fmt.Sprintf("/vaults/%v/tasks", vaultId) {
@@ -125,13 +126,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 				task, errTask := task.CreateTask(queries, payload.Data["task_name"], payload.Data["task_idea"], utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 				if errTask != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Duplicate idea in the same vault", errTask)
-					return
+					continue
 				}
 
 				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-					return
+					continue
 				}
 				realHtml := wrapWithAttributesDiv(*html, `id="collaborative-tasks" hx-swap-oob="afterbegin"`)
 
@@ -142,7 +143,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 				errTask := task.DeleteTask(queries, utils.PgUUID(payload.Data["task_id"]), utils.PgUUID(vaultId), utils.PgUUID(user.ID), r.Context())
 				if errTask != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Internal server error", errTask)
-					return
+					continue
 				}
 
 				realHtml := wrapWithAttributesDiv("", fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
@@ -162,13 +163,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					r.Context())
 				if errTask != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTask)
-					return
+					continue
 				}
 
 				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-					return
+					continue
 				}
 				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
 
@@ -183,13 +184,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					r.Context())
 				if errTask != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Internal server error", errTask)
-					return
+					continue
 				}
 
 				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-					return
+					continue
 				}
 				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
 
@@ -207,13 +208,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					r.Context())
 				if errTask != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTask)
-					return
+					continue
 				}
 
 				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-					return
+					continue
 				}
 				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
 
@@ -231,13 +232,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					r.Context())
 				if errTask != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTask)
-					return
+					continue
 				}
 
 				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-					return
+					continue
 				}
 				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="task-%v" hx-swap-oob="outerHTML"`, payload.Data["task_id"]))
 
@@ -260,7 +261,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 				jsonCursor, errJsonMarsh := json.Marshal(cursor)
 				if errJsonMarsh != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Internal server error", errJsonMarsh)
-					return
+					continue
 				}
 
 				hub.broadcast <- string(jsonCursor)
@@ -276,12 +277,12 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 						r.Context())
 					if errTag != nil {
 						utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tags with the same name", errTag)
-						return
+						continue
 					}
 					html, errRender := templates.ReturnString("collaborative-tag", tagWithTasks)
 					if errRender != nil {
 						utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-						return
+						continue
 					}
 					realHtml := wrapWithAttributesDiv(*html, `id="collaborative-tags" hx-swap-oob="afterbegin"`)
 
@@ -294,7 +295,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 						r.Context())
 					if errTag != nil {
 						utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tags with the same name", errTag)
-						return
+						continue
 					}
 
 					filters := task.FilterParams(r)
@@ -306,14 +307,14 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					)
 					if errTasks != nil {
 						utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tags with the same name", errTasks)
-						return
+						continue
 					}
 
 					html, errRender := templates.ReturnString("collaborative-tasks-container", tasks)
 
 					if errRender != nil {
 						utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-						return
+						continue
 					}
 					realHtml := wrapWithAttributesDiv(*html, `id="collaborative-tasks-container" hx-swap-oob="outerHTML"`)
 
@@ -334,13 +335,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 				if errTag != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTag)
-					return
+					continue
 				}
 
 				html, errRender := templates.ReturnString("collaborative-tag", tag)
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-					return
+					continue
 				}
 				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="tag-%v" hx-swap-oob="outerHTML"`, payload.Data["tag_id"]))
 
@@ -356,7 +357,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 				if errTag != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTag)
-					return
+					continue
 				}
 
 				realHtml := wrapWithAttributesDiv("", fmt.Sprintf(`id="tag-%v" hx-swap-oob="outerHTML"`, payload.Data["tag_id"]))
@@ -376,13 +377,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 				if errTag != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTag)
-					return
+					continue
 				}
 
 				html, errRender := templates.ReturnString("collaborative-tag", tag)
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-					return
+					continue
 				}
 				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="tag-%v" hx-swap-oob="outerHTML"`, payload.Data["tag_id"]))
 
@@ -400,13 +401,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 				if errTag != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tasks with the same name", errTag)
-					return
+					continue
 				}
 
 				html, errRender := templates.ReturnString("collaborative-tag", tag)
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
-					return
+					continue
 				}
 				realHtml := wrapWithAttributesDiv(*html, fmt.Sprintf(`id="tag-%v" hx-swap-oob="outerHTML"`, payload.Data["tag_id"]))
 
