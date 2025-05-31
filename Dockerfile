@@ -21,8 +21,15 @@ WORKDIR /app
 # Install ca-certificates for HTTPS
 RUN apk --no-cache add ca-certificates
 
-# Copy the Go binary
+
+# Download migrate CLI binary
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz \
+  && mv migrate.linux-amd64 /usr/local/bin/migrate
+
+  # Copy the Go binary and migrations
 COPY --from=builder /app/swagtask .
+COPY internal/db/migrations/ internal/db/migrations/
+
 
 # Copy static files and templates
 COPY web/ web/
