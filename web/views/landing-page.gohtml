@@ -24,11 +24,20 @@
           Hello grug, <span class="text-purple-400"> app == SwagTask</span>
         </h1>
         <div>
-          <p class="text-lg max-w-2xl mb-1 mx-auto">
-            This site is a minimalist realtime multicollaborative todo app made
-            with Go's stdlib, HTMX and Tailwind (yes, virtually only 2
-            dependencies)
-          </p>
+          <div class="text-lg max-w-2xl mb-1 mx-auto">
+            This site is a minimalist
+            <span class="text-blue-400 font-semibold">
+              realtime multicollaborative</span
+            >
+            todo app made with Go's stdlib, HTMX and Tailwind (yes, virtually
+            only 2 dependencies)
+
+            <br />
+            <br />
+            To use the multicollaborative feature, create a vault, invite an
+            alternative account or friend =>
+            <a href="/vaults/" class="text-purple-400">/vaults</a>.
+          </div>
         </div>
 
         <a
@@ -38,7 +47,7 @@
           App
         </a>
         <a
-          href="https://github.com/kdiffin/fem-htmx-proj"
+          href="https://github.com/kdiffin/swagtask"
           target="_blank"
           class="inline-block mt-4 px-8 py-3 bg-zinc-600 hover:bg-zinc-500 text-white font-semibold rounded-sm shadow transition-colors text-lg"
         >
@@ -233,7 +242,7 @@
             driven (most things). This realization has piqued my interest in
             templ and alpine, which I believe could be a good replacement to the
             missing part of my stack, being
-            <span class="underline text-blue-400"
+            <span class="text-blue-400"
               >islands of reactivity and componentization</span
             >
             <br />
