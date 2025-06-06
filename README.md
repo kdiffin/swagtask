@@ -1,6 +1,5 @@
 this project started off as a fork of primeagens frontend masters hour long htmx+go lecture, its basically nothing like that rn though
 
-chat gippity made the readme
 im doing this to learn htmx and golang i hate react now im a htmx-grug-pilled dev, f the virtual dom
 v0 made like 50% of my frontends styles btw
 
@@ -153,7 +152,7 @@ v0 made like 50% of my frontends styles btw
 
 - [ ] add some tests bruh
 
----
+## gippity made the bottom part
 
 Aight 😤 let’s cook something that's:
 
