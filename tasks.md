@@ -11,14 +11,12 @@
 - [x] implement tags page tag relation to task
 - [x] make the footer work
 - [x] IMPLEMENT ACTUAL FILTERING ON TASKS PAGE
-
   - [x] implement searching by name
   - [x] implement filtering by tag
   - [ ] implement filtering by completed (cba)
 
 - [x] read the other md files rq
 - [x] refactor v1.5
-
   - [x] add net/http and remove echo
   - [x] add decent logging on errors
   - [x] move handler logic outside of the router
@@ -40,7 +38,6 @@
 - [x] change the hx-redirects to just forms with actions
 
 - [x] refactor v2 (vaults)
-
   - **notes**
   - note to self: every tag action based on its vault should be validated with the user id
 
@@ -50,19 +47,16 @@
   - **objectives**
   - [x] replace auto incrementing ids with uuids (no random id guess attack vector)
   - [x] make it work with the uuids and vault ids now
-
     - [x] change all of the queries to use vault ids
     - [x] add default vault id to users, add vault type
     - [x] make the sign up create a default vault
 
   - [x] add author info to tags and tasks, fix the n+1s with joins, fix updatednow
-
     - [x] tags
     - [x] tasks
     - [x] fix the n+1 problem with author info
 
   - [x] fix the workflow
-
     - [x] make all queries work with roles and vaults
     - [x] change constraints of uniqueness to include vaults
 
@@ -74,7 +68,6 @@
   - [x] !!! add a vault middleware which gives the vault depending on if the route is the shared one or the default one, cuz rn its only default
 
   - [x] add vaults page
-
     - [x] fix bug where you cant see the people connected to the vaults
     - [x] fix bug where i can see other peoples tasks at /tasks
     - [x] fix bug where i can edit other peoples vaults without being owner
@@ -82,13 +75,14 @@
     - [x] stop 1 user from having multiple entries of a role (I already implemented that security measure, I guess im not that dumb after all.)
     - [x] fix that one stupid bug where an owner can remove themselves as a collaborator
 
-- [ ] Best practices refactor
+- [ ] refactor v3
+  - [x] change the logic to be struct / store based instead of every handler getting the same stuff passed in over and over again.
+  - [x] remove code reuse websockets.go by adding vaultid helper
 
-  - **I'm gonna do this boring shit later, going a bit forward so i can do websockets**
+  ***
   - [ ] fix users being able to see other peoples individual tags without auth
   - [ ] test for security issues
   - [ ] Error handling, SQL, better authz
-
     - [ ] ADD ACTUAL RBAC AND RLS INSTEAD OF THIS BS EXISTS SHIT!
     - [ ] take a look at whole codebase sql and search for security issues before proceeding
     - [ ] add some serverside error handling that gives back descriptive errors instead of sql (its secured rn but make it responsive to the user)
@@ -101,7 +95,6 @@
   - **move onto phase with collaborative vaults with websockets**
 
 - [ ] Make the multi user part work (vault implementation)
-
   - [x] finish vault introduction page
   - [x] add "upload profile picture" to sign up
   - [x] learn about websocket pub/sub architecture
@@ -109,7 +102,6 @@
   - [x] make the pub/sub channel(vault) based
   - [x] authorize the websocket connections
   - [x] create my own http verb system in websockets
-
     - [x] make task stuff work
     - [ ] make the tag stuff work
           **!!!**
@@ -133,11 +125,9 @@
 
 - [ ] add a home page with "current active users"
 - [ ] add JSON endpoint for mobile app, openapi specs
-
   - [ ] add some documentation to the json returning api
 
 - [ ] add notification system via sse
-
   - [ ] users can request others access to vaults
   - [ ] x user edited this, etc
 

@@ -63,14 +63,6 @@ func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 	mux.Handle("/pfps/", http.StripPrefix("/pfps/", http.FileServer(uploadsFS)))
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(staticFS)))
 
-	mux.Handle("POST /tags/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.FormValue("source") == "/tags" {
-			tagHandler.Create(w, r)
-		} else if r.FormValue("source") == "/tasks" {
-			taskHandler.CreateTag(w, r)
-
-		}
-	})))
 	SetupAuthRoutes(mux, authHandler)
 	SetupTaskRoutes(mux, queries, taskHandler)
 	SetupTagRoutes(mux, queries, tagHandler)

@@ -215,8 +215,7 @@
 {{ define "create-tag" }}
 <form
   id="tagform"
-  hx-post="/tags/"
-  hx-vals='{"source": "/tasks"}'
+  hx-post="/tasks/tag-options/"
   hx-swap="outerHTML transition:true swap:100ms  "
   hx-target="#tasks-container"
   class="space-y-3"

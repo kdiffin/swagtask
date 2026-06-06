@@ -10,13 +10,11 @@ import (
 
 func (h *VaultHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
-	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
+	vaultId :=  r.PathValue("vaultId")
 	if utils.CheckError(w, r, err) {
 		return
 	}
-	if utils.CheckError(w, r, errVault) {
-		return
-	}
+	
 
 	filters := task.FilterParams(r)
 	tasks, err := task.GetFilteredTasksWithTags(h.queries, filters, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
@@ -56,13 +54,11 @@ func (h *VaultHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
 	user, err := middleware.UserFromContext(r.Context())
-	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
+	vaultId :=  r.PathValue("vaultId")
 	if utils.CheckError(w, r, err) {
 		return
 	}
-	if utils.CheckError(w, r, errVault) {
-		return
-	}
+	
 	t, createdAt, err := task.GetTaskPage(h.queries,
 		utils.PgUUID(user.ID),
 		utils.PgUUID(vaultId),

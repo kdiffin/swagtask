@@ -20,13 +20,11 @@ func NewVaultHandler(queries *db.Queries, templates *template.Template) *VaultHa
 
 func (h *VaultHandler) Get(w http.ResponseWriter, r *http.Request) {
 	user, errUser := middleware.UserFromContext(r.Context())
+	vaultId :=  r.PathValue("vaultId")
 	if utils.CheckError(w, r, errUser) {
 		return
 	}
-	vaultId, errVaultId := middleware.VaultIDFromContext(r.Context())
-	if utils.CheckError(w, r, errVaultId) {
-		return
-	}
+	
 
 	vaultWithCollaborators, errVault := common.GetVaultWithCollaboratorsById(h.queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errVault) {

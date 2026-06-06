@@ -11,13 +11,11 @@ import (
 
 func (h *VaultHandler) GetTags(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
-	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
+	vaultId :=  r.PathValue("vaultId")
 	if utils.CheckError(w, r, err) {
 		return
 	}
-	if utils.CheckError(w, r, errVault) {
-		return
-	}
+
 
 	tagsWithTasks, errTags := tag.GetTagsWithTasks(h.queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errTags) {

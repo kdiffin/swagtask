@@ -16,32 +16,36 @@ func SetupVaultRoutes(
 	ownerHandler *owner_dashboard.VaultHandler,
 	collaborativeHandler *collaborative_vault.VaultHandler,
 ) {
+	withUser := func(next http.HandlerFunc) http.Handler {
+		return middleware.HandlerWithUser(queries,next)
+	}
 	// vault page
-	mux.Handle("GET /vaults/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(ownerHandler.GetAll)))
+	mux.Handle("GET /vaults/{$}", withUser(ownerHandler.GetAll))
 
-	mux.Handle("POST /vaults/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(ownerHandler.Create)))
-	mux.Handle("DELETE /vaults/{vaultId}/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(ownerHandler.Delete)))
-	mux.Handle("PUT /vaults/{vaultId}/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(ownerHandler.Update)))
-	mux.Handle("POST /vaults/{vaultId}/collaborators/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(ownerHandler.AddCollaborator)))
-	mux.Handle("DELETE /vaults/{vaultId}/collaborators/{$}", middleware.HandlerWithUser(queries, http.HandlerFunc(ownerHandler.RemoveCollaborator)))
+	mux.Handle("POST /vaults/{$}", withUser(ownerHandler.Create))
+	mux.Handle("DELETE /vaults/{vaultId}/{$}", withUser(ownerHandler.Delete))
+	mux.Handle("PUT /vaults/{vaultId}/{$}", withUser(ownerHandler.Update))
+	mux.Handle("POST /vaults/{vaultId}/collaborators/{$}", withUser(ownerHandler.AddCollaborator))
+	mux.Handle("DELETE /vaults/{vaultId}/collaborators/{$}", withUser(ownerHandler.RemoveCollaborator))
 
 	// all dynamic pages should have vaultId as their parameter
 	// ^ and all pages should be protected
 	// ^ check how the middleware works
 	// vaults{id} page with collaboration
-	mux.Handle("GET /vaults/{vaultId}/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(collaborativeHandler.Get))))
-	mux.Handle("GET /vaults/{vaultId}/tasks/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(collaborativeHandler.GetTasks))))
-	mux.Handle("GET /vaults/{vaultId}/tasks/{id}/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(collaborativeHandler.GetTask))))
-	mux.Handle("GET /vaults/{vaultId}/tags/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(collaborativeHandler.GetTags))))
+	mux.Handle("GET /vaults/{vaultId}/{$}", withUser(collaborativeHandler.Get))
+	mux.Handle("GET /vaults/{vaultId}/tasks/{$}", withUser(collaborativeHandler.GetTasks))
+	mux.Handle("GET /vaults/{vaultId}/tasks/{id}/{$}", withUser(collaborativeHandler.GetTask))
+	mux.Handle("GET /vaults/{vaultId}/tags/{$}", withUser(collaborativeHandler.GetTags))
 
-	mux.Handle("/vaults/{vaultId}/wstest/{$}", middleware.HandlerWithVaultIdFromPath(http.HandlerFunc(
+	// REFACTOR THIS
+	mux.Handle("/vaults/{vaultId}/wstest/{$}", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			vaultId, _ := middleware.VaultIDFromContext(r.Context())
+			vaultId :=  r.PathValue("vaultId")
 			websocket.Handler(collaborative_vault.WsHandlerPubSubTest(vaultId)).ServeHTTP(w, r)
 		},
-	)))
+	))
 
-	mux.Handle("/vaults/{vaultId}/ws/{$}", middleware.HandlerWithVaultIdFromPath(middleware.HandlerWithUser(queries, http.HandlerFunc(collaborativeHandler.WebSocket))))
+	mux.Handle("/vaults/{vaultId}/ws/{$}", withUser(collaborativeHandler.WebSocket))
 
 	mux.HandleFunc("/debug", collaborative_vault.DebugHandler()) // <<== here
 

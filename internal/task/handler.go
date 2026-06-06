@@ -40,7 +40,7 @@ func (h *TaskHandler) AddTag(w http.ResponseWriter, r *http.Request) {
 	h.templates.Render(w, "task", taskWithTags)
 }
 
-func (h *TaskHandler) CreateTag(w http.ResponseWriter, r *http.Request) {
+func (h *TaskHandler) CreateTagOption(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
