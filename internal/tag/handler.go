@@ -8,7 +8,16 @@ import (
 	"swagtask/internal/utils"
 )
 
-func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+type TagHandler struct {
+	queries   *db.Queries
+	templates *template.Template
+}
+
+func NewTagHandler(queries *db.Queries, templates *template.Template) *TagHandler {
+	return &TagHandler{queries: queries, templates: templates}
+}
+
+func (h *TagHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
@@ -17,16 +26,16 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
-	tagsWithTasks, errTag := GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	tagsWithTasks, errTag := GetTagsWithTasks(h.queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errTag) {
 		return
 	}
 
 	page := NewTagsPage(tagsWithTasks, true, user.PathToPfp, user.Username)
-	templates.Render(w, "tags-page", page)
+	h.templates.Render(w, "tags-page", page)
 }
 
-func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 	tagId := r.PathValue("id")
 	tagName := r.FormValue("tag_name")
 
@@ -44,15 +53,15 @@ func HandlerUpdateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	tagWithTask, err := UpdateTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), tagName, r.Context())
+	tagWithTask, err := UpdateTag(h.queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), tagName, r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	templates.Render(w, "tag-card", tagWithTask)
+	h.templates.Render(w, "tag-card", tagWithTask)
 }
 
-func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *TagHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	tagId := r.PathValue("id")
 	user, err := middleware.UserFromContext(r.Context())
 	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
@@ -63,7 +72,7 @@ func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	errTag := DeleteTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	errTag := DeleteTag(h.queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errTag) {
 		return
 	}
@@ -73,7 +82,7 @@ func HandlerDeleteTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 	w.Write([]byte(nil))
 }
 
-func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
@@ -83,15 +92,15 @@ func HandlerCreateTag(w http.ResponseWriter, r *http.Request, queries *db.Querie
 		return
 	}
 
-	tagWithTasks, errTag := CreateTag(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.FormValue("tag_name"), r.Context())
+	tagWithTasks, errTag := CreateTag(h.queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.FormValue("tag_name"), r.Context())
 	if utils.CheckError(w, r, errTag) {
 		return
 	}
 
-	templates.Render(w, "tag-card", tagWithTasks)
+	h.templates.Render(w, "tag-card", tagWithTasks)
 }
 
-func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *TagHandler) AddTask(w http.ResponseWriter, r *http.Request) {
 	tagId := r.PathValue("id")
 	taskId := r.FormValue("task_id")
 	user, err := middleware.UserFromContext(r.Context())
@@ -103,15 +112,15 @@ func HandlerAddTaskToTag(w http.ResponseWriter, r *http.Request, queries *db.Que
 		return
 	}
 
-	tagWithTasks, err := AddTaskToTag(queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(vaultId), r.Context())
+	tagWithTasks, err := AddTaskToTag(h.queries, utils.PgUUID(tagId), utils.PgUUID(user.ID), utils.PgUUID(taskId), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	templates.Render(w, "tag-card", tagWithTasks)
+	h.templates.Render(w, "tag-card", tagWithTasks)
 }
 
-func HandlerRemoveTaskFromTag(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *TagHandler) RemoveTask(w http.ResponseWriter, r *http.Request) {
 	tagId := r.PathValue("id")
 	taskId := r.FormValue("task_id")
 	user, err := middleware.UserFromContext(r.Context())
@@ -122,10 +131,10 @@ func HandlerRemoveTaskFromTag(w http.ResponseWriter, r *http.Request, queries *d
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
-	tagWithTasks, err := DeleteTaskRelationFromTag(queries, utils.PgUUID(tagId), utils.PgUUID(taskId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	tagWithTasks, err := DeleteTaskRelationFromTag(h.queries, utils.PgUUID(tagId), utils.PgUUID(taskId), utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	templates.Render(w, "tag-card", tagWithTasks)
+	h.templates.Render(w, "tag-card", tagWithTasks)
 }

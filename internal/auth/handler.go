@@ -9,13 +9,23 @@ import (
 	"os"
 	"path/filepath"
 	db "swagtask/internal/db/generated"
+	"swagtask/internal/template"
 	"swagtask/internal/utils"
 
 	"github.com/google/uuid"
 )
 
+type AuthHandler struct {
+	queries   *db.Queries
+	templates *template.Template
+}
+
+func NewAuthHandler(queries *db.Queries, templates *template.Template) *AuthHandler {
+	return &AuthHandler{queries: queries, templates: templates}
+}
+
 // TODO: write this well
-func HandleSignup(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	const MAX_UPLOAD_SIZE = 10 << 20 // 10MB
 	username := r.FormValue("username")
 	password := r.FormValue("password")
@@ -44,7 +54,7 @@ func HandleSignup(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			err = queries.SignUpAndCreateDefaultVaultNoPfp(r.Context(), db.SignUpAndCreateDefaultVaultNoPfpParams{
+			err = h.queries.SignUpAndCreateDefaultVaultNoPfp(r.Context(), db.SignUpAndCreateDefaultVaultNoPfpParams{
 				Username:     username,
 				PasswordHash: hash,
 			})
@@ -101,7 +111,7 @@ func HandleSignup(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
 	}
 
 	pathToPfp := "/pfps/" + newFilename
-	err = queries.SignUpAndCreateDefaultVault(r.Context(), db.SignUpAndCreateDefaultVaultParams{
+	err = h.queries.SignUpAndCreateDefaultVault(r.Context(), db.SignUpAndCreateDefaultVaultParams{
 		Username:     username,
 		PathToPfp:    pathToPfp,
 		PasswordHash: hash,
@@ -118,18 +128,18 @@ func generateSessionID() string {
 	rand.Read(b)
 	return hex.EncodeToString(b)
 }
-func HandleLogin(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	credentials, err := queries.GetUserCredentials(r.Context(), username)
+	credentials, err := h.queries.GetUserCredentials(r.Context(), username)
 	if err != nil || !CheckPasswordHash(password, credentials.PasswordHash) {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
 
 	sessionID := generateSessionID()
-	errSesh := queries.CreateSession(r.Context(), db.CreateSessionParams{ID: sessionID, UserID: credentials.ID})
+	errSesh := h.queries.CreateSession(r.Context(), db.CreateSessionParams{ID: sessionID, UserID: credentials.ID})
 	if errSesh != nil {
 		http.Error(w, "Error creating session", http.StatusInternalServerError)
 		return
@@ -145,10 +155,10 @@ func HandleLogin(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/tasks/", http.StatusSeeOther)
 }
 
-func HandleLogout(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if err == nil {
-		errDeleteCookie := queries.DeleteSession(r.Context(), cookie.Value)
+		errDeleteCookie := h.queries.DeleteSession(r.Context(), cookie.Value)
 		if errDeleteCookie != nil {
 			http.Error(w, "Error deleting cookie, try logging out again", http.StatusInternalServerError)
 			return
@@ -162,4 +172,12 @@ func HandleLogout(queries *db.Queries, w http.ResponseWriter, r *http.Request) {
 		Path:   "/",
 	})
 	http.Redirect(w, r, "/login/", http.StatusSeeOther)
+}
+
+func (h *AuthHandler) SignupPage(w http.ResponseWriter, _ *http.Request) {
+	h.templates.Render(w, "sign-up", nil)
+}
+
+func (h *AuthHandler) LoginPage(w http.ResponseWriter, _ *http.Request) {
+	h.templates.Render(w, "login", nil)
 }

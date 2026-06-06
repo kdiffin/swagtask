@@ -9,10 +9,17 @@ import (
 	"swagtask/internal/tag"
 	"swagtask/internal/task"
 	"swagtask/internal/template"
+	collaborative_vault "swagtask/internal/vault/collaborative-page"
+	owner_dashboard "swagtask/internal/vault/owner-dashboard"
 )
 
 func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 	mux := http.NewServeMux()
+	taskHandler := task.NewTaskHandler(queries, templates)
+	tagHandler := tag.NewTagHandler(queries, templates)
+	authHandler := auth.NewAuthHandler(queries, templates)
+	ownerVaultHandler := owner_dashboard.NewVaultHandler(queries, templates)
+	collaborativeVaultHandler := collaborative_vault.NewVaultHandler(queries, templates)
 
 	uploadsFS := http.FS(os.DirFS("./web/pfps/"))
 	staticFS := http.FS(os.DirFS("./web/static/"))
@@ -58,16 +65,16 @@ func NewMux(queries *db.Queries, templates *template.Template) *http.ServeMux {
 
 	mux.Handle("POST /tags/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.FormValue("source") == "/tags" {
-			tag.HandlerCreateTag(w, r, queries, templates)
+			tagHandler.Create(w, r)
 		} else if r.FormValue("source") == "/tasks" {
-			task.HandlerCreateTag(w, r, queries, templates)
+			taskHandler.CreateTag(w, r)
 
 		}
 	})))
-	SetupAuthRoutes(mux, queries, templates)
-	SetupTaskRoutes(mux, queries, templates)
-	SetupTagRoutes(mux, queries, templates)
-	SetupVaultRoutes(mux, queries, templates)
+	SetupAuthRoutes(mux, authHandler)
+	SetupTaskRoutes(mux, queries, taskHandler)
+	SetupTagRoutes(mux, queries, tagHandler)
+	SetupVaultRoutes(mux, queries, ownerVaultHandler, collaborativeVaultHandler)
 
 	return mux
 }

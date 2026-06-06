@@ -1,7 +1,6 @@
 package vault
 
 import (
-	"fmt"
 	"net/http"
 	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
@@ -10,42 +9,51 @@ import (
 	common "swagtask/internal/vault/common"
 )
 
-func HandlerGetVaults(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+type VaultHandler struct {
+	queries   *db.Queries
+	templates *template.Template
+}
+
+func NewVaultHandler(queries *db.Queries, templates *template.Template) *VaultHandler {
+	return &VaultHandler{queries: queries, templates: templates}
+}
+
+func (h *VaultHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	vaults, err := common.GetVaultsWithCollaborators(queries, utils.PgUUID(user.ID), r.Context())
+	vaults, err := common.GetVaultsWithCollaborators(h.queries, utils.PgUUID(user.ID), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
 	page := common.NewVaultsPage(vaults, true, user.PathToPfp, user.Username)
-	templates.Render(w, "vaults-page", page)
+	h.templates.Render(w, "vaults-page", page)
 }
 
-func HandlerCreateVault(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *VaultHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	vaults, err := common.CreateVault(queries, r.FormValue("vault_name"), r.FormValue("vault_description"), utils.PgUUID(user.ID), r.Context())
+	vaults, err := common.CreateVault(h.queries, r.FormValue("vault_name"), r.FormValue("vault_description"), utils.PgUUID(user.ID), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	templates.Render(w, "vault-card", vaults)
+	h.templates.Render(w, "vault-card", vaults)
 }
 
-func HandlerDeleteVault(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *VaultHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	errDelete := common.DeleteVault(queries, utils.PgUUID(r.PathValue("vaultId")), utils.PgUUID(user.ID), r.Context())
+	errDelete := common.DeleteVault(h.queries, utils.PgUUID(r.PathValue("vaultId")), utils.PgUUID(user.ID), r.Context())
 	if utils.CheckError(w, r, errDelete) {
 		return
 	}
@@ -54,7 +62,7 @@ func HandlerDeleteVault(w http.ResponseWriter, r *http.Request, queries *db.Quer
 	w.Write([]byte(nil))
 }
 
-func HandlerUpdateVault(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *VaultHandler) Update(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
@@ -67,36 +75,34 @@ func HandlerUpdateVault(w http.ResponseWriter, r *http.Request, queries *db.Quer
 		locked = true
 	}
 
-	vault, errUpdate := common.UpdateVault(queries, utils.PgUUID(r.PathValue("vaultId")), utils.PgUUID(user.ID), r.FormValue("vault_name"), r.FormValue("vault_description"), locked, r.Context())
+	vault, errUpdate := common.UpdateVault(h.queries, utils.PgUUID(r.PathValue("vaultId")), utils.PgUUID(user.ID), r.FormValue("vault_name"), r.FormValue("vault_description"), locked, r.Context())
 	if utils.CheckError(w, r, errUpdate) {
-		fmt.Println("yea error here")
 		return
 	}
 
-	templates.Render(w, "vault-card", vault)
+	h.templates.Render(w, "vault-card", vault)
 }
 
-func HandlerAddCollaboratorToVault(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *VaultHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	vault, errUpdate := common.AddCollaboratorToVault(queries,
+	vault, errUpdate := common.AddCollaboratorToVault(h.queries,
 		r.FormValue("collaborator_username"),
 		utils.PgUUID(user.ID),
 		utils.PgUUID(r.PathValue("vaultId")),
 		r.FormValue("collaborator_role"),
 		r.Context())
 	if utils.CheckError(w, r, errUpdate) {
-		fmt.Println("yea error here")
 		return
 	}
 
-	templates.Render(w, "vault-card", vault)
+	h.templates.Render(w, "vault-card", vault)
 }
 
-func HandlerDeleteCollaboratorToVault(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *VaultHandler) RemoveCollaborator(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
 		return
@@ -107,15 +113,14 @@ func HandlerDeleteCollaboratorToVault(w http.ResponseWriter, r *http.Request, qu
 		http.Error(w, "You cant remove the owner as a collaborator, consider deleting the vault if needed.", http.StatusBadRequest)
 		return
 	}
-	vault, errUpdate := common.RemoveCollaboratorFromVault(queries,
+	vault, errUpdate := common.RemoveCollaboratorFromVault(h.queries,
 		utils.PgUUID(user.ID),
 		utils.PgUUID(r.PathValue("vaultId")),
 		collaboratorUsername,
 		r.Context())
 	if utils.CheckError(w, r, errUpdate) {
-		fmt.Println("yea error here")
 		return
 	}
 
-	templates.Render(w, "vault-card", vault)
+	h.templates.Render(w, "vault-card", vault)
 }

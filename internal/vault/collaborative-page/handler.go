@@ -1,7 +1,6 @@
 package vault
 
 import (
-	"fmt"
 	"net/http"
 	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
@@ -10,7 +9,16 @@ import (
 	common "swagtask/internal/vault/common"
 )
 
-func HandlerGetVault(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+type VaultHandler struct {
+	queries   *db.Queries
+	templates *template.Template
+}
+
+func NewVaultHandler(queries *db.Queries, templates *template.Template) *VaultHandler {
+	return &VaultHandler{queries: queries, templates: templates}
+}
+
+func (h *VaultHandler) Get(w http.ResponseWriter, r *http.Request) {
 	user, errUser := middleware.UserFromContext(r.Context())
 	if utils.CheckError(w, r, errUser) {
 		return
@@ -20,21 +28,12 @@ func HandlerGetVault(w http.ResponseWriter, r *http.Request, queries *db.Queries
 		return
 	}
 
-	vaultWithCollaborators, errVault := common.GetVaultWithCollaboratorsById(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	vaultWithCollaborators, errVault := common.GetVaultWithCollaboratorsById(h.queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
 
-	var role string
-	collaborators := []common.CollaboratorUI{}
-	for _, item := range vaultWithCollaborators.RelatedCollaborators {
-		fmt.Println(item.Name)
-		if item.Name == user.Username {
-			role = item.Role
-		}
-
-		collaborators = append(collaborators, common.CollaboratorUI(item))
-	}
+	role, collaborators := collaboratorView(vaultWithCollaborators.RelatedCollaborators, user.Username)
 
 	page := common.NewVaultPage(
 		common.UserVaultUI{
@@ -45,6 +44,18 @@ func HandlerGetVault(w http.ResponseWriter, r *http.Request, queries *db.Queries
 		},
 		vaultWithCollaborators.VaultUI,
 		collaborators)
-	templates.Render(w, "vault-page", page)
+	h.templates.Render(w, "vault-page", page)
 
+}
+
+func collaboratorView(items []common.RelatedCollaborator, username string) (string, []common.CollaboratorUI) {
+	var role string
+	collaborators := make([]common.CollaboratorUI, 0, len(items))
+	for _, item := range items {
+		if item.Name == username {
+			role = item.Role
+		}
+		collaborators = append(collaborators, common.CollaboratorUI(item))
+	}
+	return role, collaborators
 }

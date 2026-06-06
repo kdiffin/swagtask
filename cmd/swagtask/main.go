@@ -40,7 +40,7 @@ func main() {
 	mux := router.NewMux(queries, templates)
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080" // fallback for local dev
+		port = "8080"
 	}
 	server := http.Server{
 		Addr:    ":" + port,

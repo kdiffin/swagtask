@@ -1,17 +1,14 @@
 package vault
 
 import (
-	"fmt"
 	"net/http"
-	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
 	"swagtask/internal/task"
-	"swagtask/internal/template"
 	"swagtask/internal/utils"
 	common "swagtask/internal/vault/common"
 )
 
-func HandlerGetTasks(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *VaultHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
@@ -22,45 +19,19 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request, queries *db.Queries
 	}
 
 	filters := task.FilterParams(r)
-	tasks, err := task.GetFilteredTasksWithTags(queries, filters, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	tasks, err := task.GetFilteredTasksWithTags(h.queries, filters, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, err) {
 		return
 	}
 
-	// AGAIN THIS HACKY BULLSHIT BC OF NOT USING TEMPL :SOB
-	// FEELING THE TECH DEBT
-	var tasksReal []task.TaskWithTags
-	for _, t := range tasks {
-		tasksReal = append(tasksReal, task.TaskWithTags{
-			TaskUI: task.TaskUI{
-				ID:        t.ID,
-				CreatedAt: t.CreatedAt,
-				Name:      t.Name,
-				Author:    t.Author,
-				Idea:      t.Idea,
-				Completed: t.Completed,
-			},
-			VaultID:       vaultId,
-			RelatedTags:   t.RelatedTags,
-			AvailableTags: t.AvailableTags,
-		})
-	}
+	tasksReal := addVaultIDToTasks(vaultId, tasks)
 
-	vaultWithCollaborators, errVault := common.GetVaultWithCollaboratorsById(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	vaultWithCollaborators, errVault := common.GetVaultWithCollaboratorsById(h.queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
 
-	var role string
-	collaborators := []common.CollaboratorUI{}
-	for _, item := range vaultWithCollaborators.RelatedCollaborators {
-		fmt.Println(item.Name)
-		if item.Name == user.Username {
-			role = item.Role
-		}
-
-		collaborators = append(collaborators, common.CollaboratorUI(item))
-	}
+	role, collaborators := collaboratorView(vaultWithCollaborators.RelatedCollaborators, user.Username)
 
 	page := common.NewVaultTasksPage(
 		tasksReal,
@@ -75,17 +46,13 @@ func HandlerGetTasks(w http.ResponseWriter, r *http.Request, queries *db.Queries
 		collaborators,
 	)
 
-	templates.Render(w, "collaborative-tasks-page", page)
+	h.templates.Render(w, "collaborative-tasks-page", page)
 }
 
 // this is for the single page
 // i had to replicate this function because of the crap with templates
 // not being smart
-func HandlerGetTask(w http.ResponseWriter,
-	r *http.Request,
-	queries *db.Queries,
-
-	templates *template.Template) {
+func (h *VaultHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
 	user, err := middleware.UserFromContext(r.Context())
@@ -96,7 +63,7 @@ func HandlerGetTask(w http.ResponseWriter,
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
-	t, createdAt, err := task.GetTaskPage(queries,
+	t, createdAt, err := task.GetTaskPage(h.queries,
 		utils.PgUUID(user.ID),
 		utils.PgUUID(vaultId),
 		utils.PgUUID(id), r.Context())
@@ -104,36 +71,15 @@ func HandlerGetTask(w http.ResponseWriter,
 		return
 	}
 
-	tasksReal := task.TaskWithTags{
-		TaskUI: task.TaskUI{
-			ID:        t.ID,
-			CreatedAt: t.CreatedAt,
-			Name:      t.Name,
-			Author:    t.Author,
-			Idea:      t.Idea,
-			Completed: t.Completed,
-		},
-		VaultID:       vaultId,
-		RelatedTags:   t.RelatedTags,
-		AvailableTags: t.AvailableTags,
-	}
-	vaultWithCollaborators, errVault := common.GetVaultWithCollaboratorsById(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	taskWithVault := addVaultIDToTask(vaultId, *t)
+	vaultWithCollaborators, errVault := common.GetVaultWithCollaboratorsById(h.queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
 
-	var role string
-	collaborators := []common.CollaboratorUI{}
-	for _, item := range vaultWithCollaborators.RelatedCollaborators {
-		fmt.Println(item.Name)
-		if item.Name == user.Username {
-			role = item.Role
-		}
-
-		collaborators = append(collaborators, common.CollaboratorUI(item))
-	}
-	prevButton, nextButton := task.GetTaskNavigationButtons(r.Context(), queries, createdAt, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(id))
-	page := common.NewVaultTaskPage(tasksReal,
+	role, collaborators := collaboratorView(vaultWithCollaborators.RelatedCollaborators, user.Username)
+	prevButton, nextButton := task.GetTaskNavigationButtons(r.Context(), h.queries, createdAt, utils.PgUUID(user.ID), utils.PgUUID(vaultId), utils.PgUUID(id))
+	page := common.NewVaultTaskPage(taskWithVault,
 		task.TaskPageButtons{
 			PrevButton: prevButton,
 			NextButton: nextButton,
@@ -148,5 +94,30 @@ func HandlerGetTask(w http.ResponseWriter,
 		collaborators,
 	)
 
-	templates.Render(w, "collaborative-task-page", page)
+	h.templates.Render(w, "collaborative-task-page", page)
+}
+
+func addVaultIDToTasks(vaultID string, tasks []task.TaskWithTags) []task.TaskWithTags {
+	result := make([]task.TaskWithTags, 0, len(tasks))
+	for _, item := range tasks {
+		result = append(result, addVaultIDToTask(vaultID, item))
+	}
+	return result
+}
+
+func addVaultIDToTask(vaultId string, t task.TaskWithTags) task.TaskWithTags {
+	tasksReal := task.TaskWithTags{
+		TaskUI: task.TaskUI{
+			CreatedAt: t.CreatedAt,
+			ID:        t.ID,
+			Name:      t.Name,
+			Author:    t.Author,
+			Idea:      t.Idea,
+			Completed: t.Completed,
+		},
+		VaultID:       vaultId,
+		RelatedTags:   t.RelatedTags,
+		AvailableTags: t.AvailableTags,
+	}
+	return tasksReal
 }

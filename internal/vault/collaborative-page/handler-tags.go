@@ -1,18 +1,15 @@
 package vault
 
 import (
-	"fmt"
 	"net/http"
-	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
 	"swagtask/internal/tag"
-	"swagtask/internal/template"
 	common "swagtask/internal/vault/common"
 
 	"swagtask/internal/utils"
 )
 
-func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries, templates *template.Template) {
+func (h *VaultHandler) GetTags(w http.ResponseWriter, r *http.Request) {
 	user, err := middleware.UserFromContext(r.Context())
 	vaultId, errVault := middleware.VaultIDFromContext(r.Context())
 	if utils.CheckError(w, r, err) {
@@ -22,27 +19,17 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 		return
 	}
 
-	tagsWithTasks, errTags := tag.GetTagsWithTasks(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	tagsWithTasks, errTags := tag.GetTagsWithTasks(h.queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errTags) {
-		fmt.Println("error was here")
 		return
 	}
 
-	vaultWithCollaborators, errVault := common.GetVaultWithCollaboratorsById(queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+	vaultWithCollaborators, errVault := common.GetVaultWithCollaboratorsById(h.queries, utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 	if utils.CheckError(w, r, errVault) {
 		return
 	}
 
-	var role string
-	collaborators := []common.CollaboratorUI{}
-	for _, item := range vaultWithCollaborators.RelatedCollaborators {
-		fmt.Println(item.Name)
-		if item.Name == user.Username {
-			role = item.Role
-		}
-
-		collaborators = append(collaborators, common.CollaboratorUI(item))
-	}
+	role, collaborators := collaboratorView(vaultWithCollaborators.RelatedCollaborators, user.Username)
 
 	page := common.NewVaultTagsPage(tagsWithTasks,
 		vaultWithCollaborators.VaultUI,
@@ -53,6 +40,6 @@ func HandlerGetTags(w http.ResponseWriter, r *http.Request, queries *db.Queries,
 			Role:       role,
 		},
 		collaborators)
-	templates.Render(w, "collaborative-tags-page", page)
+	h.templates.Render(w, "collaborative-tags-page", page)
 
 }

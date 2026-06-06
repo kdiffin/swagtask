@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
 	"swagtask/internal/tag"
 	"swagtask/internal/task"
-	"swagtask/internal/template"
 	"swagtask/internal/utils"
 	"sync"
 
@@ -92,7 +90,11 @@ type Payload struct {
 }
 
 // === WebSocket connection handler ===
-func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.ResponseWriter, r *http.Request) func(*websocket.Conn) {
+func (h *VaultHandler) WebSocket(w http.ResponseWriter, r *http.Request) {
+	websocket.Handler(h.webSocketConnection(r)).ServeHTTP(w, r)
+}
+
+func (h *VaultHandler) webSocketConnection(r *http.Request) func(*websocket.Conn) {
 	vaultId, _ := middleware.VaultIDFromContext(r.Context())
 	user, _ := middleware.UserFromContext(r.Context())
 
@@ -120,16 +122,13 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			}
 
 			if payload.Action == "create_task" && payload.Path == fmt.Sprintf("/vaults/%v/tasks", vaultId) {
-				fmt.Println(payload.Data["taskIdea"], "idea")
-				fmt.Println(payload.Data["taskName"], "name")
-
-				task, errTask := task.CreateTask(queries, payload.Data["task_name"], payload.Data["task_idea"], utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
+				task, errTask := task.CreateTask(h.queries, payload.Data["task_name"], payload.Data["task_idea"], utils.PgUUID(user.ID), utils.PgUUID(vaultId), r.Context())
 				if errTask != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Duplicate idea in the same vault", errTask)
 					continue
 				}
 
-				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
+				html, errRender := h.templates.ReturnString("collaborative-task", addVaultIDToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					continue
@@ -140,7 +139,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			}
 
 			if payload.Action == "delete_task" {
-				errTask := task.DeleteTask(queries, utils.PgUUID(payload.Data["task_id"]), utils.PgUUID(vaultId), utils.PgUUID(user.ID), r.Context())
+				errTask := task.DeleteTask(h.queries, utils.PgUUID(payload.Data["task_id"]), utils.PgUUID(vaultId), utils.PgUUID(user.ID), r.Context())
 				if errTask != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Internal server error", errTask)
 					continue
@@ -153,7 +152,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 			if payload.Action == "update_task" {
 				task, errTask := task.UpdateTask(
-					queries,
+					h.queries,
 					utils.PgUUID(vaultId),
 					utils.PgUUID(payload.Data["task_id"]),
 					utils.PgUUID(user.ID),
@@ -166,7 +165,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					continue
 				}
 
-				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
+				html, errRender := h.templates.ReturnString("collaborative-task", addVaultIDToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					continue
@@ -177,7 +176,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			}
 			if payload.Action == "update_task_completion" {
 				task, errTask := task.UpdateTaskCompletion(
-					queries,
+					h.queries,
 					utils.PgUUID(user.ID),
 					utils.PgUUID(vaultId),
 					utils.PgUUID(payload.Data["task_id"]),
@@ -187,7 +186,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					continue
 				}
 
-				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
+				html, errRender := h.templates.ReturnString("collaborative-task", addVaultIDToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					continue
@@ -199,7 +198,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 			if payload.Action == "add_tag_to_task" {
 				task, errTask := task.AddTagToTask(
-					queries,
+					h.queries,
 					utils.PgUUID(payload.Data["tag_id"]),
 					utils.PgUUID(user.ID),
 					utils.PgUUID(payload.Data["task_id"]),
@@ -211,7 +210,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					continue
 				}
 
-				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
+				html, errRender := h.templates.ReturnString("collaborative-task", addVaultIDToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					continue
@@ -223,7 +222,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 			if payload.Action == "remove_tag_from_task" {
 				task, errTask := task.DeleteTagRelationFromTask(
-					queries,
+					h.queries,
 					utils.PgUUID(payload.Data["tag_id"]),
 					utils.PgUUID(user.ID),
 					utils.PgUUID(vaultId),
@@ -235,7 +234,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					continue
 				}
 
-				html, errRender := templates.ReturnString("collaborative-task", addVaultIdToTask(vaultId, *task))
+				html, errRender := h.templates.ReturnString("collaborative-task", addVaultIDToTask(vaultId, *task))
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					continue
@@ -270,7 +269,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			if payload.Action == "create_tag" {
 				// MAKE THIS WORK BY SENDING sONE TAG NOT EVERYTHING
 				if i, ok := payload.Data["source"]; ok && i == "/tags" {
-					tagWithTasks, errTag := tag.CreateTag(queries,
+					tagWithTasks, errTag := tag.CreateTag(h.queries,
 						utils.PgUUID(user.ID),
 						utils.PgUUID(vaultId),
 						payload.Data["tag_name"],
@@ -279,7 +278,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 						utils.CheckErrorWebsocket(hub.broadcast, "Can't have two tags with the same name", errTag)
 						continue
 					}
-					html, errRender := templates.ReturnString("collaborative-tag", tagWithTasks)
+					html, errRender := h.templates.ReturnString("collaborative-tag", tagWithTasks)
 					if errRender != nil {
 						utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 						continue
@@ -288,7 +287,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 					hub.broadcast <- realHtml
 				} else {
-					_, errTag := tag.CreateTag(queries,
+					_, errTag := tag.CreateTag(h.queries,
 						utils.PgUUID(user.ID),
 						utils.PgUUID(vaultId),
 						payload.Data["tag_name"],
@@ -299,7 +298,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					}
 
 					filters := task.FilterParams(r)
-					tasks, errTasks := task.GetFilteredTasksWithTags(queries,
+					tasks, errTasks := task.GetFilteredTasksWithTags(h.queries,
 						filters,
 						utils.PgUUID(user.ID),
 						utils.PgUUID(vaultId),
@@ -310,7 +309,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 						continue
 					}
 
-					html, errRender := templates.ReturnString("collaborative-tasks-container", tasks)
+					html, errRender := h.templates.ReturnString("collaborative-tasks-container", tasks)
 
 					if errRender != nil {
 						utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
@@ -326,7 +325,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 			if payload.Action == "update_tag" {
 				tag, errTag := tag.UpdateTag(
-					queries,
+					h.queries,
 					utils.PgUUID(payload.Data["tag_id"]),
 					utils.PgUUID(user.ID),
 					utils.PgUUID(vaultId),
@@ -338,7 +337,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					continue
 				}
 
-				html, errRender := templates.ReturnString("collaborative-tag", tag)
+				html, errRender := h.templates.ReturnString("collaborative-tag", tag)
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					continue
@@ -349,7 +348,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			}
 			if payload.Action == "delete_tag" {
 				errTag := tag.DeleteTag(
-					queries,
+					h.queries,
 					utils.PgUUID(payload.Data["tag_id"]),
 					utils.PgUUID(user.ID),
 					utils.PgUUID(vaultId),
@@ -367,7 +366,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 
 			if payload.Action == "add_task_to_tag" {
 				tag, errTag := tag.AddTaskToTag(
-					queries,
+					h.queries,
 					utils.PgUUID(payload.Data["tag_id"]),
 					utils.PgUUID(user.ID),
 					utils.PgUUID(payload.Data["task_id"]),
@@ -380,7 +379,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					continue
 				}
 
-				html, errRender := templates.ReturnString("collaborative-tag", tag)
+				html, errRender := h.templates.ReturnString("collaborative-tag", tag)
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					continue
@@ -391,7 +390,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 			}
 			if payload.Action == "remove_task_from_tag" {
 				tag, errTag := tag.DeleteTaskRelationFromTag(
-					queries,
+					h.queries,
 					utils.PgUUID(payload.Data["tag_id"]),
 					utils.PgUUID(payload.Data["task_id"]),
 					utils.PgUUID(user.ID),
@@ -404,7 +403,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 					continue
 				}
 
-				html, errRender := templates.ReturnString("collaborative-tag", tag)
+				html, errRender := h.templates.ReturnString("collaborative-tag", tag)
 				if errRender != nil {
 					utils.CheckErrorWebsocket(hub.broadcast, "Error rendering component", errRender)
 					continue
@@ -416,22 +415,7 @@ func WsHandlerPubSub(queries *db.Queries, templates *template.Template, w http.R
 		}
 	}
 }
-func addVaultIdToTask(vaultId string, t task.TaskWithTags) task.TaskWithTags {
-	tasksReal := task.TaskWithTags{
-		TaskUI: task.TaskUI{
-			CreatedAt: t.CreatedAt,
-			ID:        t.ID,
-			Name:      t.Name,
-			Author:    t.Author,
-			Idea:      t.Idea,
-			Completed: t.Completed,
-		},
-		VaultID:       vaultId,
-		RelatedTags:   t.RelatedTags,
-		AvailableTags: t.AvailableTags,
-	}
-	return tasksReal
-}
+
 func wrapWithAttributesDiv(html string, attrs string) string {
 	s := fmt.Sprintf(`<div %v>`, attrs) + html + "</div>"
 

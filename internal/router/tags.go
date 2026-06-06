@@ -6,28 +6,17 @@ import (
 	db "swagtask/internal/db/generated"
 	"swagtask/internal/middleware"
 	"swagtask/internal/tag"
-	"swagtask/internal/template"
 	"swagtask/internal/utils"
 )
 
-func SetupTagRoutes(mux *http.ServeMux, queries *db.Queries, templates *template.Template) {
+func SetupTagRoutes(mux *http.ServeMux, queries *db.Queries, handler *tag.TagHandler) {
 
-	mux.Handle("GET /tags/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tag.HandlerGetTags(w, r, queries, templates)
-	})))
-	mux.Handle("PUT /tags/{id}/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tag.HandlerUpdateTag(w, r, queries, templates)
-	})))
+	mux.Handle("GET /tags/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(handler.GetAll)))
+	mux.Handle("PUT /tags/{id}/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(handler.Update)))
 
-	mux.Handle("DELETE /tags/{id}/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tag.HandlerDeleteTag(w, r, queries, templates)
-	})))
-	mux.Handle("POST /tags/{id}/tasks/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tag.HandlerAddTaskToTag(w, r, queries, templates)
-	})))
-	mux.Handle("DELETE /tags/{id}/tasks/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tag.HandlerRemoveTaskFromTag(w, r, queries, templates)
-	})))
+	mux.Handle("DELETE /tags/{id}/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(handler.Delete)))
+	mux.Handle("POST /tags/{id}/tasks/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(handler.AddTask)))
+	mux.Handle("DELETE /tags/{id}/tasks/{$}", middleware.HandlerWithVaultIdFromUser(queries, http.HandlerFunc(handler.RemoveTask)))
 	mux.HandleFunc("GET /json", func(w http.ResponseWriter, r *http.Request) {
 		// Prepare the response data
 		response := map[string]string{
