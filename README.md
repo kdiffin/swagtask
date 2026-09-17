@@ -17,7 +17,9 @@ Because of this project being so no-dependency focused I actually managed to lea
 
 Most notably being http, networking and how the browser actually works -> this was delegated to nextjs previously and I didnt understand the network tab in my browser, with htmx the network tab becomes a first class citizen in development which greatly enhanced my understanding of REST principles and http/s.
 
-You become enlightened to browser native caching techniques and actual performance optimizations instead of pointless v-dom rerender juggling with state and memoization attemps, HTMX is lean and mean, low-level-esque and imperative, and a joy for backend developers.
+You become enlightened to browser native caching techniques and actual performance optimizations instead of pointless v-dom rerender juggling with state and memoization attemps.
+
+HTMX is lean and mean, low-level in terms of browser primitives and imperative; a joy for backend developers who want to write very little frontend code.
 
 Really enjoyed that freedom this project.
 
