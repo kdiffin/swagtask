@@ -34,4 +34,4 @@ And for the realtime thing I think a reactive way of doings things would be bett
  
 ---
 
-task history + future tasks: (tasks.md)[tasks.md]
+task history + future tasks: [tasks.md](tasks.md)
