@@ -27,7 +27,7 @@ My only drawbacks here have been the lack of UI componentization and typesafety 
 
 And for the realtime thing I think a reactive way of doings things would be better if the system got more complex. (this is just a hunch though, after I do the alpine stuff I'll have an opinion on this for real)
 
-## hand drawn architecture 
+## hand drawn architecture of the CRUD / RBAC-ish thnig
 
  ![example](./mds/flow.jpeg)
 
