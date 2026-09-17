@@ -4,7 +4,7 @@ this project started off as a fork of a lesson given by ThePrimeagen on Frontend
 
 Everything here was hand-rolled (even the pub-sub) and follows **_HATEOAS_**.
 
-no frameworks, no build step, just Go stdlib and htmx
+no frameworks, no build step, just :Go stdlib and htmx
 pub-sub, websockets, and all the glue code is mine
 no dependencies, no npm, no yarn, no package.json (If I havent made it clear yet, I'm tired of JS build step/dependency hell.)
 This app is a heavy WIP.
@@ -27,8 +27,11 @@ My only drawbacks here have been the lack of UI componentization and typesafety 
 
 And for the realtime thing I think a reactive way of doings things would be better if the system got more complex. (this is just a hunch though, after I do the alpine stuff I'll have an opinion on this for real)
 
+## hand drawn architecture 
+
+ ![example](./mds/flow.jpeg)
+
+ 
 ---
 
-the things that's left to implement
-[tasks](tasks.md)
-
+task history + future tasks: (tasks.md)[tasks.md]
